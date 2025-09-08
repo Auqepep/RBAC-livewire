@@ -44,6 +44,10 @@ Route::get('dashboard', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::get('my-groups', [UserController::class, 'myGroups'])->name('my-groups');
+    Route::get('available-groups', function () {
+        return view('users.available-groups');
+    })->name('available-groups');
+    Route::get('groups/{group}', [UserController::class, 'showGroup'])->name('groups.show');
 });
 
 // Debug route for testing verification
@@ -71,6 +75,11 @@ Route::middleware(['auth', 'role:administrator'])->prefix('admin')->name('admin.
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
+    
+    // Group Join Requests Management
+    Route::get('group-join-requests', function () {
+        return view('admin.group-join-requests');
+    })->name('group-join-requests');
     
     // Admin Dashboard
     Route::get('/', function () {

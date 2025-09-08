@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -180,5 +181,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function createdGroups()
     {
         return $this->hasMany(Group::class, 'created_by');
+    }
+
+    /**
+     * Get user's group join requests
+     */
+    public function groupJoinRequests(): HasMany
+    {
+        return $this->hasMany(GroupJoinRequest::class);
+    }
+
+    /**
+     * Get user's pending group join requests
+     */
+    public function pendingGroupJoinRequests(): HasMany
+    {
+        return $this->hasMany(GroupJoinRequest::class)->where('status', 'pending');
     }
 }

@@ -32,9 +32,14 @@ class UserController extends Controller
      */
     public function myGroups()
     {
-        $user = Auth::user();
-        $groups = $user->groups()->with(['members.user'])->get();
-        
-        return view('users.my-groups', compact('groups', 'user'));
+        return view('users.my-groups');
+    }
+
+    /**
+     * Display a specific group's homepage
+     */
+    public function showGroup($groupId)
+    {
+        return view('users.group-homepage', compact('groupId'));
     }
 }

@@ -1,37 +1,53 @@
 <x-admin.layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <flux:heading size="lg">{{ __('Groups Management') }}</flux:heading>
-            <flux:button href="{{ route('admin.groups.create') }}" variant="primary">
-                <flux:icon.plus class="size-4" />
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Groups Management') }}
+            </h2>
+            <a href="{{ route('admin.groups.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
                 Create New Group
-            </flux:button>
+            </a>
         </div>
     </x-slot>
 
-    <flux:card>
-        <flux:table :paginate="$groups">
-            <flux:columns>
-                <flux:column>Group</flux:column>
-                <flux:column>Members</flux:column>
-                <flux:column>Status</flux:column>
-                <flux:column>Created By</flux:column>
-                <flux:column>Actions</flux:column>
-            </flux:columns>
-
-            <flux:rows>
-                @forelse ($groups as $group)
-                    <flux:row>
-                        <flux:cell>
-                            <div>
-                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {{ $group->name }}
-                                </div>
-                                @if($group->description)
-                                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                        {{ Str::limit($group->description, 50) }}
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Group
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Members
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created By
+                        </th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Actions</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse ($groups as $group)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ $group->name }}
                                     </div>
-                                @endif
+                                    @if($group->description)
+                                        <div class="text-xs text-gray-400 mt-1">
+                                            {{ Str::limit($group->description, 50) }}
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

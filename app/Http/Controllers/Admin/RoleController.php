@@ -15,8 +15,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::with('permissions')->paginate(15);
-        return view('admin.roles.index', compact('roles'));
+        return view('admin.roles.index');
     }
 
     /**
@@ -24,8 +23,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::where('is_active', true)->get()->groupBy('module');
-        return view('admin.roles.create', compact('permissions'));
+        return view('admin.roles.create');
     }
 
     /**
@@ -73,9 +71,7 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        $permissions = Permission::where('is_active', true)->get()->groupBy('module');
-        $rolePermissions = $role->permissions->pluck('id')->toArray();
-        return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));
+        return view('admin.roles.edit', compact('role'));
     }
 
     /**
