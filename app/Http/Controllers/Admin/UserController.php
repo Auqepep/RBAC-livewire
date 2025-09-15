@@ -15,8 +15,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('roles')->paginate(15);
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index');
     }
 
     /**
@@ -70,9 +69,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $roles = Role::where('is_active', true)->get();
-        $userRoles = $user->roles->pluck('id')->toArray();
-        return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
+        return view('admin.users.edit', compact('user'));
     }
 
     /**

@@ -39,21 +39,9 @@
                                             {{ strtoupper(substr($user->name, 0, 1)) }}
                                         </span>
                                     </div>
-                                    <div class="flex-1">
+                                    <div>
                                         <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
                                         <p class="text-xs text-gray-500">{{ $user->email }}</p>
-                                        @if($user->roles->count() > 0)
-                                            <div class="mt-1 flex flex-wrap gap-1">
-                                                @foreach($user->roles->take(3) as $role)
-                                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full text-white" style="{{ $role->badge_color }}">
-                                                        {{ $role->display_name }}
-                                                    </span>
-                                                @endforeach
-                                                @if($user->roles->count() > 3)
-                                                    <span class="text-xs text-gray-400">+{{ $user->roles->count() - 3 }} more</span>
-                                                @endif
-                                            </div>
-                                        @endif
                                     </div>
                                 </div>
                                 <p class="text-xs text-gray-400">{{ $user->created_at->diffForHumans() }}</p>

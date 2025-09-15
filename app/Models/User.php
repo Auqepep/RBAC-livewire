@@ -46,6 +46,13 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the email address that should be used for verification.
+     */
+    public function getEmailForVerification(): string
+    {
+        return $this->email;
+    }
+    /**
      * Get roles assigned to user
      */
     public function roles(): BelongsToMany

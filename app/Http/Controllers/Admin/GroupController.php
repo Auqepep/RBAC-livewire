@@ -15,7 +15,11 @@ class GroupController extends Controller
      */
     public function index()
     {
-        return view('admin.groups.index');
+        $groups = Group::with(['users', 'creator'])
+                      ->withCount('users')
+                      ->paginate(15);
+        
+        return view('admin.groups.index', compact('groups'));
     }
 
     /**
@@ -23,7 +27,8 @@ class GroupController extends Controller
      */
     public function create()
     {
-        return view('admin.groups.create');
+        $users = User::whereNotNull('email_verified_at')->get();
+        return view('admin.groups.create', compact('users'));
     }
 
     /**
@@ -75,7 +80,9 @@ class GroupController extends Controller
      */
     public function edit(Group $group)
     {
-        return view('admin.groups.edit', compact('group'));
+        $users = User::whereNotNull('email_verified_at')->get();
+        $groupUsers = $group->users->pluck('id')->toArray();
+        return view('admin.groups.edit', compact('group', 'users', 'groupUsers'));
     }
 
     /**

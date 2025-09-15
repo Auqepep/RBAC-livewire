@@ -2,19 +2,19 @@
     <!-- Flash Messages -->
     @if (session()->has('message'))
         <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
-            {{ session('message') }}
+            {{ session('message'); }}
         </div>
     @endif
 
     @if (session()->has('error'))
         <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
-            {{ session('error') }}
+            {{ session('error'); }}
         </div>
     @endif
 
     @if (session()->has('debug'))
         <div class="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-md">
-            DEBUG: {{ session('debug') }}
+            DEBUG: {{ session('debug'); }}
         </div>
     @endif
 
@@ -56,11 +56,11 @@
                             <div class="flex items-start justify-between mb-4">
                                 <div class="flex-1">
                                     <h4 class="text-lg font-semibold text-gray-900 mb-2">
-                                        {{ $group->name }}
+                                        {{ $group->name; }}
                                     </h4>
                                     @if($group->description)
                                         <p class="text-sm text-gray-600 mb-3">
-                                            {{ Str::limit($group->description, 100) }}
+                                            {{ Str::limit($group->description, 100); }}
                                         </p>
                                     @endif
                                 </div>
@@ -73,11 +73,11 @@
                             <div class="space-y-2 mb-4">
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-500">Members</span>
-                                    <span class="font-medium text-gray-900">{{ $group->members_count }}</span>
+                                    <span class="font-medium text-gray-900">{{ $group->members_count; }}</span>
                                 </div>
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-500">Created</span>
-                                    <span class="font-medium text-gray-900">{{ $group->created_at->format('M d, Y') }}</span>
+                                    <span class="font-medium text-gray-900">{{ $group->created_at->format('M d, Y'); }}</span>
                                 </div>
                             </div>
 
@@ -88,7 +88,7 @@
                                         Request Pending
                                     </button>
                                 @else
-                                    <button wire:click="openRequestModal({{ $group->id }})" 
+                                    <button wire:click="openRequestModal({{ $group->id; }})" 
                                             class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors">
                                         Request to Join
                                     </button>
@@ -101,7 +101,7 @@
 
             <!-- Pagination -->
             <div class="px-6 py-4 border-t border-gray-200">
-                {{ $groups->links() }}
+                {{ $groups->links(); }}
             </div>
         @else
             <div class="text-center py-12">

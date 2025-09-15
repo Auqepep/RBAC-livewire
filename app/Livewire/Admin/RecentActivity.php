@@ -20,7 +20,7 @@ class RecentActivity extends Component
 
     public function loadRecentActivity()
     {
-        $this->recentUsers = User::with('roles')->latest()->take(5)->get();
+        $this->recentUsers = User::latest()->take(5)->get();
         $this->recentRoles = Role::latest()->take(5)->get();
         $this->recentGroups = Group::latest()->take(5)->get();
     }

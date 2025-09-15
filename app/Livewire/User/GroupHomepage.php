@@ -24,6 +24,6 @@ class GroupHomepage extends Component
 
     public function render()
     {
-        return view('livewire.user.group-homepage')->layout('layouts.user');
+        return view('livewire.user.group-homepage');
     }
 }
