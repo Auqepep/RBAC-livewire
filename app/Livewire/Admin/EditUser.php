@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\Role;
+use App\Models\GroupMember;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
@@ -27,8 +27,14 @@ class EditUser extends Component
         $this->user = $user;
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->selectedRoles = $user->roles->pluck('id')->toArray();
-        $this->roles = Role::where('is_active', true)->get();
+        
+        // Get role IDs from group memberships
+        $this->selectedRoles = $user->groupMembers()
+            ->whereNotNull('role_id')
+            ->pluck('role_id')
+            ->toArray();
+        
+        $this->roles = \App\Models\Role::all(); // All available roles
     }
 
     public function rules()
@@ -49,14 +55,9 @@ class EditUser extends Component
             'email' => $this->email,
         ]);
 
-        // Sync roles
-        $this->user->roles()->detach();
-        if (!empty($this->selectedRoles)) {
-            $roles = Role::whereIn('id', $this->selectedRoles)->get();
-            foreach ($roles as $role) {
-                $this->user->assignRole($role, auth()->user());
-            }
-        }
+        // Note: In our group-based RBAC system, roles are managed through groups
+        // Direct role assignment to users is no longer supported
+        session()->flash('message', 'User updated successfully. Note: Roles are now managed through group memberships.');
 
         session()->flash('success', 'User updated successfully.');
         return redirect()->route('admin.users.index');

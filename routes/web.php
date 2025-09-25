@@ -29,8 +29,8 @@ Route::post('logout', function () {
 })->name('logout')->middleware('auth');
 
 Route::get('dashboard', function () {
-    // Redirect administrators to admin dashboard
-    if (Auth::user()->hasRole('administrator')) {
+    // Redirect system administrators to admin dashboard
+    if (Auth::user()->canManageSystem()) {
         return redirect()->route('admin.dashboard');
     }
     
@@ -69,14 +69,29 @@ Route::get('debug-verify/{id}/{hash}', function ($id, $hash) {
     ];
 })->name('debug.verify');
 
-// Admin Routes (Only for administrators)
-Route::middleware(['auth', 'role:administrator'])->prefix('admin')->name('admin.')->group(function () {
+// Admin Routes (Only for system administrators)
+Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', AdminUserController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
     
-    // Group Join Requests Management
+    // Group member management
+    Route::get('groups/{group}/members', function (\App\Models\Group $group) {
+        return view('admin.group-members', compact('group'));
+    })->name('groups.members');
+    
+    // User to Group Management
+    Route::get('manage-memberships', function () {
+        return view('admin.manage-memberships');
+    })->name('manage-memberships');
+    
+    // Group Roles Management
+    Route::get('manage-group-roles', function () {
+        return view('admin.manage-group-roles');
+    })->name('manage-group-roles');
+    
+    // Group join requests
     Route::get('group-join-requests', function () {
         return view('admin.group-join-requests');
     })->name('group-join-requests');
@@ -86,9 +101,9 @@ Route::middleware(['auth', 'role:administrator'])->prefix('admin')->name('admin.
         $stats = [
             'users' => \App\Models\User::count(),
             'roles' => \App\Models\Role::count(),
-            'permissions' => \App\Models\Permission::count(),
+            'total_assignments' => \App\Models\GroupMember::count(),
             'groups' => \App\Models\Group::count(),
-            'active_roles' => \App\Models\Role::where('is_active', true)->count(),
+            'active_assignments' => \App\Models\GroupMember::count(),
             'active_groups' => \App\Models\Group::where('is_active', true)->count(),
         ];
         return view('admin.dashboard', compact('stats'));

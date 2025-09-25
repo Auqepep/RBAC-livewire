@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Role;
+use App\Models\GroupMember;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -44,15 +44,11 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        if (isset($validated['roles'])) {
-            $roles = Role::whereIn('id', $validated['roles'])->get();
-            foreach ($roles as $role) {
-                $user->assignRole($role, auth()->user());
-            }
-        }
+        // Note: In our group-based RBAC system, roles are managed through groups
+        // Direct role assignment is no longer supported
 
         return redirect()->route('admin.users.index')
-                        ->with('success', 'User created successfully.');
+                        ->with('success', 'User created successfully. Assign user to groups to give them roles.');
     }
 
     /**
@@ -89,19 +85,11 @@ class UserController extends Controller
             'email' => $validated['email'],
         ]);
 
-        // Sync roles
-        if (isset($validated['roles'])) {
-            $user->roles()->detach();
-            $roles = Role::whereIn('id', $validated['roles'])->get();
-            foreach ($roles as $role) {
-                $user->assignRole($role, auth()->user());
-            }
-        } else {
-            $user->roles()->detach();
-        }
+        // Note: In our group-based RBAC system, roles are managed through groups
+        // Direct role assignment is no longer supported
 
         return redirect()->route('admin.users.index')
-                        ->with('success', 'User updated successfully.');
+                        ->with('success', 'User updated successfully. Manage roles through group memberships.');
     }
 
     /**
@@ -117,7 +105,8 @@ class UserController extends Controller
             return back()->with('error', 'You cannot delete your own account.');
         }
 
-        $user->roles()->detach();
+        // Remove user from all groups
+        $user->groupMembers()->delete();
         $user->delete();
 
         return redirect()->route('admin.users.index')

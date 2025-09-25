@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\Role;
+use App\Models\Group;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
@@ -16,13 +16,13 @@ class CreateUser extends Component
     public $email = '';
 
     #[Validate('array')]
-    public $selectedRoles = [];
+    public $selectedGroups = [];
 
-    public $roles;
+    public $groups;
 
     public function mount()
     {
-        $this->roles = Role::where('is_active', true)->get();
+        $this->groups = Group::with('roles')->where('is_active', true)->get();
     }
 
     public function save()
@@ -35,14 +35,11 @@ class CreateUser extends Component
             'email_verified_at' => now(),
         ]);
 
-        if (!empty($this->selectedRoles)) {
-            $roles = Role::whereIn('id', $this->selectedRoles)->get();
-            foreach ($roles as $role) {
-                $user->assignRole($role, auth()->user());
-            }
-        }
+        // In our group-based RBAC system, users are assigned to groups
+        // For now, we just create the user and let admins assign groups separately
+        // This could be enhanced to allow group selection during user creation
 
-        session()->flash('success', 'User created successfully.');
+        session()->flash('success', 'User created successfully. Assign user to groups to give them roles.');
         return redirect()->route('admin.users.index');
     }
 

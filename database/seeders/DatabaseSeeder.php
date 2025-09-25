@@ -13,17 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed RBAC data first
+        // Seed RBAC data with the new pure group-based structure
         $this->call([
-            RbacSeeder::class,
-            GroupSeeder::class,
-        ]);
-
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            PureGroupBasedRbacSeeder::class,
         ]);
     }
 }

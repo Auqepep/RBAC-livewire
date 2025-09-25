@@ -50,7 +50,7 @@ class GroupsTable extends Component
         }
 
         // Check if group has members
-        if ($group->users()->count() > 0) {
+        if ($group->members()->count() > 0) {
             session()->flash('error', 'Cannot delete group that has members.');
             return;
         }
@@ -78,7 +78,7 @@ class GroupsTable extends Component
     public function render()
     {
         $query = Group::with(['creator', 'users'])
-            ->withCount('users');
+            ->withCount('groupMembers');
 
         if ($this->search) {
             $query->where(function ($q) {

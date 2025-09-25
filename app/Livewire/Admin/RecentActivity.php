@@ -3,8 +3,9 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\Role;
 use Livewire\Component;
 
 class RecentActivity extends Component

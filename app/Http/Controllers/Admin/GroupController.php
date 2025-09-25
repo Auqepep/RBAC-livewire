@@ -15,8 +15,8 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $groups = Group::with(['users', 'creator'])
-                      ->withCount('users')
+        $groups = Group::with(['creator'])
+                      ->withCount('groupMembers')
                       ->paginate(15);
         
         return view('admin.groups.index', compact('groups'));
@@ -53,7 +53,16 @@ class GroupController extends Controller
 
         if (isset($validated['users'])) {
             foreach ($validated['users'] as $userId) {
-                $group->addMember($userId, auth()->id());
+                $group->addUserRole($userId, 'Member', [
+                    'role_display_name' => 'Group Member',
+                    'role_description' => 'Regular group member',
+                    'badge_color' => '#3b82f6',
+                    'hierarchy_level' => 10,
+                    'permissions' => ['view_group'],
+                    'is_active' => true,
+                    'assigned_by' => auth()->id(),
+                    'assigned_at' => now()
+                ]);
             }
         }
 
@@ -66,11 +75,7 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
-        $group->load(['creator']);
-        // Load users with pivot data
-        $group->load(['users' => function($query) {
-            $query->withPivot(['added_by', 'joined_at']);
-        }]);
+        $group->load(['creator', 'groupMembers.user', 'groupMembers.role']);
         
         return view('admin.groups.show', compact('group'));
     }
@@ -106,15 +111,19 @@ class GroupController extends Controller
 
         // Sync users
         if (isset($validated['users'])) {
-            // Remove all current users
-            $group->users()->detach();
-            // Add selected users
-            foreach ($validated['users'] as $userId) {
-                $group->addMember($userId, auth()->id());
+            // Remove all current members in this group
+            $group->groupMembers()->delete();
+            
+            // Add selected users with Member role
+            $memberRole = \App\Models\Role::where('name', 'Member')->first();
+            if ($memberRole) {
+                foreach ($validated['users'] as $userId) {
+                    $group->addMember($userId, $memberRole->id);
+                }
             }
         } else {
             // No users selected, remove all
-            $group->users()->detach();
+            $group->groupMembers()->delete();
         }
 
         return redirect()->route('admin.groups.index')
@@ -127,7 +136,7 @@ class GroupController extends Controller
     public function destroy(Group $group)
     {
         // Check if group has users
-        if ($group->users()->count() > 0) {
+        if ($group->groupMembers()->count() > 0) {
             return back()->with('error', 'Cannot delete group that has members. Remove all members first.');
         }
 

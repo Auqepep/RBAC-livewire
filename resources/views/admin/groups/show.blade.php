@@ -103,12 +103,12 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-500">
-                                                {{ $member->pivot && $member->pivot->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('M d, Y H:i') : 'N/A' }}
+                                                {{ $member->pivot?->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('M d, Y H:i') : 'N/A' }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-500">
-                                                @if($member->pivot && $member->pivot->added_by)
+                                                @if($member->pivot?->added_by)
                                                     @php
                                                         $addedBy = \App\Models\User::find($member->pivot->added_by);
                                                     @endphp

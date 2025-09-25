@@ -54,6 +54,7 @@ class Register extends Component
             $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
+                'password' => bcrypt('dummy-password'), // Default password since we use OTP
                 'email_verified_at' => null, // Will be set when they click the verification link
             ]);
 

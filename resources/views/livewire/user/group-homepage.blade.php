@@ -156,7 +156,7 @@
                             @php
                                 $userMembership = $group->members->where('user_id', auth()->id())->first();
                             @endphp
-                            @if($userMembership && $userMembership->joined_at)
+                            @if($userMembership?->joined_at)
                                 <div class="flex justify-between">
                                     <dt class="text-sm text-gray-600">You Joined</dt>
                                     <dd class="text-sm font-medium text-gray-900">

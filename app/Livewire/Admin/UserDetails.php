@@ -3,8 +3,8 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Group;
+use App\Models\Role;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,7 +19,10 @@ class UserDetails extends Component
     public function mount(User $user)
     {
         $this->user = $user;
-        $this->selectedRoles = $user->roles->pluck('id')->toArray();
+        $this->selectedRoles = $user->groupMembers()
+            ->whereNotNull('role_id')
+            ->pluck('role_id')
+            ->toArray();
         $this->selectedGroups = $user->groups->pluck('id')->toArray();
     }
 
@@ -33,12 +36,12 @@ class UserDetails extends Component
         $this->showGroupModal = !$this->showGroupModal;
     }
 
+    // Note: In our group-based RBAC system, roles are no longer assigned directly to users
+    // Users get roles through their group memberships. This method is disabled.
     public function updateRoles()
     {
-        $this->user->roles()->sync($this->selectedRoles);
-        $this->user->refresh();
+        session()->flash('error', 'Roles are now managed through groups. Please assign the user to groups that have the desired roles.');
         $this->showRoleModal = false;
-        session()->flash('message', 'User roles updated successfully.');
     }
 
     public function updateGroups()
@@ -57,12 +60,10 @@ class UserDetails extends Component
         session()->flash('message', 'User groups updated successfully.');
     }
 
+    // Note: In our group-based RBAC system, roles are no longer assigned directly to users
     public function removeRole($roleId)
     {
-        $this->user->roles()->detach($roleId);
-        $this->user->refresh();
-        $this->selectedRoles = $this->user->roles->pluck('id')->toArray();
-        session()->flash('message', 'Role removed successfully.');
+        session()->flash('error', 'Roles are now managed through groups. Please remove the user from groups that have this role.');
     }
 
     public function removeGroup($groupId)
@@ -75,7 +76,7 @@ class UserDetails extends Component
 
     public function render()
     {
-        $availableRoles = Role::where('is_active', true)->orderBy('display_name')->get();
+        $availableRoles = collect(); // Will be replaced with group roles
         $availableGroups = Group::where('is_active', true)->orderBy('name')->get();
         
         return view('livewire.admin.user-details', compact('availableRoles', 'availableGroups'));

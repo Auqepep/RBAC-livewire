@@ -73,10 +73,10 @@
                                 @endif
                             </div>
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" wire:click="sortBy('users_count')">
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" wire:click="sortBy('group_members_count')">
                             <div class="flex items-center space-x-1">
                                 <span>Members</span>
-                                @if($sortField === 'users_count')
+                                @if($sortField === 'group_members_count')
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         @if($sortDirection === 'asc')
                                             <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"/>
@@ -137,13 +137,13 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    {{ $group->users_count }} members
+                                    {{ $group->group_members_count }} members
                                 </div>
-                                @if($group->users_count > 0)
+                                @if($group->group_members_count > 0)
                                     <div class="text-xs text-gray-500 mt-1">
                                         {{ $group->users->take(3)->pluck('name')->implode(', ') }}
-                                        @if($group->users_count > 3)
-                                            <span class="text-gray-400">+{{ $group->users_count - 3 }} more</span>
+                                        @if($group->group_members_count > 3)
+                                            <span class="text-gray-400">+{{ $group->group_members_count - 3 }} more</span>
                                         @endif
                                     </div>
                                 @endif

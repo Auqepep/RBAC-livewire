@@ -23,9 +23,9 @@ class EditRole extends Component
         $this->name = $role->name;
         $this->display_name = $role->display_name;
         $this->description = $role->description ?? '';
-        $this->color = $role->color ?? '#3B82F6';
+        $this->color = $role->badge_color ?? '#3B82F6';
         $this->is_active = $role->is_active;
-        $this->selectedPermissions = $role->permissions->pluck('id')->toArray();
+        $this->selectedPermissions = $role->permissions ?? [];
     }
 
     protected function rules()
@@ -37,7 +37,6 @@ class EditRole extends Component
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'is_active' => ['boolean'],
             'selectedPermissions' => ['array'],
-            'selectedPermissions.*' => ['exists:permissions,id'],
         ];
     }
 
@@ -60,19 +59,17 @@ class EditRole extends Component
                 'name' => $this->name,
                 'display_name' => $this->display_name,
                 'description' => $this->description,
-                'color' => $this->color,
+                'badge_color' => $this->color,
                 'is_active' => $this->is_active,
+                'permissions' => $this->selectedPermissions,
             ]);
 
-            // Sync permissions
-            $this->role->permissions()->sync($this->selectedPermissions);
-
-            session()->flash('message', 'Role updated successfully.');
+            session()->flash('message', 'Role template updated successfully.');
             
             return $this->redirect(route('admin.roles.index'));
             
         } catch (\Exception $e) {
-            session()->flash('error', 'An error occurred while updating the role.');
+            session()->flash('error', 'An error occurred while updating the role template: ' . $e->getMessage());
         }
     }
 
@@ -83,7 +80,7 @@ class EditRole extends Component
 
     public function render()
     {
-        $permissions = Permission::orderBy('display_name')->get();
+        $permissions = Permission::all();
         
         return view('livewire.admin.edit-role', compact('permissions'));
     }

@@ -60,9 +60,9 @@
             <div class="p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Total Roles</p>
+                        <p class="text-sm font-medium text-gray-600">Roles</p>
                         <p class="text-3xl font-bold text-gray-900">{{ $stats['roles'] }}</p>
-                        <p class="text-xs text-gray-500 mt-1">{{ $stats['active_roles'] }} active</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ $stats['active_assignments'] }} assignments</p>
                     </div>
                     <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
                         <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,8 +96,8 @@
             <div class="p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Total Permissions</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ $stats['permissions'] }}</p>
+                        <p class="text-sm font-medium text-gray-600">Total Assignments</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ $stats['total_assignments'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">System wide</p>
                     </div>
                     <div class="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">

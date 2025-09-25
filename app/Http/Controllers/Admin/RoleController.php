@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\GroupMember;
 use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
@@ -15,7 +15,8 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::with('permissions')->paginate(15);
+        $roles = Role::with(['permissions'])
+            ->paginate(15);
         return view('admin.roles.index', compact('roles'));
     }
 
@@ -24,7 +25,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::where('is_active', true)->get()->groupBy('module');
+        $permissions = Permission::all();
         return view('admin.roles.create', compact('permissions'));
     }
 
@@ -34,29 +35,29 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles',
+            'name' => 'required|string|max:255|unique:roles,name',
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'hierarchy_level' => 'required|integer|min:1|max:100',
             'is_active' => 'boolean',
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id'
+            'permissions' => 'array'
         ]);
 
         $role = Role::create([
             'name' => $validated['name'],
             'display_name' => $validated['display_name'],
             'description' => $validated['description'],
-            'color' => $validated['color'],
+            'hierarchy_level' => $validated['hierarchy_level'],
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        if (isset($validated['permissions'])) {
+        // Attach permissions if provided
+        if (!empty($validated['permissions'])) {
             $role->permissions()->sync($validated['permissions']);
         }
 
         return redirect()->route('admin.roles.index')
-                        ->with('success', 'Role created successfully.');
+            ->with('message', 'Role created successfully.');
     }
 
     /**
@@ -64,8 +65,9 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        $role->load('permissions', 'users');
-        return view('admin.roles.show', compact('role'));
+        $usageCount = GroupMember::where('role_id', $role->id)->count();
+        $role->load('permissions');
+        return view('admin.roles.show', compact('role', 'usageCount'));
     }
 
     /**
@@ -73,9 +75,9 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        $permissions = Permission::where('is_active', true)->get()->groupBy('module');
-        $rolePermissions = $role->permissions->pluck('id')->toArray();
-        return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));
+        $permissions = Permission::all();
+        $role->load('permissions');
+        return view('admin.roles.edit', compact('role', 'permissions'));
     }
 
     /**
@@ -84,31 +86,29 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('roles')->ignore($role->id)],
+            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'hierarchy_level' => 'required|integer|min:1|max:100',
             'is_active' => 'boolean',
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id'
+            'permissions' => 'array'
         ]);
 
         $role->update([
             'name' => $validated['name'],
             'display_name' => $validated['display_name'],
             'description' => $validated['description'],
-            'color' => $validated['color'],
+            'hierarchy_level' => $validated['hierarchy_level'],
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
+        // Update permissions
         if (isset($validated['permissions'])) {
             $role->permissions()->sync($validated['permissions']);
-        } else {
-            $role->permissions()->detach();
         }
 
         return redirect()->route('admin.roles.index')
-                        ->with('success', 'Role updated successfully.');
+            ->with('message', 'Role updated successfully.');
     }
 
     /**
@@ -116,20 +116,17 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        // Prevent deleting administrator role
-        if ($role->name === 'administrator') {
-            return back()->with('error', 'Cannot delete administrator role.');
+        // Check if role is in use
+        $usageCount = GroupMember::where('role_id', $role->id)->count();
+        
+        if ($usageCount > 0) {
+            return redirect()->route('admin.roles.index')
+                ->with('error', 'Cannot delete role that is currently assigned to users.');
         }
 
-        // Check if role has users
-        if ($role->users()->count() > 0) {
-            return back()->with('error', 'Cannot delete role that has assigned users.');
-        }
-
-        $role->permissions()->detach();
         $role->delete();
 
         return redirect()->route('admin.roles.index')
-                        ->with('success', 'Role deleted successfully.');
+            ->with('message', 'Role deleted successfully.');
     }
 }

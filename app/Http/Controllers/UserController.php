@@ -15,8 +15,28 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $user = Auth::user();
         
-        $users = User::with(['roles', 'groups'])
+        // For admin users, show all users
+        if ($user->canManageSystem()) {
+            $users = User::with(['groups'])
+                ->when($search, function ($query, $search) {
+                    return $query->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->paginate(15)
+                ->appends($request->query());
+                
+            return view('users.index', compact('users', 'search'));
+        }
+        
+        // For regular users, show only users in their groups
+        $userGroupIds = $user->groups()->pluck('groups.id')->toArray();
+        
+        $users = User::with(['groups'])
+            ->whereHas('groups', function($query) use ($userGroupIds) {
+                $query->whereIn('groups.id', $userGroupIds);
+            })
             ->when($search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");

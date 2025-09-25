@@ -4,34 +4,40 @@ namespace App\Livewire\Admin;
 
 use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Group;
 use Livewire\Component;
 use Illuminate\Validation\Rule;
 
 class CreateRole extends Component
 {
+    public $group_id = '';
     public $name = '';
     public $display_name = '';
     public $description = '';
-    public $color = '#3B82F6';
+    public $badge_color = '#3B82F6';
+    public $hierarchy_level = 1;
     public $is_active = true;
     public $selectedPermissions = [];
 
     protected function rules()
     {
         return [
-            'name' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:roles,name'],
+            'group_id' => ['nullable', 'exists:groups,id'],
+            'name' => ['required', 'string', 'max:255', 'alpha_dash'],
             'display_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'badge_color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'hierarchy_level' => ['required', 'integer', 'min:1', 'max:100'],
             'is_active' => ['boolean'],
             'selectedPermissions' => ['array'],
-            'selectedPermissions.*' => ['exists:permissions,id'],
         ];
     }
 
     protected $messages = [
         'name.alpha_dash' => 'The role name may only contain letters, numbers, dashes and underscores.',
-        'color.regex' => 'The color must be a valid hex color code.',
+        'badge_color.regex' => 'The badge color must be a valid hex color code.',
+        'hierarchy_level.min' => 'Hierarchy level must be at least 1.',
+        'hierarchy_level.max' => 'Hierarchy level cannot exceed 10.',
     ];
 
     public function updated($propertyName)
@@ -48,13 +54,13 @@ class CreateRole extends Component
                 'name' => $this->name,
                 'display_name' => $this->display_name,
                 'description' => $this->description,
-                'color' => $this->color,
+                'hierarchy_level' => $this->hierarchy_level,
                 'is_active' => $this->is_active,
             ]);
 
             // Attach selected permissions
             if (!empty($this->selectedPermissions)) {
-                $role->permissions()->attach($this->selectedPermissions);
+                $role->permissions()->sync($this->selectedPermissions);
             }
 
             session()->flash('message', 'Role created successfully.');
@@ -62,7 +68,7 @@ class CreateRole extends Component
             return $this->redirect(route('admin.roles.index'));
             
         } catch (\Exception $e) {
-            session()->flash('error', 'An error occurred while creating the role.');
+            session()->flash('error', 'An error occurred while creating the role: ' . $e->getMessage());
         }
     }
 
@@ -73,8 +79,9 @@ class CreateRole extends Component
 
     public function render()
     {
-        $permissions = Permission::orderBy('display_name')->get();
+        $permissions = Permission::all();
+        $groups = Group::where('is_active', true)->orderBy('name')->get();
         
-        return view('livewire.admin.create-role', compact('permissions'));
+        return view('livewire.admin.create-role', compact('permissions', 'groups'));
     }
 }

@@ -2,35 +2,36 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
+        'password',
+        'email_verified_at',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
-        // No sensitive attributes to hide
+        'remember_token',
     ];
 
     /**
@@ -46,163 +47,118 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the email address that should be used for verification.
+     * Get the groups this user belongs to
      */
-    public function getEmailForVerification(): string
+    public function groups(): BelongsToMany
     {
-        return $this->email;
-    }
-    /**
-     * Get roles assigned to user
-     */
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class, 'user_roles')
-                    ->withPivot('assigned_at', 'assigned_by')
+        return $this->belongsToMany(Group::class, 'group_members')
+                    ->withPivot(['role_id', 'assigned_by', 'joined_at'])
                     ->withTimestamps();
     }
 
     /**
-     * Check if user has specific role
+     * Get the roles this user has (through group membership)
      */
-    public function hasRole(string $role): bool
+    public function roles(): BelongsToMany
     {
-        return $this->roles()->where('name', $role)->exists();
+        return $this->belongsToMany(Role::class, 'group_members')
+                    ->withPivot(['group_id', 'assigned_by', 'joined_at'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get group memberships for this user
+     */
+    public function groupMemberships(): HasMany
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    /**
+     * Alias for groupMemberships (for consistency)
+     */
+    public function groupMembers(): HasMany
+    {
+        return $this->hasMany(GroupMember::class);
     }
 
     /**
      * Check if user has any of the given roles
      */
-    public function hasAnyRole(array $roles): bool
+    public function hasAnyRole(array $roleNames): bool
     {
-        return $this->roles()->whereIn('name', $roles)->exists();
+        return $this->roles()->whereIn('name', $roleNames)->exists();
     }
 
     /**
-     * Check if user has all of the given roles
+     * Check if user has specific role
      */
-    public function hasAllRoles(array $roles): bool
+    public function hasRole(string $roleName): bool
     {
-        return $this->roles()->whereIn('name', $roles)->count() === count($roles);
+        return $this->roles()->where('name', $roleName)->exists();
     }
 
     /**
-     * Assign role to user
+     * Check if user has permission (through their roles)
      */
-    public function assignRole(Role|string $role, User $assignedBy = null): void
-    {
-        if (is_string($role)) {
-            $role = Role::where('name', $role)->first();
-        }
-
-        if ($role && !$this->hasRole($role->name)) {
-            $this->roles()->attach($role->id, [
-                'assigned_by' => $assignedBy?->id,
-                'assigned_at' => now()
-            ]);
-        }
-    }
-
-    /**
-     * Remove role from user
-     */
-    public function removeRole(Role|string $role): void
-    {
-        if (is_string($role)) {
-            $role = Role::where('name', $role)->first();
-        }
-
-        if ($role) {
-            $this->roles()->detach($role->id);
-        }
-    }
-
-    /**
-     * Check if user has specific permission
-     */
-    public function hasPermission(string $permission): bool
+    public function hasPermission(string $permissionName): bool
     {
         return $this->roles()
-                    ->whereHas('permissions', function ($query) use ($permission) {
-                        $query->where('permissions.name', $permission);
+                    ->whereHas('permissions', function($query) use ($permissionName) {
+                        $query->where('name', $permissionName);
                     })
                     ->exists();
     }
 
     /**
-     * Check if user has any of the given permissions
+     * Check if user is system admin (has Super Admin or Admin role)
      */
-    public function hasAnyPermission(array $permissions): bool
+    public function isSystemAdmin(): bool
     {
-        return $this->roles()
-                    ->whereHas('permissions', function ($query) use ($permissions) {
-                        $query->whereIn('permissions.name', $permissions);
-                    })
-                    ->exists();
+        return $this->hasAnyRole(['Super Admin', 'Admin']);
     }
 
     /**
-     * Get all permissions through roles
+     * Check if user can manage system
      */
-    public function getAllPermissions()
+    public function canManageSystem(): bool
     {
-        $roleIds = $this->roles->pluck('id');
-        
-        return Permission::whereHas('roles', function ($query) use ($roleIds) {
-            $query->whereIn('roles.id', $roleIds);
-        })->get();
+        return $this->isSystemAdmin();
     }
 
     /**
-     * Check if user is administrator
+     * Get user's roles in a specific group
      */
-    public function isAdmin(): bool
+    public function getRolesInGroup(int $groupId)
     {
-        return $this->hasRole('administrator');
+        return $this->groupMemberships()
+                    ->where('group_id', $groupId)
+                    ->with('role')
+                    ->get()
+                    ->pluck('role');
     }
 
     /**
-     * Get groups this user belongs to
+     * Assign user to a group with a role
      */
-    public function groups(): BelongsToMany
+    public function assignToGroup(int $groupId, int $roleId, int $assignedBy = null): void
     {
-        return $this->belongsToMany(Group::class, 'group_members')
-                    ->withPivot('added_by', 'joined_at')
-                    ->withTimestamps();
+        GroupMember::create([
+            'group_id' => $groupId,
+            'user_id' => $this->id,
+            'role_id' => $roleId,
+            'assigned_by' => $assignedBy ?? auth()->id(),
+            'joined_at' => now()
+        ]);
     }
 
     /**
-     * Check if user belongs to specific group
+     * Remove user from a group
      */
-    public function inGroup(string|Group $group): bool
+    public function removeFromGroup(int $groupId): void
     {
-        if (is_string($group)) {
-            return $this->groups()->where('name', $group)->exists();
-        }
-        return $this->groups()->where('group_id', $group->id)->exists();
-    }
-
-    /**
-     * Get groups created by this user
-     */
-    public function createdGroups()
-    {
-        return $this->hasMany(Group::class, 'created_by');
-    }
-
-    /**
-     * Get user's group join requests
-     */
-    public function groupJoinRequests(): HasMany
-    {
-        return $this->hasMany(GroupJoinRequest::class);
-    }
-
-    /**
-     * Get user's pending group join requests
-     */
-    public function pendingGroupJoinRequests(): HasMany
-    {
-        return $this->hasMany(GroupJoinRequest::class)->where('status', 'pending');
+        $this->groupMemberships()
+             ->where('group_id', $groupId)
+             ->delete();
     }
 }

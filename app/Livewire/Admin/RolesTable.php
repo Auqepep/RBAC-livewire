@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Role;
-use App\Models\Permission;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -50,21 +49,20 @@ class RolesTable extends Component
             return;
         }
 
-        // Don't allow deletion of administrator role
-        if ($role->name === 'administrator') {
-            session()->flash('error', 'Cannot delete the administrator role.');
+        // Don't allow deletion of system roles
+        if (in_array($role->name, ['Super Admin', 'Admin', 'Manager'])) {
+            session()->flash('error', 'Cannot delete system roles.');
             return;
         }
 
-        // Check if role has users
-        if ($role->users()->count() > 0) {
-            session()->flash('error', 'Cannot delete role that has assigned users.');
+        // Check if role is being used
+        $usageCount = \App\Models\GroupMember::where('role_id', $role->id)->count();
+        if ($usageCount > 0) {
+            session()->flash('error', "Cannot delete role that is assigned to {$usageCount} users.");
             return;
         }
 
-        $role->permissions()->detach();
         $role->delete();
-
         session()->flash('message', 'Role deleted successfully.');
     }
 
@@ -85,8 +83,7 @@ class RolesTable extends Component
 
     public function render()
     {
-        $query = Role::with(['permissions', 'users'])
-            ->withCount('users');
+        $query = Role::query();
 
         if ($this->search) {
             $query->where(function ($q) {
@@ -102,6 +99,13 @@ class RolesTable extends Component
 
         $roles = $query->orderBy($this->sortField, $this->sortDirection)
                       ->paginate($this->perPage);
+
+        // Add usage count for each role
+        $roles->getCollection()->transform(function ($role) {
+            $role->users_count = \App\Models\GroupMember::where('role_id', $role->id)
+                                                        ->count();
+            return $role;
+        });
 
         return view('livewire.admin.roles-table', compact('roles'));
     }
