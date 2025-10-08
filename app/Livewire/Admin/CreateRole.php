@@ -54,6 +54,7 @@ class CreateRole extends Component
                 'name' => $this->name,
                 'display_name' => $this->display_name,
                 'description' => $this->description,
+                'badge_color' => $this->badge_color,
                 'hierarchy_level' => $this->hierarchy_level,
                 'is_active' => $this->is_active,
             ]);

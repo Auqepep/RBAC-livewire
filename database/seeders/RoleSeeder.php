@@ -18,12 +18,13 @@ class RoleSeeder extends Seeder
                 'badge_color' => '#dc2626',
                 'hierarchy_level' => 100,
                 'permissions' => [
-                    'manage_system', 'view_system_logs', 'manage_settings',
-                    'manage_users', 'create_users', 'edit_users', 'delete_users', 'view_users',
-                    'manage_groups', 'create_groups', 'edit_groups', 'delete_groups', 'view_groups',
-                    'manage_roles', 'create_roles', 'edit_roles', 'delete_roles', 'assign_roles',
-                    'manage_permissions', 'view_reports', 'generate_reports', 'export_data',
-                    'view_dashboard', 'access_admin'
+                    'manage_system', 'manage_permissions', 'manage_roles',
+                    'manage_users', 'view_users', 'edit_user_roles',
+                    'manage_groups', 'view_groups', 'assign_group_members', 'manage_group_roles',
+                    'create_content', 'edit_content', 'delete_content', 'publish_content',
+                    'view_reports', 'export_data',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'manage_department', 'view_team_data', 'approve_requests'
                 ]
             ],
             [
@@ -33,21 +34,94 @@ class RoleSeeder extends Seeder
                 'badge_color' => '#dc2626',
                 'hierarchy_level' => 90,
                 'permissions' => [
-                    'manage_users', 'create_users', 'edit_users', 'view_users',
-                    'manage_groups', 'edit_groups', 'view_groups',
-                    'assign_roles', 'view_reports', 'generate_reports',
-                    'view_dashboard', 'access_admin'
+                    'manage_users', 'view_users', 'edit_user_roles',
+                    'manage_groups', 'view_groups', 'assign_group_members', 'manage_group_roles',
+                    'create_content', 'edit_content', 'delete_content', 'publish_content',
+                    'view_reports', 'export_data',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'manage_department', 'view_team_data', 'approve_requests'
+                ]
+            ],
+            [
+                'name' => 'IT Manager',
+                'display_name' => 'IT Manager',
+                'description' => 'IT department management role',
+                'badge_color' => '#7c3aed',
+                'hierarchy_level' => 80,
+                'permissions' => [
+                    'view_users', 'manage_groups', 'view_groups', 'assign_group_members', 'manage_group_roles',
+                    'create_content', 'edit_content', 'publish_content',
+                    'view_reports', 'export_data',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'manage_department', 'view_team_data', 'approve_requests'
+                ]
+            ],
+            [
+                'name' => 'Marketing Manager',
+                'display_name' => 'Marketing Manager',
+                'description' => 'Marketing department management role',
+                'badge_color' => '#059669',
+                'hierarchy_level' => 80,
+                'permissions' => [
+                    'view_users', 'manage_groups', 'view_groups', 'assign_group_members', 'manage_group_roles',
+                    'create_content', 'edit_content', 'publish_content',
+                    'view_reports', 'export_data',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'manage_department', 'view_team_data', 'approve_requests'
+                ]
+            ],
+            [
+                'name' => 'HR Manager',
+                'display_name' => 'HR Manager',
+                'description' => 'Human Resources management role',
+                'badge_color' => '#dc2626',
+                'hierarchy_level' => 80,
+                'permissions' => [
+                    'manage_users', 'view_users', 'edit_user_roles',
+                    'manage_groups', 'view_groups', 'assign_group_members', 'manage_group_roles',
+                    'view_reports', 'export_data',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'manage_department', 'view_team_data', 'approve_requests'
+                ]
+            ],
+            [
+                'name' => 'Supervisor',
+                'display_name' => 'Supervisor',
+                'description' => 'Team supervisor with reporting access',
+                'badge_color' => '#0891b2',
+                'hierarchy_level' => 60,
+                'permissions' => [
+                    'view_users', 'view_groups',
+                    'create_content', 'edit_content',
+                    'view_reports',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'view_team_data', 'approve_requests'
+                ]
+            ],
+            [
+                'name' => 'Senior Developer',
+                'display_name' => 'Senior Developer',
+                'description' => 'Senior technical role with content permissions',
+                'badge_color' => '#7c3aed',
+                'hierarchy_level' => 55,
+                'permissions' => [
+                    'create_content', 'edit_content', 'publish_content',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'view_team_data'
                 ]
             ],
             [
                 'name' => 'Manager',
                 'display_name' => 'Manager',
-                'description' => 'Management role with group oversight',
+                'description' => 'General management role',
                 'badge_color' => '#059669',
                 'hierarchy_level' => 70,
                 'permissions' => [
-                    'view_users', 'view_groups', 'assign_roles',
-                    'view_reports', 'view_dashboard'
+                    'view_users', 'view_groups', 'assign_group_members',
+                    'create_content', 'edit_content',
+                    'view_reports',
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'view_team_data', 'approve_requests'
                 ]
             ],
             [
@@ -55,9 +129,21 @@ class RoleSeeder extends Seeder
                 'display_name' => 'Staff',
                 'description' => 'Regular staff member with basic access',
                 'badge_color' => '#2563eb',
-                'hierarchy_level' => 50,
+                'hierarchy_level' => 30,
                 'permissions' => [
-                    'view_dashboard'
+                    'create_content', 'edit_content',
+                    'view_dashboard', 'view_profile', 'edit_profile'
+                ]
+            ],
+            [
+                'name' => 'IT Support',
+                'display_name' => 'IT Support Staff',
+                'description' => 'IT support team member',
+                'badge_color' => '#6366f1',
+                'hierarchy_level' => 25,
+                'permissions' => [
+                    'view_dashboard', 'view_profile', 'edit_profile',
+                    'view_team_data'
                 ]
             ],
             [
@@ -67,7 +153,7 @@ class RoleSeeder extends Seeder
                 'badge_color' => '#6b7280',
                 'hierarchy_level' => 10,
                 'permissions' => [
-                    'view_dashboard'
+                    'view_dashboard', 'view_profile', 'edit_profile'
                 ]
             ]
         ];
@@ -78,12 +164,14 @@ class RoleSeeder extends Seeder
 
             $role = Role::firstOrCreate(
                 ['name' => $roleData['name']],
-                $roleData
+                array_merge($roleData, ['is_active' => true])
             );
 
-            // Assign permissions to role
+            // Assign permissions to role (only existing permissions)
             $permissionIds = Permission::whereIn('name', $permissions)->pluck('id');
-            $role->permissions()->sync($permissionIds);
+            if ($permissionIds->isNotEmpty()) {
+                $role->permissions()->sync($permissionIds);
+            }
         }
 
         $this->command->info('Roles and permissions seeded successfully.');

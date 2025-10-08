@@ -20,6 +20,7 @@ class OtpVerification extends Component
     public $loading = false;
     public $resending = false;
     public $countdown = 0;
+    public $autoVerifying = false;
 
     public function mount($email, $type = 'login', $title = null, $subtitle = null)
     {
@@ -35,14 +36,20 @@ class OtpVerification extends Component
     {
         $this->validateOnly('otp');
         
-        // Auto-verify when 6 digits are entered
-        if (strlen($this->otp) === 6) {
+        // Auto-verify when 6 digits are entered, but only if not already loading
+        if (strlen($this->otp) === 6 && !$this->loading) {
+            $this->autoVerifying = true;
             $this->verifyOtp();
         }
     }
 
     public function verifyOtp()
     {
+        // Prevent double submission
+        if ($this->loading) {
+            return;
+        }
+        
         $this->loading = true;
         $this->validate();
 
@@ -62,6 +69,7 @@ class OtpVerification extends Component
             \Log::error('OTP verification error: ' . $e->getMessage());
         } finally {
             $this->loading = false;
+            $this->autoVerifying = false;
         }
     }
 

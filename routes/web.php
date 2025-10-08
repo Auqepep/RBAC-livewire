@@ -110,5 +110,10 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     })->name('dashboard');
 });
 
+// Test route for Tailwind v4
+Route::get('/tailwind-test', function () {
+    return view('tailwind-test');
+})->name('tailwind.test');
+
 // Comment out the default auth routes since we're using custom OTP auth
 // require __DIR__.'/auth.php';

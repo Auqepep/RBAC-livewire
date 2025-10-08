@@ -21,7 +21,6 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
         'email_verified_at',
     ];
 
@@ -31,7 +30,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'remember_token',
+    
     ];
 
     /**
@@ -44,6 +43,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
         ];
+    }
+
+    public function getEmailForVerification(): string
+    {
+        return $this->email;
     }
 
     /**
@@ -160,5 +164,119 @@ class User extends Authenticatable
         $this->groupMemberships()
              ->where('group_id', $groupId)
              ->delete();
+    }
+
+    /**
+     * Get user's highest role hierarchy level
+     */
+    public function getHighestRoleLevel(): int
+    {
+        return $this->roles()->max('hierarchy_level') ?? 0;
+    }
+
+    /**
+     * Check if user has minimum role level
+     */
+    public function hasMinimumLevel(int $minimumLevel): bool
+    {
+        return $this->getHighestRoleLevel() >= $minimumLevel;
+    }
+
+    /**
+     * Check if user is Super Admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('Super Admin');
+    }
+
+    /**
+     * Check if user is Admin (Super Admin or Admin)
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(['Super Admin', 'Admin']);
+    }
+
+    /**
+     * Check if user is Manager level (Manager, Admin, or Super Admin)
+     */
+    public function isManager(): bool
+    {
+        return $this->hasMinimumLevel(4);
+    }
+
+    /**
+     * Check if user is Supervisor level (Supervisor or above)
+     */
+    public function isSupervisor(): bool
+    {
+        return $this->hasMinimumLevel(3);
+    }
+
+    /**
+     * Check if user is Staff level (Staff or above)
+     */
+    public function isStaff(): bool
+    {
+        return $this->hasMinimumLevel(2);
+    }
+
+    /**
+     * Get user level as string
+     */
+    public function getUserLevel(): string
+    {
+        $level = $this->getHighestRoleLevel();
+        
+        return match($level) {
+            6 => 'Super Admin',
+            5 => 'Admin',
+            4 => 'Manager', 
+            3 => 'Supervisor',
+            2 => 'Staff',
+            1 => 'Member',
+            default => 'Guest'
+        };
+    }
+
+    /**
+     * Check if user can manage users
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->hasPermission('manage_users');
+    }
+
+    /**
+     * Check if user can manage groups
+     */
+    public function canManageGroups(): bool
+    {
+        return $this->hasPermission('manage_groups');
+    }
+
+    /**
+     * Check if user can manage roles
+     */
+    public function canManageRoles(): bool
+    {
+        return $this->hasPermission('manage_roles');
+    }
+
+    /**
+     * Check if user can view reports
+     */
+    public function canViewReports(): bool
+    {
+        return $this->hasPermission('view_reports');
+    }
+
+    /**
+     * Check if user can approve requests
+     */
+    public function canApproveRequests(): bool
+    {
+        return $this->hasPermission('approve_requests');
     }
 }

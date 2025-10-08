@@ -23,6 +23,7 @@ class Login extends Component
     public $loading = false;
     public $resending = false;
     public $countdown = 0;
+    public $autoVerifying = false;
 
     protected $messages = [
         'email.exists' => 'No account found with this email address.',
@@ -47,7 +48,8 @@ class Login extends Component
         // Real-time validation and auto-submit when 6 digits entered
         $this->validateOnly('otp');
         
-        if (strlen($this->otp) === 6) {
+        if (strlen($this->otp) === 6 && !$this->loading) {
+            $this->autoVerifying = true;
             $this->verifyOtpAndLogin();
         }
     }
@@ -89,6 +91,11 @@ class Login extends Component
 
     public function verifyOtpAndLogin()
     {
+        // Prevent double submission
+        if ($this->loading) {
+            return;
+        }
+        
         $this->loading = true;
         $this->validate(['otp' => 'required|string|size:6']);
 
@@ -112,6 +119,7 @@ class Login extends Component
             \Log::error('OTP verification error: ' . $e->getMessage());
         } finally {
             $this->loading = false;
+            $this->autoVerifying = false;
         }
     }
 
