@@ -42,12 +42,17 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Role Color</label>
                         <div class="mt-1 flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded border-2 border-gray-300" style="background-color: {{ $role->color ?? '#3B82F6' }};"></div>
-                            <span class="text-sm text-gray-900 font-mono">{{ $role->color ?? '#3B82F6' }}</span>
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" style="{{ $role->badge_color }}">
+                            <div class="w-8 h-8 rounded border-2 border-gray-300" style="background-color: {{ $role->badge_color ?? '#3B82F6' }};"></div>
+                            <span class="text-sm text-gray-900 font-mono">{{ $role->badge_color ?? '#3B82F6' }}</span>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" style="background-color: {{ $role->badge_color ?? '#3B82F6' }};">
                                 Preview
                             </span>
                         </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Hierarchy Level</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ $role->hierarchy_level ?? 'Not set' }}</p>
                     </div>
                     
                     <div>
@@ -73,47 +78,33 @@
             </div>
         </div>
 
-        <!-- Assigned Users -->
+        <!-- Role Usage -->
         <div class="bg-white overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    Users with this Role ({{ $role->users->count() }})
+                    Usage Statistics
                 </h3>
                 
-                @if($role->users->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($role->users as $user)
-                            <div class="border border-gray-200 rounded-lg p-4">
-                                <div class="flex items-center space-x-3">
-                                    <div class="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                                        <span class="text-sm font-medium text-gray-700">{{ substr($user->name, 0, 1) }}</span>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">
-                                            {{ $user->name }}
-                                        </p>
-                                        <p class="text-sm text-gray-500 truncate">
-                                            {{ $user->email }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <a href="{{ route('admin.users.show', $user) }}" class="text-xs text-blue-600 hover:text-blue-800">
-                                        View User →
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">{{ $usageCount }}</div>
+                        <div class="text-sm text-gray-500">Users Assigned</div>
                     </div>
-                @else
-                    <div class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No users assigned</h3>
-                        <p class="mt-1 text-sm text-gray-500">No users currently have this role.</p>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">
+                            @if(is_array($role->permissions))
+                                {{ count($role->permissions) }}
+                            @else
+                                0
+                            @endif
+                        </div>
+                        <div class="text-sm text-gray-500">Permissions</div>
                     </div>
-                @endif
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">{{ $role->hierarchy_level ?? 0 }}</div>
+                        <div class="text-sm text-gray-500">Hierarchy Level</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -121,19 +112,26 @@
         <div class="bg-white overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    Role Permissions ({{ $role->permissions->count() }})
+                    Role Permissions
+                    @if(is_array($role->permissions))
+                        ({{ count($role->permissions) }})
+                    @else
+                        (0)
+                    @endif
                 </h3>
                 
-                @if($role->permissions->count() > 0)
+                @if($role->permissions->isNotEmpty())
                     @php
-                        $groupedPermissions = $role->permissions->groupBy('module');
+                        $groupedPermissions = $role->permissions->groupBy(function($permission) {
+                            return $permission->category ?? 'General';
+                        });
                     @endphp
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($groupedPermissions as $module => $permissions)
+                        @foreach($groupedPermissions as $category => $permissions)
                             <div class="border border-gray-200 rounded-lg p-4">
                                 <h4 class="font-medium text-gray-900 mb-3 capitalize">
-                                    {{ $module }} Module
+                                    {{ $category }}
                                 </h4>
                                 <div class="space-y-2">
                                     @foreach($permissions as $permission)
@@ -142,9 +140,9 @@
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                             </svg>
                                             <div>
-                                                <span class="text-gray-900 font-medium">{{ $permission->display_name }}</span>
-                                                @if($permission->description)
-                                                    <p class="text-xs text-gray-500">{{ $permission->description }}</p>
+                                                <span class="text-gray-900 font-medium">{{ $permission['label'] }}</span>
+                                                @if($permission['description'])
+                                                    <p class="text-xs text-gray-500">{{ $permission['description'] }}</p>
                                                 @endif
                                             </div>
                                         </div>

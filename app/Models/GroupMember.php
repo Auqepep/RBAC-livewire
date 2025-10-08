@@ -10,12 +10,13 @@ class GroupMember extends Model
     protected $fillable = [
         'group_id',
         'user_id',
-        'added_by',
+        'role_id',
+        'assigned_by',
         'joined_at'
     ];
 
     protected $casts = [
-        'joined_at' => 'datetime',
+        'joined_at' => 'datetime'
     ];
 
     /**
@@ -35,10 +36,59 @@ class GroupMember extends Model
     }
 
     /**
-     * Get the user who added this member
+     * Get the role assigned in this membership
      */
-    public function addedBy(): BelongsTo
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'added_by');
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Get the user who assigned this member
+     */
+    public function assignedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    /**
+     * Check if this membership is for a specific role
+     */
+    public function hasRole($roleId): bool
+    {
+        return $this->role_id == $roleId;
+    }
+
+    /**
+     * Check if this member can manage another member based on hierarchy
+     */
+    public function canManage(GroupMember $otherMember): bool
+    {
+        // Must be in the same group
+        if ($this->group_id !== $otherMember->group_id) {
+            return false;
+        }
+
+        // Check hierarchy levels
+        return $this->role->hierarchy_level > $otherMember->role->hierarchy_level;
+    }
+
+    /**
+     * Assign a user to a role within a specific group
+     */
+    public static function assignUserToGroupRole($userId, $groupId, $roleId, $assignedBy = null): GroupMember
+    {
+        // Remove any existing membership in this group
+        static::where('user_id', $userId)
+              ->where('group_id', $groupId)
+              ->delete();
+
+        return static::create([
+            'user_id' => $userId,
+            'group_id' => $groupId,
+            'role_id' => $roleId,
+            'assigned_by' => $assignedBy ?? auth()->id(),
+            'joined_at' => now(),
+        ]);
     }
 }

@@ -18,33 +18,33 @@ class RbacSeeder extends Seeder
         // Create Permissions
         $permissions = [
             // User Management
-            ['name' => 'users.view', 'display_name' => 'View Users', 'description' => 'Can view users list', 'module' => 'users'],
-            ['name' => 'users.create', 'display_name' => 'Create Users', 'description' => 'Can create new users', 'module' => 'users'],
-            ['name' => 'users.edit', 'display_name' => 'Edit Users', 'description' => 'Can edit existing users', 'module' => 'users'],
-            ['name' => 'users.delete', 'display_name' => 'Delete Users', 'description' => 'Can delete users', 'module' => 'users'],
+            ['name' => 'users.view', 'display_name' => 'View Users', 'description' => 'Can view users list', 'category' => 'users'],
+            ['name' => 'users.create', 'display_name' => 'Create Users', 'description' => 'Can create new users', 'category' => 'users'],
+            ['name' => 'users.edit', 'display_name' => 'Edit Users', 'description' => 'Can edit existing users', 'category' => 'users'],
+            ['name' => 'users.delete', 'display_name' => 'Delete Users', 'description' => 'Can delete users', 'category' => 'users'],
             
             // Role Management
-            ['name' => 'roles.view', 'display_name' => 'View Roles', 'description' => 'Can view roles list', 'module' => 'roles'],
-            ['name' => 'roles.create', 'display_name' => 'Create Roles', 'description' => 'Can create new roles', 'module' => 'roles'],
-            ['name' => 'roles.edit', 'display_name' => 'Edit Roles', 'description' => 'Can edit existing roles', 'module' => 'roles'],
-            ['name' => 'roles.delete', 'display_name' => 'Delete Roles', 'description' => 'Can delete roles', 'module' => 'roles'],
+            ['name' => 'roles.view', 'display_name' => 'View Roles', 'description' => 'Can view roles list', 'category' => 'roles'],
+            ['name' => 'roles.create', 'display_name' => 'Create Roles', 'description' => 'Can create new roles', 'category' => 'roles'],
+            ['name' => 'roles.edit', 'display_name' => 'Edit Roles', 'description' => 'Can edit existing roles', 'category' => 'roles'],
+            ['name' => 'roles.delete', 'display_name' => 'Delete Roles', 'description' => 'Can delete roles', 'category' => 'roles'],
             
             // Permission Management
-            ['name' => 'permissions.view', 'display_name' => 'View Permissions', 'description' => 'Can view permissions list', 'module' => 'permissions'],
-            ['name' => 'permissions.create', 'display_name' => 'Create Permissions', 'description' => 'Can create new permissions', 'module' => 'permissions'],
-            ['name' => 'permissions.edit', 'display_name' => 'Edit Permissions', 'description' => 'Can edit existing permissions', 'module' => 'permissions'],
-            ['name' => 'permissions.delete', 'display_name' => 'Delete Permissions', 'description' => 'Can delete permissions', 'module' => 'permissions'],
+            ['name' => 'permissions.view', 'display_name' => 'View Permissions', 'description' => 'Can view permissions list', 'category' => 'permissions'],
+            ['name' => 'permissions.create', 'display_name' => 'Create Permissions', 'description' => 'Can create new permissions', 'category' => 'permissions'],
+            ['name' => 'permissions.edit', 'display_name' => 'Edit Permissions', 'description' => 'Can edit existing permissions', 'category' => 'permissions'],
+            ['name' => 'permissions.delete', 'display_name' => 'Delete Permissions', 'description' => 'Can delete permissions', 'category' => 'permissions'],
             
             // Dashboard
-            ['name' => 'dashboard.view', 'display_name' => 'View Dashboard', 'description' => 'Can access dashboard', 'module' => 'dashboard'],
+            ['name' => 'dashboard.view', 'display_name' => 'View Dashboard', 'description' => 'Can access dashboard', 'category' => 'dashboard'],
             
             // Reports
-            ['name' => 'reports.view', 'display_name' => 'View Reports', 'description' => 'Can view reports', 'module' => 'reports'],
-            ['name' => 'reports.export', 'display_name' => 'Export Reports', 'description' => 'Can export reports', 'module' => 'reports'],
+            ['name' => 'reports.view', 'display_name' => 'View Reports', 'description' => 'Can view reports', 'category' => 'reports'],
+            ['name' => 'reports.export', 'display_name' => 'Export Reports', 'description' => 'Can export reports', 'category' => 'reports'],
             
             // System Settings
-            ['name' => 'settings.view', 'display_name' => 'View Settings', 'description' => 'Can view system settings', 'module' => 'settings'],
-            ['name' => 'settings.edit', 'display_name' => 'Edit Settings', 'description' => 'Can edit system settings', 'module' => 'settings'],
+            ['name' => 'settings.view', 'display_name' => 'View Settings', 'description' => 'Can view system settings', 'category' => 'settings'],
+            ['name' => 'settings.edit', 'display_name' => 'Edit Settings', 'description' => 'Can edit system settings', 'category' => 'settings'],
         ];
 
         foreach ($permissions as $permission) {
@@ -57,25 +57,25 @@ class RbacSeeder extends Seeder
                 'name' => 'administrator',
                 'display_name' => 'Administrator',
                 'description' => 'Has full access to all system features and can manage all users, roles, and permissions',
-                'color' => '#DC2626' // Red
+                'badge_color' => 'background-color: #DC2626' // Red
             ],
             [
                 'name' => 'manager',
                 'display_name' => 'Manager',
                 'description' => 'Can manage users and view reports, but cannot modify system settings or roles',
-                'color' => '#7C3AED' // Purple
+                'badge_color' => 'background-color: #7C3AED' // Purple
             ],
             [
                 'name' => 'editor',
                 'display_name' => 'Editor',
                 'description' => 'Can create and edit content, view users, but cannot delete or manage roles',
-                'color' => '#059669' // Green
+                'badge_color' => 'background-color: #059669' // Green
             ],
             [
                 'name' => 'viewer',
                 'display_name' => 'Viewer',
                 'description' => 'Can only view content and basic dashboard, no editing capabilities',
-                'color' => '#3B82F6' // Blue
+                'badge_color' => 'background-color: #3B82F6' // Blue
             ],
         ];
 
@@ -122,6 +122,7 @@ class RbacSeeder extends Seeder
             [
                 'name' => 'System Administrator',
                 'email_verified_at' => now(),
+                'password' => bcrypt('admin123'), // Default password
             ]
         );
 

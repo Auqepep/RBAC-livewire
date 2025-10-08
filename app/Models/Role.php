@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -11,23 +13,15 @@ class Role extends Model
         'name',
         'display_name',
         'description',
-        'color',
+        'badge_color',
+        'hierarchy_level',
         'is_active'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'hierarchy_level' => 'integer',
     ];
-
-    /**
-     * Get users that have this role
-     */
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'user_roles')
-                    ->withPivot('assigned_at', 'assigned_by')
-                    ->withTimestamps();
-    }
 
     /**
      * Get permissions assigned to this role
@@ -35,6 +29,24 @@ class Role extends Model
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'role_permissions')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get group members that have this role
+     */
+    public function groupMembers(): HasMany
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    /**
+     * Get users that have this role (through group membership)
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'group_members')
+                    ->withPivot(['group_id', 'assigned_by', 'joined_at'])
                     ->withTimestamps();
     }
 
@@ -75,10 +87,39 @@ class Role extends Model
     }
 
     /**
-     * Get the CSS class for role badge based on color
+     * Get the CSS style for role badge based on color
      */
-    public function getBadgeColorAttribute(): string
+    public function getBadgeStyleAttribute(): string
     {
-        return 'background-color: ' . $this->color . '; color: white;';
+        return 'background-color: ' . $this->attributes['badge_color'] . '; color: white;';
+    }
+
+    /**
+     * Check if this role is higher in hierarchy than another role
+     */
+    public function isHigherThan(Role $role): bool
+    {
+        return $this->hierarchy_level > $role->hierarchy_level;
+    }
+
+    /**
+     * Check if this role is lower in hierarchy than another role  
+     */
+    public function isLowerThan(Role $role): bool
+    {
+        return $this->hierarchy_level < $role->hierarchy_level;
+    }
+
+    /**
+     * Scopes
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeByHierarchy($query)
+    {
+        return $query->orderByDesc('hierarchy_level');
     }
 }
