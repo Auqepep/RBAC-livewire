@@ -1,55 +1,61 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Mail;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
 
-class VerifyEmailController extends Controller
+class SendOtpMail extends Mailable
 {
+    use Queueable, SerializesModels;
+
+    public $otp;
+    public $type;
+
     /**
-     * Mark the user's email address as verified via email link.
+     * Create a new message instance.
      */
-    public function __invoke(Request $request, $id, $hash): RedirectResponse
+    public function __construct(string $otp, string $type = 'login')
     {
-        // Find the user by ID
-        $user = User::find($id);
-        
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'User not found.');
-        }
+        $this->otp = $otp;
+        $this->type = $type;
+    }
 
-        // Verify the hash matches the user's email
-        if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect()->route('login')->with('error', 'Invalid verification link.');
-        }
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: $this->type === 'verification' ? 'Email Verification Code' : 'Login Code',
+        );
+    }
 
-        // Check if URL signature is valid (security check)
-        if (!URL::hasValidSignature($request)) {
-            return redirect()->route('login')->with('error', 'Invalid or expired verification link.');
-        }
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.otp',
+            with: [
+                'otp' => $this->otp,
+                'type' => $this->type,
+            ],
+        );
+    }
 
-        // Check if already verified
-        if ($user->hasVerifiedEmail()) {
-            // Auto-login the user if not already authenticated
-            if (!auth()->check()) {
-                auth()->login($user);
-            }
-            return redirect()->route('dashboard')->with('success', 'Email already verified.');
-        }
-
-        // Mark email as verified
-        if ($user->markEmailAsVerified()) {
-            event(new Verified($user));
-        }
-
-        // Auto-login the user after successful verification
-        auth()->login($user);
-
-        return redirect()->route('dashboard')->with('success', 'Email verified successfully! You are now logged in.');
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
     }
 }
