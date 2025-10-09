@@ -115,11 +115,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is system admin (has Super Admin or Admin role)
+     * Check if user is system admin (has admin role or system_admin permission)
      */
     public function isSystemAdmin(): bool
     {
-        return $this->hasAnyRole(['Super Admin', 'Admin']);
+        // Check if user has admin role or system_admin permission
+        return $this->hasAnyRole(['admin', 'super_admin']) || 
+               $this->hasPermission('system_admin');
     }
 
     /**

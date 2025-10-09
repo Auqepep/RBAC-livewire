@@ -13,9 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed RBAC data with the new pure group-based structure
+        // Seed the new group-centric RBAC structure
         $this->call([
-            PureGroupBasedRbacSeeder::class,
+            GroupCentricSeeder::class,
         ]);
     }
 }

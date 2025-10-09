@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
             // Removed password-related columns for OTP-based authentication:
-            // - email_verified_at (not needed with OTP verification)
             // - password (using OTP instead)
             // - remember_token (not applicable without password auth)
             $table->timestamps();

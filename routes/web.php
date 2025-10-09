@@ -72,14 +72,32 @@ Route::get('debug-verify/{id}/{hash}', function ($id, $hash) {
 // Admin Routes (Only for system administrators)
 Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', AdminUserController::class);
-    Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
+    
+    // Role routes - only accessible through group context
+    Route::get('groups/{group}/roles', [RoleController::class, 'index'])->name('groups.roles.index');
+    Route::get('groups/{group}/roles/create', [RoleController::class, 'create'])->name('groups.roles.create');
+    Route::post('groups/{group}/roles', [RoleController::class, 'store'])->name('groups.roles.store');
+    Route::get('groups/{group}/roles/{role}', [RoleController::class, 'show'])->name('groups.roles.show');
+    Route::get('groups/{group}/roles/{role}/edit', [RoleController::class, 'edit'])->name('groups.roles.edit');
+    Route::put('groups/{group}/roles/{role}', [RoleController::class, 'update'])->name('groups.roles.update');
+    Route::delete('groups/{group}/roles/{role}', [RoleController::class, 'destroy'])->name('groups.roles.destroy');
     
     // Group member management
     Route::get('groups/{group}/members', function (\App\Models\Group $group) {
         return view('admin.group-members', compact('group'));
     })->name('groups.members');
+    
+    // Remove member from group
+    Route::delete('groups/{group}/members/{user}', function (\App\Models\Group $group, \App\Models\User $user) {
+        $membership = $group->groupMembers()->where('user_id', $user->id)->first();
+        if ($membership) {
+            $membership->delete();
+            return back()->with('success', 'Member removed from group successfully.');
+        }
+        return back()->with('error', 'Member not found in group.');
+    })->name('groups.members.remove');
     
     // User to Group Management
     Route::get('manage-memberships', function () {

@@ -38,10 +38,6 @@
                                 Users
                             </a>
                             
-                            <a href="{{ route('admin.roles.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.roles.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Roles
-                            </a>
-                            
                             <a href="{{ route('admin.groups.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
                                 Groups
                             </a>
@@ -98,6 +94,12 @@
                 @if (session('error'))
                     <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                         <span class="block sm:inline">{{ session('error') }}</span>
+                    </div>
+                @endif
+
+                @if (session('message'))
+                    <div class="mb-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">{{ session('message') }}</span>
                     </div>
                 @endif
 

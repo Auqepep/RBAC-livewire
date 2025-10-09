@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('display_name');
             $table->string('description')->nullable();
             $table->string('category')->default('general');
+            $table->json('dependencies')->nullable(); // permissions that this permission depends on
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
