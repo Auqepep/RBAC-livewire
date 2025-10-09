@@ -15,7 +15,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view('admin.users.index');
+        $users = User::with(['groupMembers.group', 'groupMembers.role'])
+                    ->orderBy('name')
+                    ->paginate(15);
+                    
+        return view('admin.users.index', compact('users'));
     }
 
     /**
@@ -23,7 +27,16 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        $groups = \App\Models\Group::where('is_active', true)->get();
+        $roles = \App\Models\Role::where('is_active', true)->get();
+        
+        // Get roles available per group (for JavaScript)
+        $groupRoles = [];
+        foreach ($groups as $group) {
+            $groupRoles[$group->id] = \App\Models\Role::where('is_active', true)->get();
+        }
+        
+        return view('admin.users.create', compact('groups', 'roles', 'groupRoles'));
     }
 
     /**
@@ -34,21 +47,34 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'roles' => 'array',
-            'roles.*' => 'exists:roles,id'
+            'group_assignments' => 'array',
+            'group_assignments.*.group_id' => 'required|exists:groups,id',
+            'group_assignments.*.role_id' => 'required|exists:roles,id'
         ]);
 
-        $user = User::create([
+        // Create user
+        $user = \App\Models\User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'email_verified_at' => now(),
+            'email_verified_at' => now(), // Auto-verify for admin-created users
         ]);
 
-        // Note: In our group-based RBAC system, roles are managed through groups
-        // Direct role assignment is no longer supported
+        // Assign to groups with roles
+        if (!empty($validated['group_assignments'])) {
+            foreach ($validated['group_assignments'] as $assignment) {
+                if (!empty($assignment['group_id']) && !empty($assignment['role_id'])) {
+                    \App\Models\GroupMember::create([
+                        'group_id' => $assignment['group_id'],
+                        'user_id' => $user->id,
+                        'role_id' => $assignment['role_id'],
+                        'assigned_by' => auth()->id(),
+                        'joined_at' => now(),
+                    ]);
+                }
+            }
+        }
 
-        return redirect()->route('admin.users.index')
-                        ->with('success', 'User created successfully. Assign user to groups to give them roles.');
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
 
     /**
@@ -56,7 +82,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $user->load('roles.permissions');
+        $user->load(['groupMembers.group', 'groupMembers.role']);
         return view('admin.users.show', compact('user'));
     }
 
@@ -65,6 +91,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $user->load(['groupMembers.group', 'groupMembers.role']);
         return view('admin.users.edit', compact('user'));
     }
 

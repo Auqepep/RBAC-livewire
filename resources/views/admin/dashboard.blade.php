@@ -1,43 +1,130 @@
 <x-admin.layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Admin Dashboard') }}
+            Admin Dashboard
         </h2>
     </x-slot>
 
-    <div class="space-y-6">
-        <!-- Statistics Section -->
-        <livewire:admin.dashboard-stats />
-        
-        <!-- Recent Activity Section -->
-        <livewire:admin.recent-activity />
-        
-        <!-- Quick Actions -->
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="{{ route('admin.users.create') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Create User
-                    </a>
-                    
-                    <a href="{{ route('admin.groups.create') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Create Group
-                    </a>
-                </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {{-- Statistics Cards --}}
+        <x-mary-stat
+            title="Total Users"
+            description="Registered users"
+            value="{{ $stats['users'] ?? 0 }}"
+            icon="o-users"
+            color="text-primary" />
+
+        <x-mary-stat
+            title="Active Groups"
+            description="Active groups"
+            value="{{ $stats['active_groups'] ?? 0 }}"
+            icon="o-building-office"
+            color="text-success" />
+
+        <x-mary-stat
+            title="Total Roles"
+            description="Available roles"
+            value="{{ $stats['roles'] ?? 0 }}"
+            icon="o-identification"
+            color="text-warning" />
+
+        <x-mary-stat
+            title="Group Assignments"
+            description="User-group assignments"
+            value="{{ $stats['total_assignments'] ?? 0 }}"
+            icon="o-link"
+            color="text-info" />
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Quick Actions Card --}}
+        <x-mary-card title="Quick Actions" subtitle="Common administrative tasks">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <x-mary-button 
+                    label="Create User" 
+                    icon="o-user-plus" 
+                    class="btn-primary"
+                    link="{{ route('admin.users.create') }}" />
                 
-                <div class="mt-4 text-sm text-gray-600">
-                    <p><strong>Note:</strong> Roles are now managed within groups. To create or manage roles, go to a specific group's management page.</p>
-                </div>
+                <x-mary-button 
+                    label="Create Group" 
+                    icon="o-plus-circle" 
+                    class="btn-secondary"
+                    link="{{ route('admin.groups.create') }}" />
+                
+                <x-mary-button 
+                    label="Manage Groups" 
+                    icon="o-rectangle-group" 
+                    class="btn-accent"
+                    link="{{ route('admin.groups.index') }}" />
+                
+                <x-mary-button 
+                    label="View Permissions" 
+                    icon="o-key" 
+                    class="btn-outline"
+                    link="{{ route('admin.permissions.index') }}" />
             </div>
-        </div>
+            
+            <x-mary-alert class="mt-6" icon="o-information-circle">
+                <strong>Group-Centric Roles:</strong> Roles are now managed within groups. 
+                To create or manage roles, go to a specific group's management page.
+            </x-mary-alert>
+        </x-mary-card>
+
+        {{-- Recent Activity --}}
+        <x-mary-card title="Recent Activity" subtitle="Latest system changes">
+            <livewire:admin.recent-activity />
+        </x-mary-card>
+    </div>
+
+    {{-- Additional Management Sections --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <x-mary-card title="User Management" subtitle="Manage system users">
+            <div class="space-y-3">
+                <x-mary-button 
+                    label="View All Users" 
+                    icon="o-user-group" 
+                    class="btn-outline btn-sm w-full"
+                    link="{{ route('admin.users.index') }}" />
+                    
+                <x-mary-button 
+                    label="User Directory" 
+                    icon="o-book-open" 
+                    class="btn-ghost btn-sm w-full"
+                    link="{{ route('users.index') }}" />
+            </div>
+        </x-mary-card>
+
+        <x-mary-card title="Group Management" subtitle="Organize users into groups">
+            <div class="space-y-3">
+                <x-mary-button 
+                    label="All Groups" 
+                    icon="o-rectangle-group" 
+                    class="btn-outline btn-sm w-full"
+                    link="{{ route('admin.groups.index') }}" />
+                    
+                <x-mary-button 
+                    label="Join Requests" 
+                    icon="o-envelope" 
+                    class="btn-ghost btn-sm w-full"
+                    link="{{ route('admin.group-join-requests') }}" />
+            </div>
+        </x-mary-card>
+
+        <x-mary-card title="System Settings" subtitle="Configure system">
+            <div class="space-y-3">
+                <x-mary-button 
+                    label="Permissions" 
+                    icon="o-key" 
+                    class="btn-outline btn-sm w-full"
+                    link="{{ route('admin.permissions.index') }}" />
+                    
+                <x-mary-button 
+                    label="System Logs" 
+                    icon="o-document-text" 
+                    class="btn-ghost btn-sm w-full disabled"
+                    disabled />
+            </div>
+        </x-mary-card>
     </div>
 </x-admin.layout>

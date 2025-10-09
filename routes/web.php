@@ -89,6 +89,16 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
         return view('admin.group-members', compact('group'));
     })->name('groups.members');
     
+    // Remove member from group
+    Route::delete('groups/{group}/members/{user}', function (\App\Models\Group $group, \App\Models\User $user) {
+        $membership = $group->groupMembers()->where('user_id', $user->id)->first();
+        if ($membership) {
+            $membership->delete();
+            return back()->with('success', 'Member removed from group successfully.');
+        }
+        return back()->with('error', 'Member not found in group.');
+    })->name('groups.members.remove');
+    
     // User to Group Management
     Route::get('manage-memberships', function () {
         return view('admin.manage-memberships');

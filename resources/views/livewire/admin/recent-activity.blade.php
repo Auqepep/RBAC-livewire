@@ -81,8 +81,8 @@
                         @endforeach
                     </div>
                     <div class="mt-4">
-                        <a href="{{ route('admin.roles.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900">
-                            View all roles →
+                        <a href="{{ route('admin.groups.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900">
+                            Manage roles in groups →
                         </a>
                     </div>
                 @else

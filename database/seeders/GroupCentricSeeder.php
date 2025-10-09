@@ -124,6 +124,11 @@ class GroupCentricSeeder extends Seeder
         // Create sample groups
         $groups = [
             [
+                'name' => 'System Administrators',
+                'description' => 'System Administrators with full access',
+                'created_by' => $admin->id,
+            ],
+            [
                 'name' => 'IT Support',
                 'description' => 'Information Technology Support Department',
                 'created_by' => $admin->id,
@@ -168,6 +173,7 @@ class GroupCentricSeeder extends Seeder
         }
 
         // Get created entities
+        $systemAdminGroup = Group::where('name', 'System Administrators')->first();
         $itGroup = Group::where('name', 'IT Support')->first();
         $hrGroup = Group::where('name', 'Human Resources')->first();
         $marketingGroup = Group::where('name', 'Marketing')->first();
@@ -180,8 +186,18 @@ class GroupCentricSeeder extends Seeder
         
         $systemAdminPermission = Permission::where('name', 'system_admin')->first();
         
-        // Assign system admin permission to admin user directly (not through group)
-        // This could be done through a special "System" group or direct assignment
+        // Assign admin user to System Administrators group with admin role
+        GroupMember::firstOrCreate(
+            [
+                'group_id' => $systemAdminGroup->id,
+                'user_id' => $admin->id,
+            ],
+            [
+                'role_id' => $adminRole->id,
+                'assigned_by' => $admin->id,
+                'joined_at' => now(),
+            ]
+        );
         
         // Assign users to groups with roles
         $assignments = [
