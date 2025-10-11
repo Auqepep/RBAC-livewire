@@ -27,6 +27,24 @@ $logout = function (Logout $logout) {
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    
+                    @if(auth()->user()->canManageSystem())
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
+                            {{ __('Admin') }}
+                        </x-nav-link>
+                    @endif
+                    
+                    @if(!auth()->user()->canManageSystem())
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate>
+                            {{ __('Users') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('my-groups')" :active="request()->routeIs('my-groups')" wire:navigate>
+                            {{ __('My Groups') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('available-groups')" :active="request()->routeIs('available-groups')" wire:navigate>
+                            {{ __('Available Groups') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -46,10 +64,6 @@ $logout = function (Logout $logout) {
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile')" wire:navigate>
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
                         <!-- Authentication -->
                         <button wire:click="logout" class="w-full text-start">
                             <x-dropdown-link>
@@ -78,6 +92,24 @@ $logout = function (Logout $logout) {
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            
+            @if(auth()->user()->canManageSystem())
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
+                    {{ __('Admin') }}
+                </x-responsive-nav-link>
+            @endif
+            
+            @if(!auth()->user()->canManageSystem())
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate>
+                    {{ __('Users') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('my-groups')" :active="request()->routeIs('my-groups')" wire:navigate>
+                    {{ __('My Groups') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('available-groups')" :active="request()->routeIs('available-groups')" wire:navigate>
+                    {{ __('Available Groups') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
@@ -88,10 +120,6 @@ $logout = function (Logout $logout) {
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile')" wire:navigate>
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
                 <!-- Authentication -->
                 <button wire:click="logout" class="w-full text-start">
                     <x-responsive-nav-link>

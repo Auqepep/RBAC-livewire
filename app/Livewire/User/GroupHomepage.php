@@ -13,11 +13,11 @@ class GroupHomepage extends Component
 
     public function mount($groupId)
     {
-        $this->group = Group::with(['users', 'members.user', 'creator'])->findOrFail($groupId);
+        $this->group = Group::with(['groupMembers.user', 'groupMembers.role', 'creator'])->findOrFail($groupId);
         $this->isMember = $this->group->hasMember(Auth::id());
         
         // Only allow access if user is a member or admin
-        if (!$this->isMember && !Auth::user()->hasRole('administrator')) {
+        if (!$this->isMember && !Auth::user()->canManageSystem()) {
             abort(403, 'You do not have permission to view this group.');
         }
     }

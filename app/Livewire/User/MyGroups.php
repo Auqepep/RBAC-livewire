@@ -12,14 +12,14 @@ class MyGroups extends Component
 
     public function mount()
     {
-        $this->user = Auth::user();
+        $this->user = Auth::user()->load('roles');
         $this->loadGroups();
     }
 
     public function loadGroups()
     {
         $this->groups = $this->user->groups()
-            ->with(['members.user'])
+            ->with(['groupMembers.user', 'groupMembers.role'])
             ->get();
     }
 

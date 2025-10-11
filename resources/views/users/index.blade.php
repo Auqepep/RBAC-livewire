@@ -7,135 +7,124 @@
         </div>
     </x-slot>
 
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
-            <!-- Search Form -->
-            <div class="mb-6">
-                <form method="GET" action="{{ route('users.index') }}" class="flex gap-4">
-                    <div class="flex-1">
-                        <input type="text" 
-                               name="search" 
-                               value="{{ $search }}" 
-                               placeholder="Search users by name or email..."
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                        Search
-                    </button>
-                    @if($search)
-                        <a href="{{ route('users.index') }}" class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
-                            Clear
-                        </a>
-                    @endif
-                </form>
-            </div>
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-mary-card title="Users Directory">
+                <!-- Search Form -->
+                <div class="mb-6">
+                    <form method="GET" action="{{ route('users.index') }}" class="flex gap-4">
+                        <div class="flex-1">
+                            <x-mary-input 
+                                name="search" 
+                                value="{{ $search }}" 
+                                placeholder="Search users by name or email..."
+                                icon="o-magnifying-glass"
+                            />
+                        </div>
+                        <x-mary-button type="submit" class="btn-primary" icon="o-magnifying-glass">
+                            Search
+                        </x-mary-button>
+                        @if($search)
+                            <x-mary-button link="{{ route('users.index') }}" class="btn-secondary" icon="o-x-mark">
+                                Clear
+                            </x-mary-button>
+                        @endif
+                    </form>
+                </div>
 
-            <!-- Users Table -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                User
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Roles
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Groups
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($users as $user)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                                            <span class="text-sm font-medium text-gray-700">
+                <!-- Users List -->
+                @if($users->count() > 0)
+                    <div class="space-y-4">
+                        @foreach($users as $user)
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                            <span class="text-lg font-bold text-white">
                                                 {{ substr($user->name, 0, 1) }}
                                             </span>
                                         </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $user->name }}
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                {{ $user->email }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->roles->count() > 0)
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($user->roles as $role)
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" style="{{ $role->badge_color }}">
-                                                    {{ $role->display_name }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-gray-400 text-sm">No roles assigned</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->groups->count() > 0)
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($user->groups->take(3) as $group)
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                                                    {{ $group->name }}
-                                                </span>
-                                            @endforeach
-                                            @if($user->groups->count() > 3)
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
-                                                    +{{ $user->groups->count() - 3 }} more
-                                                </span>
+                                        <div>
+                                            <h3 class="font-medium text-gray-900">{{ $user->name }}</h3>
+                                            <p class="text-sm text-gray-600">{{ $user->email }}</p>
+                                            
+                                            <!-- Email Verification Status -->
+                                            @if($user->email_verified_at)
+                                                <x-mary-badge value="Verified" class="badge-success mt-1" />
+                                            @else
+                                                <x-mary-badge value="Unverified" class="badge-warning mt-1" />
                                             @endif
                                         </div>
-                                    @else
-                                        <span class="text-gray-400 text-sm">No groups</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->email_verified_at)
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                            Verified
-                                        </span>
-                                    @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Unverified
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
-                                    <div class="text-gray-500">
-                                        @if($search)
-                                            <p class="text-lg font-medium">No users found for "{{ $search }}"</p>
-                                            <p class="mt-1">Try adjusting your search terms.</p>
+                                    </div>
+
+                                    <div class="text-right space-y-2">
+                                        <!-- Roles -->
+                                        @if($user->roles->count() > 0)
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-1">Roles:</p>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    @foreach($user->roles as $role)
+                                                        <x-mary-badge 
+                                                            value="{{ $role->display_name }}" 
+                                                            class="badge-{{ $role->getBadgeColor() }}"
+                                                        />
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <!-- Groups -->
+                                        @if($user->groups->count() > 0)
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-1">Groups:</p>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    @foreach($user->groups->take(3) as $group)
+                                                        <x-mary-badge 
+                                                            value="{{ $group->name }}" 
+                                                            class="badge-ghost"
+                                                        />
+                                                    @endforeach
+                                                    @if($user->groups->count() > 3)
+                                                        <x-mary-badge 
+                                                            value="+{{ $user->groups->count() - 3 }} more" 
+                                                            class="badge-ghost"
+                                                        />
+                                                    @endif
+                                                </div>
+                                            </div>
                                         @else
-                                            <p class="text-lg font-medium">No users found</p>
+                                            <p class="text-xs text-gray-400">No groups</p>
                                         @endif
                                     </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
 
-            <!-- Pagination -->
-            @if($users->hasPages())
-                <div class="mt-6">
-                    {{ $users->links() }}
-                </div>
-            @endif
+                    <!-- Pagination -->
+                    @if($users->hasPages())
+                        <div class="mt-6">
+                            {{ $users->links() }}
+                        </div>
+                    @endif
+                @else
+                    <div class="text-center py-12">
+                        <div class="text-gray-500">
+                            @if($search)
+                                <x-mary-icon name="o-users" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                                <p class="text-lg font-medium">No users found for "{{ $search }}"</p>
+                                <p class="mt-1">Try adjusting your search terms.</p>
+                                <x-mary-button link="{{ route('users.index') }}" class="btn-ghost btn-sm mt-4">
+                                    Clear search
+                                </x-mary-button>
+                            @else
+                                <x-mary-icon name="o-users" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                                <p class="text-lg font-medium">No users found</p>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            </x-mary-card>
         </div>
     </div>
 </x-user.layout>

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -280,5 +279,38 @@ class User extends Authenticatable
     public function canApproveRequests(): bool
     {
         return $this->hasPermission('approve_requests');
+    }
+
+    /**
+     * Check if user can assign roles in a specific group
+     */
+    public function canAssignRolesInGroup(int $groupId): bool
+    {
+        // System admins can assign roles in any group
+        if ($this->isSystemAdmin()) {
+            return true;
+        }
+        
+        // Check if user has manage_group_members permission in this specific group
+        return $this->hasPermissionInGroup($groupId, 'manage_group_members');
+    }
+
+    /**
+     * Check if user has a specific permission in a specific group
+     */
+    public function hasPermissionInGroup(int $groupId, string $permissionName): bool
+    {
+        $groupMembership = $this->groupMemberships()
+                              ->where('group_id', $groupId)
+                              ->with('role.permissions')
+                              ->first();
+        
+        if (!$groupMembership || !$groupMembership->role) {
+            return false;
+        }
+        
+        return $groupMembership->role->permissions()
+                              ->where('name', $permissionName)
+                              ->exists();
     }
 }

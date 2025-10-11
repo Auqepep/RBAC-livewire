@@ -19,7 +19,7 @@ class UserController extends Controller
         
         // For admin users, show all users
         if ($user->canManageSystem()) {
-            $users = User::with(['groups'])
+            $users = User::with(['groups', 'roles'])
                 ->when($search, function ($query, $search) {
                     return $query->where('name', 'like', "%{$search}%")
                                 ->orWhere('email', 'like', "%{$search}%");
@@ -33,7 +33,7 @@ class UserController extends Controller
         // For regular users, show only users in their groups
         $userGroupIds = $user->groups()->pluck('groups.id')->toArray();
         
-        $users = User::with(['groups'])
+        $users = User::with(['groups', 'roles'])
             ->whereHas('groups', function($query) use ($userGroupIds) {
                 $query->whereIn('groups.id', $userGroupIds);
             })

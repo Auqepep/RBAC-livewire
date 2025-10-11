@@ -1,33 +1,27 @@
-<div class="space-y-6">
-    <!-- Group Header -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
+<div class="py-6">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <!-- Group Header -->
+        <x-mary-card>
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $group->name; }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ $group->name }}</h1>
                     @if($group->description)
-                        <p class="mt-2 text-gray-600">{{ $group->description; }}</p>
+                        <p class="mt-2 text-gray-600">{{ $group->description }}</p>
                     @endif
                     
-                    <div class="mt-4 flex items-center space-x-4 text-sm text-gray-500">
+                    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
                         <div class="flex items-center">
-                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            {{ $group->members->count(); }} members
+                            <x-mary-icon name="o-users" class="w-4 h-4 mr-1" />
+                            {{ $group->groupMembers->count() }} members
                         </div>
                         <div class="flex items-center">
-                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 6v6m1-10V4a5 5 0 00-10 0v3M3 7h18l-1 13H4L3 7z"/>
-                            </svg>
-                            Created {{ $group->created_at->format('M d, Y'); }}
+                            <x-mary-icon name="o-calendar" class="w-4 h-4 mr-1" />
+                            Created {{ $group->created_at->format('M d, Y') }}
                         </div>
                         @if($group->creator)
                             <div class="flex items-center">
-                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Created by {{ $group->creator->name; }}
+                                <x-mary-icon name="o-user" class="w-4 h-4 mr-1" />
+                                Created by {{ $group->creator->name }}
                             </div>
                         @endif
                     </div>
@@ -35,44 +29,35 @@
                 
                 <div class="flex items-center space-x-2">
                     @if($group->is_active)
-                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
-                            Active
-                        </span>
+                        <x-mary-badge value="Active" class="badge-success" />
                     @else
-                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">
-                            Inactive
-                        </span>
+                        <x-mary-badge value="Inactive" class="badge-error" />
                     @endif
                     
                     @if($isMember)
-                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
-                            Member
-                        </span>
+                        <x-mary-badge value="Member" class="badge-info" />
                     @endif
                 </div>
             </div>
-        </div>
-    </div>
+        </x-mary-card>
 
-    <!-- Group Members -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                Group Members ({{ $group->members->count(); }})
-            </h2>
-            
-            @if($group->members->count() > 0)
+        <!-- Group Members -->
+        <x-mary-card title="Group Members ({{ $group->groupMembers->count() }})">
+            @if($group->groupMembers->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach($group->members as $member)
-                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-                            <div class="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                                <span class="text-sm font-medium text-gray-700">
+                    @foreach($group->groupMembers as $member)
+                        <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border">
+                            <div class="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-bold text-white">
                                     {{ substr($member->user->name, 0, 1) }}
                                 </span>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate">
                                     {{ $member->user->name }}
+                                    @if($member->user->id === auth()->id())
+                                        <span class="text-xs text-gray-500">(You)</span>
+                                    @endif
                                 </p>
                                 <p class="text-sm text-gray-500 truncate">
                                     {{ $member->user->email }}
@@ -83,21 +68,109 @@
                                     </p>
                                 @endif
                             </div>
-                            @if($member->user->roles->count() > 0)
-                                <div class="flex flex-wrap gap-1">
-                                    @foreach($member->user->roles->take(2) as $role)
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" style="{{ $role->badge_color }}">
-                                            {{ $role->display_name }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @endif
+                            <div class="text-right">
+                                @if($member->role)
+                                    <x-mary-badge 
+                                        value="{{ $member->role->display_name }}" 
+                                        class="badge-{{ $member->role->getBadgeColor() }}"
+                                    />
+                                @endif
+                                
+                                @if($member->user->email_verified_at)
+                                    <x-mary-badge value="Verified" class="badge-success mt-1" />
+                                @else
+                                    <x-mary-badge value="Unverified" class="badge-warning mt-1" />
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
             @else
                 <div class="text-center py-8">
-                    <div class="mx-auto h-16 w-16 text-gray-400">
+                    <x-mary-icon name="o-users" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Members</h3>
+                    <p class="text-gray-500">This group doesn't have any members yet.</p>
+                </div>
+            @endif
+        </x-mary-card>
+
+        <!-- Group Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <x-mary-card title="Member Statistics">
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Members</span>
+                        <span class="font-semibold">{{ $group->groupMembers->count() }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Verified Members</span>
+                        <span class="font-semibold">{{ $group->groupMembers->whereNotNull('user.email_verified_at')->count() }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Active Roles</span>
+                        <span class="font-semibold">{{ $group->groupMembers->whereNotNull('role_id')->groupBy('role_id')->count() }}</span>
+                    </div>
+                </div>
+            </x-mary-card>
+
+            <x-mary-card title="Group Activity">
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Created</span>
+                        <span class="font-semibold">{{ $group->created_at->format('M d, Y') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status</span>
+                        @if($group->is_active)
+                            <x-mary-badge value="Active" class="badge-success" />
+                        @else
+                            <x-mary-badge value="Inactive" class="badge-error" />
+                        @endif
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Last Updated</span>
+                        <span class="font-semibold">{{ $group->updated_at->format('M d, Y') }}</span>
+                    </div>
+                </div>
+            </x-mary-card>
+
+            <x-mary-card title="Your Status">
+                @php
+                    $userMembership = $group->groupMembers->where('user_id', auth()->id())->first();
+                @endphp
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Membership</span>
+                        @if($isMember)
+                            <x-mary-badge value="Member" class="badge-success" />
+                        @else
+                            <x-mary-badge value="Not a member" class="badge-ghost" />
+                        @endif
+                    </div>
+                    @if($userMembership)
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Your Role</span>
+                            @if($userMembership->role)
+                                <x-mary-badge 
+                                    value="{{ $userMembership->role->display_name }}" 
+                                    class="badge-{{ $userMembership->role->getBadgeColor() }}"
+                                />
+                            @else
+                                <span class="text-gray-500">No role assigned</span>
+                            @endif
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Joined</span>
+                            <span class="font-semibold">
+                                {{ $userMembership->joined_at?->format('M d, Y') ?? $userMembership->created_at->format('M d, Y') }}
+                            </span>
+                        </div>
+                    @endif
+                </div>
+            </x-mary-card>
+        </div>
+    </div>
+</div>
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>

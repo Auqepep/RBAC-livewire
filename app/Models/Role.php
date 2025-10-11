@@ -111,6 +111,29 @@ class Role extends Model
     }
 
     /**
+     * Get the badge color class for this role
+     */
+    public function getBadgeColor(): string
+    {
+        return $this->badge_color ?? $this->getDefaultBadgeColor();
+    }
+
+    /**
+     * Get default badge color based on hierarchy level
+     */
+    public function getDefaultBadgeColor(): string
+    {
+        return match(true) {
+            $this->hierarchy_level >= 6 => 'error', // Super Admin
+            $this->hierarchy_level >= 5 => 'warning', // Admin
+            $this->hierarchy_level >= 4 => 'info', // Manager
+            $this->hierarchy_level >= 3 => 'success', // Supervisor
+            $this->hierarchy_level >= 2 => 'secondary', // Staff
+            default => 'ghost' // Member/Guest
+        };
+    }
+
+    /**
      * Scopes
      */
     public function scopeActive($query)

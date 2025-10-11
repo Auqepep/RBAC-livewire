@@ -65,7 +65,7 @@ class Group extends Model
     /**
      * Add a user to this group with a specific role
      */
-    public function addMember($userId, $roleId = null): GroupMember
+    public function addMember($userId, $roleId = null, $assignedBy = null): GroupMember
     {
         $user = User::findOrFail($userId);
         
@@ -73,7 +73,25 @@ class Group extends Model
             'group_id' => $this->id,
             'user_id' => $userId,
             'role_id' => $roleId,
+            'assigned_by' => $assignedBy ?? auth()->id(),
             'joined_at' => now(),
+        ]);
+    }
+
+    /**
+     * Change a user's role in this group
+     */
+    public function changeUserRole($userId, $roleId, $assignedBy = null): bool
+    {
+        $member = $this->groupMembers()->where('user_id', $userId)->first();
+        
+        if (!$member) {
+            return false;
+        }
+        
+        return $member->update([
+            'role_id' => $roleId,
+            'assigned_by' => $assignedBy ?? auth()->id(),
         ]);
     }
 
@@ -195,5 +213,13 @@ class Group extends Model
         }
         
         return $maxLevel;
+    }
+
+    /**
+     * Get the roles that belong to this group
+     */
+    public function roles(): HasMany
+    {
+        return $this->hasMany(Role::class);
     }
 }

@@ -170,8 +170,8 @@ class ManageGroupMembers extends Component
 
     public function render()
     {
-        $members = $this->group->members()
-            ->with(['user', 'role', 'assignedBy'])
+        $members = $this->group->groupMembers()
+            ->with(['user', 'role'])
             ->when($this->search, function($query) {
                 $query->whereHas('user', function($userQuery) {
                     $userQuery->where('name', 'like', '%' . $this->search . '%')
