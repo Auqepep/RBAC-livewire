@@ -313,4 +313,17 @@ class User extends Authenticatable
                               ->where('name', $permissionName)
                               ->exists();
     }
+
+    /**
+     * Check if user has all permissions (custom helper)
+     */
+    public function hasAllPermissions(array $abilities): bool
+    {
+        foreach ($abilities as $ability) {
+            if (!\Gate::forUser($this)->check($ability)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

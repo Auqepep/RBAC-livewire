@@ -32,3 +32,17 @@
 .mary-table-pagination button {
     @apply cursor-pointer
 }
+
+/* Custom mary button colors */
+.mary-btn {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+}
+
+/* Or override specific mary button variants */
+.btn-primary {
+    @apply bg-black text-white hover:bg-blue-900 shadow-none border-0;
+}
+
+.btn-secondary {
+    @apply bg-gray-500 text-white hover:bg-gray-600 shadow-none border-0;
+}

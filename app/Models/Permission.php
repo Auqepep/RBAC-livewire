@@ -11,7 +11,7 @@ class Permission extends Model
         'name',
         'display_name',
         'description',
-        'module',
+        'category',
         'is_active'
     ];
 
@@ -39,10 +39,10 @@ class Permission extends Model
     }
 
     /**
-     * Scope by module
+     * Scope by category
      */
-    public function scopeByModule($query, string $module)
+    public function scopeByCategory($query, string $category)
     {
-        return $query->where('module', $module);
+        return $query->where('category', $category);
     }
 }

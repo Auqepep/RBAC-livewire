@@ -6,14 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PermissionController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        // Temporarily allow all authenticated users for debugging
+        // TODO: Restore authorization after debugging
+        // $this->authorize('manage-permissions');
+
+        // Debug current user info
+        $currentUser = auth()->user();
+        $debugInfo = [
+            'user_id' => $currentUser->id,
+            'user_name' => $currentUser->name,
+            'roles' => $currentUser->roles->pluck('name')->toArray(),
+            'groups' => $currentUser->groups->pluck('name')->toArray(),
+            'is_super_admin' => $currentUser->isSuperAdmin(),
+            'is_admin' => $currentUser->isAdmin(),
+        ];
+        
+        // Add debug to session to display in view
+        session()->flash('debug_info', $debugInfo);
+
         $permissions = Permission::paginate(15);
         return view('admin.permissions.index', compact('permissions'));
     }
@@ -23,6 +44,8 @@ class PermissionController extends Controller
      */
     public function create()
     {
+        $this->authorize('manage-permissions');
+        
         return view('admin.permissions.create');
     }
 
@@ -31,11 +54,13 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('manage-permissions');
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:permissions',
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'module' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -43,7 +68,7 @@ class PermissionController extends Controller
             'name' => $validated['name'],
             'display_name' => $validated['display_name'],
             'description' => $validated['description'],
-            'module' => $validated['module'],
+            'category' => $validated['category'],
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
@@ -56,6 +81,8 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
+        $this->authorize('manage-permissions');
+        
         $permission->load('roles.users');
         return view('admin.permissions.show', compact('permission'));
     }
@@ -65,6 +92,8 @@ class PermissionController extends Controller
      */
     public function edit(Permission $permission)
     {
+        $this->authorize('manage-permissions');
+        
         return view('admin.permissions.edit', compact('permission'));
     }
 
@@ -73,11 +102,13 @@ class PermissionController extends Controller
      */
     public function update(Request $request, Permission $permission)
     {
+        $this->authorize('manage-permissions');
+        
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('permissions')->ignore($permission->id)],
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'module' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -85,7 +116,7 @@ class PermissionController extends Controller
             'name' => $validated['name'],
             'display_name' => $validated['display_name'],
             'description' => $validated['description'],
-            'module' => $validated['module'],
+            'category' => $validated['category'],
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
@@ -101,6 +132,8 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
+        $this->authorize('manage-permissions');
+        
         // Check if permission has roles
         if ($permission->roles()->count() > 0) {
             return back()->with('error', 'Cannot delete permission that is assigned to roles.');
