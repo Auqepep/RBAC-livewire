@@ -22,7 +22,7 @@
             color="text-success" />
 
         <x-mary-stat
-            title="Total Roles"
+            title="Total Roles" 
             description="Available roles"
             value="{{ $stats['roles'] ?? 0 }}"
             icon="o-identification"
@@ -71,60 +71,83 @@
             </x-mary-alert>
         </x-mary-card>
 
-        {{-- Recent Activity --}}
-        <x-mary-card title="Recent Activity" subtitle="Latest system changes">
-            <livewire:admin.recent-activity />
+        {{-- Administrative Management --}}
+        <x-mary-card title="Administrative Management" subtitle="Comprehensive system administration">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {{-- User Management Section --}}
+                <div class="space-y-4">
+                    <div class="border-b border-gray-200 pb-2 mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <x-mary-icon name="o-user-group" class="w-4 h-4 mr-2 text-primary" />
+                            User Management
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">Manage system users</p>
+                    </div>
+                    <div class="space-y-3">
+                        <x-mary-button 
+                            label="View All Users" 
+                            icon="o-user-group" 
+                            class="btn-outline btn-sm w-full"
+                            link="{{ route('admin.users.index') }}" />
+                            
+                        <x-mary-button 
+                            label="User Directory" 
+                            icon="o-book-open" 
+                            class="btn-ghost btn-sm w-full"
+                            link="{{ route('users.index') }}" />
+                    </div>
+                </div>
+
+                {{-- Group Management Section --}}
+                <div class="space-y-4">
+                    <div class="border-b border-gray-200 pb-2 mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <x-mary-icon name="o-rectangle-group" class="w-4 h-4 mr-2 text-success" />
+                            Group Management
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">Organize users into groups</p>
+                    </div>
+                    <div class="space-y-3">
+                        <x-mary-button 
+                            label="All Groups" 
+                            icon="o-rectangle-group" 
+                            class="btn-outline btn-sm w-full"
+                            link="{{ route('admin.groups.index') }}" />
+                            
+                        <x-mary-button 
+                            label="Join Requests" 
+                            icon="o-envelope" 
+                            class="btn-ghost btn-sm w-full"
+                            link="{{ route('admin.group-join-requests') }}" />
+                    </div>
+                </div>
+
+                {{-- System Settings Section --}}
+                <div class="space-y-4">
+                    <div class="border-b border-gray-200 pb-2 mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <x-mary-icon name="o-cog-6-tooth" class="w-4 h-4 mr-2 text-warning" />
+                            System Settings
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">Configure system</p>
+                    </div>
+                    <div class="space-y-3">
+                        <x-mary-button 
+                            label="Permissions" 
+                            icon="o-key" 
+                            class="btn-outline btn-sm w-full"
+                            link="{{ route('admin.permissions.index') }}" />
+                            
+                        <x-mary-button 
+                            label="System Logs" 
+                            icon="o-document-text" 
+                            class="btn-ghost btn-sm w-full disabled"
+                            disabled />
+                    </div>
+                </div>
+            </div>
         </x-mary-card>
     </div>
 
-    {{-- Additional Management Sections --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        <x-mary-card title="User Management" subtitle="Manage system users">
-            <div class="space-y-3">
-                <x-mary-button 
-                    label="View All Users" 
-                    icon="o-user-group" 
-                    class="btn-outline btn-sm w-full"
-                    link="{{ route('admin.users.index') }}" />
-                    
-                <x-mary-button 
-                    label="User Directory" 
-                    icon="o-book-open" 
-                    class="btn-ghost btn-sm w-full"
-                    link="{{ route('users.index') }}" />
-            </div>
-        </x-mary-card>
-
-        <x-mary-card title="Group Management" subtitle="Organize users into groups">
-            <div class="space-y-3">
-                <x-mary-button 
-                    label="All Groups" 
-                    icon="o-rectangle-group" 
-                    class="btn-outline btn-sm w-full"
-                    link="{{ route('admin.groups.index') }}" />
-                    
-                <x-mary-button 
-                    label="Join Requests" 
-                    icon="o-envelope" 
-                    class="btn-ghost btn-sm w-full"
-                    link="{{ route('admin.group-join-requests') }}" />
-            </div>
-        </x-mary-card>
-
-        <x-mary-card title="System Settings" subtitle="Configure system">
-            <div class="space-y-3">
-                <x-mary-button 
-                    label="Permissions" 
-                    icon="o-key" 
-                    class="btn-outline btn-sm w-full"
-                    link="{{ route('admin.permissions.index') }}" />
-                    
-                <x-mary-button 
-                    label="System Logs" 
-                    icon="o-document-text" 
-                    class="btn-ghost btn-sm w-full disabled"
-                    disabled />
-            </div>
-        </x-mary-card>
-    </div>
+   
 </x-admin.layout>

@@ -13,13 +13,35 @@ class GroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->get('search');
+        $sortBy = $request->get('sort_by', 'name'); // Default sort by name
+        $sortOrder = $request->get('sort_order', 'asc'); // Default ascending
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'created_at', 'group_members_count'];
+        $allowedSortOrders = ['asc', 'desc'];
+        
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        
+        if (!in_array($sortOrder, $allowedSortOrders)) {
+            $sortOrder = 'asc';
+        }
+        
         $groups = Group::with(['creator'])
                       ->withCount('groupMembers')
-                      ->paginate(15);
+                      ->when($search, function ($query, $search) {
+                          return $query->where('name', 'like', "%{$search}%")
+                                      ->orWhere('description', 'like', "%{$search}%");
+                      })
+                      ->orderBy($sortBy, $sortOrder)
+                      ->paginate(15)
+                      ->appends($request->query());
         
-        return view('admin.groups.index', compact('groups'));
+        return view('admin.groups.index', compact('groups', 'search', 'sortBy', 'sortOrder'));
     }
 
     /**

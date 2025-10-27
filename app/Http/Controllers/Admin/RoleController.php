@@ -14,17 +14,43 @@ class RoleController extends Controller
     /**
      * Display a listing of roles for a specific group.
      */
-    public function index(Group $group)
+    public function index(Group $group, Request $request)
     {
+        $search = $request->get('search');
+        $sortBy = $request->get('sort_by', 'name'); // Default sort by name
+        $sortOrder = $request->get('sort_order', 'asc'); // Default ascending
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'hierarchy_level', 'created_at'];
+        $allowedSortOrders = ['asc', 'desc'];
+        
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        
+        if (!in_array($sortOrder, $allowedSortOrders)) {
+            $sortOrder = 'asc';
+        }
+        
         // Get roles used in this group
         $groupRoleIds = GroupMember::where('group_id', $group->id)
             ->distinct()
             ->pluck('role_id');
             
-        $groupRoles = Role::whereIn('id', $groupRoleIds)->with(['permissions'])->get();
-        $allRoles = Role::with(['permissions'])->get();
+        $groupRolesQuery = Role::whereIn('id', $groupRoleIds)->with(['permissions']);
         
-        return view('admin.roles.index', compact('group', 'groupRoles', 'allRoles'));
+        if ($search) {
+            $groupRolesQuery->where(function($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('display_name', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        
+        $groupRoles = $groupRolesQuery->orderBy($sortBy, $sortOrder)->get();
+        $allRoles = Role::with(['permissions'])->orderBy('name', 'asc')->get();
+        
+        return view('admin.roles.index', compact('group', 'groupRoles', 'allRoles', 'search', 'sortBy', 'sortOrder'));
     }
 
     /**

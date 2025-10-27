@@ -13,6 +13,61 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <x-mary-card>
+                <!-- Search and Sort Form -->
+                <div class="mb-6 space-y-4">
+                    <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col lg:flex-row gap-4">
+                        <div class="flex-1">
+                            <x-mary-input 
+                                name="search" 
+                                value="{{ $search }}" 
+                                placeholder="Search users by name or email..."
+                                icon="o-magnifying-glass"
+                            />
+                        </div>
+                        
+                        <!-- Sort Controls -->
+                        <div class="flex gap-2">
+                            <x-mary-select 
+                                name="sort_by" 
+                                :options="[
+                                    ['value' => 'name', 'label' => 'Name'],
+                                    ['value' => 'email', 'label' => 'Email'],
+                                    ['value' => 'created_at', 'label' => 'Date Created']
+                                ]"
+                                option-value="value"
+                                option-label="label"
+                                value="{{ $sortBy }}"
+                                placeholder="Sort by..."
+                            />
+                            
+                            <x-mary-select 
+                                name="sort_order" 
+                                :options="[
+                                    ['value' => 'asc', 'label' => 'A-Z / Oldest'],
+                                    ['value' => 'desc', 'label' => 'Z-A / Newest']
+                                ]"
+                                option-value="value"
+                                option-label="label"
+                                value="{{ $sortOrder }}"
+                                placeholder="Order..."
+                            />
+                            
+                            <x-mary-button type="submit" icon="o-funnel" class="btn-primary">
+                                Filter
+                            </x-mary-button>
+                        </div>
+                    </form>
+                    
+                    <!-- Clear filters if any are applied -->
+                    @if($search || $sortBy !== 'name' || $sortOrder !== 'asc')
+                        <div class="flex justify-between items-center">
+                            <x-mary-button link="{{ route('admin.users.index') }}" class="btn-ghost btn-sm">
+                                Clear all filters
+                            </x-mary-button>
+                        </div>
+                    @endif
+                </div>
+
                 @if(session('success'))
                     <x-mary-alert icon="o-check-circle" class="alert-success mb-4">
                         {{ session('success') }}
@@ -30,11 +85,12 @@
                         <table class="table table-zebra w-full">
                             <thead>
                                 <tr>
-                                    <th class="w-1/4">User</th>
-                                    <th class="w-1/4">Email</th>
-                                    <th class="w-1/4">Groups</th>
-                                    <th class="w-1/6 text-center">Status</th>
-                                    <th class="w-1/6 text-center">Actions</th>
+                                    <th class="w-1/5">User</th>
+                                    <th class="w-1/5">Email</th>
+                                    <th class="w-1/5">Groups</th>
+                                    <th class="w-1/6">Created Date</th>
+                                    <th class="w-1/8 text-center">Status</th>
+                                    <th class="w-1/8 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -42,7 +98,6 @@
                                     <tr>
                                         <td>
                                             <div class="font-medium text-gray-900">{{ $user->name }}</div>
-                                            <div class="text-sm text-gray-500">Joined {{ $user->created_at->diffForHumans() }}</div>
                                         </td>
                                         <td>
                                             <div class="text-sm">{{ $user->email }}</div>
@@ -66,6 +121,10 @@
                                             @else
                                                 <span class="text-gray-400 text-sm">No groups</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                            <div class="text-sm text-gray-600">{{ $user->created_at->format('M j, Y') }}</div>
+                                            <div class="text-xs text-gray-400">{{ $user->created_at->diffForHumans() }}</div>
                                         </td>
                                         <td class="text-center">
                                             @if($user->email_verified_at)
@@ -99,9 +158,26 @@
                         {{ $users->links() }}
                     </div>
                 @else
-                    <x-mary-alert icon="o-information-circle" class="alert-info">
-                        No users found. <a href="{{ route('admin.users.create') }}" class="link link-primary">Create the first user</a>.
-                    </x-mary-alert>
+                    <div class="text-center py-12">
+                        <x-mary-icon name="o-user-group" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No Users Found</h3>
+                        @if($search)
+                            <p class="text-gray-500 mb-4">No users match your search criteria for "{{ $search }}".</p>
+                            <div class="space-x-3">
+                                <x-mary-button link="{{ route('admin.users.index') }}" class="btn-primary">
+                                    View All Users
+                                </x-mary-button>
+                                <x-mary-button link="{{ route('admin.users.create') }}" class="btn-secondary">
+                                    Create New User
+                                </x-mary-button>
+                            </div>
+                        @else
+                            <p class="text-gray-500 mb-4">There are no users to display.</p>
+                            <x-mary-button link="{{ route('admin.users.create') }}" class="btn-primary">
+                                Create First User
+                            </x-mary-button>
+                        @endif
+                    </div>
                 @endif
             </x-mary-card>
         </div>

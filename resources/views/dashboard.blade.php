@@ -129,42 +129,6 @@
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Your Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Account Details</h4>
-                        <dl class="space-y-2">
-                            <div>
-                                <dt class="text-sm text-gray-600">Member since</dt>
-                                <dd class="text-sm font-medium text-gray-900">{{ Auth::user()->created_at->format('F j, Y') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm text-gray-600">Last updated</dt>
-                                <dd class="text-sm font-medium text-gray-900">{{ Auth::user()->updated_at->format('F j, Y') }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Quick Actions</h4>
-                        <div class="space-y-2">
-                            <a href="{{ route('users.index') }}" class="block text-sm text-blue-600 hover:underline">
-                                View all users
-                            </a>
-                            <a href="{{ route('my-groups') }}" class="block text-sm text-blue-600 hover:underline">
-                                Manage my groups
-                            </a>
-                            @if(Auth::user()->hasRole('administrator'))
-                                <a href="{{ route('admin.dashboard') }}" class="block text-sm text-blue-600 hover:underline">
-                                    Access admin panel
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </x-user.layout>

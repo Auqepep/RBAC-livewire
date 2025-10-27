@@ -45,15 +45,69 @@
                     </x-mary-alert>
                 @endif
 
+                <!-- Search and Sort Form -->
+                <div class="mb-6 space-y-4">
+                    <form method="GET" action="{{ route('groups.roles.index', $group) }}" class="flex flex-col lg:flex-row gap-4">
+                        <div class="flex-1">
+                            <x-mary-input 
+                                name="search" 
+                                value="{{ $search ?? '' }}" 
+                                placeholder="Search roles by name or description..."
+                                icon="o-magnifying-glass"
+                            />
+                        </div>
+                        
+                        <!-- Sort Controls -->
+                        <div class="flex gap-2">
+                            <x-mary-select 
+                                name="sort_by" 
+                                :options="[
+                                    ['value' => 'name', 'label' => 'Name'],
+                                    ['value' => 'hierarchy_level', 'label' => 'Hierarchy Level'],
+                                    ['value' => 'created_at', 'label' => 'Date Created']
+                                ]"
+                                option-value="value"
+                                option-label="label"
+                                value="{{ $sortBy ?? 'name' }}"
+                                placeholder="Sort by..."
+                            />
+                            
+                            <x-mary-select 
+                                name="sort_order" 
+                                :options="[
+                                    ['value' => 'asc', 'label' => 'A-Z / Lowest / Oldest'],
+                                    ['value' => 'desc', 'label' => 'Z-A / Highest / Newest']
+                                ]"
+                                option-value="value"
+                                option-label="label"
+                                value="{{ $sortOrder ?? 'asc' }}"
+                                placeholder="Order..."
+                            />
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <x-mary-button type="submit" class="btn-primary" icon="o-magnifying-glass">
+                                Search
+                            </x-mary-button>
+                            @if(($search ?? '') || ($sortBy ?? 'name') !== 'name' || ($sortOrder ?? 'asc') !== 'asc')
+                                <x-mary-button link="{{ route('groups.roles.index', $group) }}" class="btn-secondary" icon="o-x-mark">
+                                    Reset
+                                </x-mary-button>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+
                 @if($groupRoles->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="table table-zebra w-full">
                             <thead>
                                 <tr>
-                                    <th class="w-1/4">Role</th>
+                                    <th class="w-1/5">Role</th>
                                     <th class="w-1/3">Description</th>
-                                    <th class="w-1/6 text-center">Level</th>
-                                    <th class="w-1/6 text-center">Users</th>
+                                    <th class="w-1/8 text-center">Level</th>
+                                    <th class="w-1/8 text-center">Users</th>
+                                    <th class="w-1/6">Created</th>
                                     <th class="w-1/6 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -77,6 +131,10 @@
                                                 $usageCount = $group->groupMembers->where('role_id', $role->id)->count();
                                             @endphp
                                             <x-mary-badge value="{{ $usageCount }}" class="badge-secondary" />
+                                        </td>
+                                        <td>
+                                            <div class="text-sm text-gray-900">{{ $role->created_at->format('M j, Y') }}</div>
+                                            <div class="text-xs text-gray-500">{{ $role->created_at->diffForHumans() }}</div>
                                         </td>
                                         <td class="text-center">
                                             <div class="flex justify-center space-x-2">

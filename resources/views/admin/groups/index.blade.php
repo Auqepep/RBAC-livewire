@@ -25,15 +25,69 @@
                     </x-mary-alert>
                 @endif
 
+                <!-- Search and Sort Form -->
+                <div class="mb-6 space-y-4">
+                    <form method="GET" action="{{ route('admin.groups.index') }}" class="flex flex-col lg:flex-row gap-4">
+                        <div class="flex-1">
+                            <x-mary-input 
+                                name="search" 
+                                value="{{ $search ?? '' }}" 
+                                placeholder="Search groups by name or description..."
+                                icon="o-magnifying-glass"
+                            />
+                        </div>
+                        
+                        <!-- Sort Controls -->
+                        <div class="flex gap-2">
+                            <x-mary-select 
+                                name="sort_by" 
+                                :options="[
+                                    ['value' => 'name', 'label' => 'Name'],
+                                    ['value' => 'created_at', 'label' => 'Date Created'],
+                                    ['value' => 'group_members_count', 'label' => 'Member Count']
+                                ]"
+                                option-value="value"
+                                option-label="label"
+                                value="{{ $sortBy ?? 'name' }}"
+                                placeholder="Sort by..."
+                            />
+                            
+                            <x-mary-select 
+                                name="sort_order" 
+                                :options="[
+                                    ['value' => 'asc', 'label' => 'A-Z / Oldest / Least'],
+                                    ['value' => 'desc', 'label' => 'Z-A / Newest / Most']
+                                ]"
+                                option-value="value"
+                                option-label="label"
+                                value="{{ $sortOrder ?? 'asc' }}"
+                                placeholder="Order..."
+                            />
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <x-mary-button type="submit" class="btn-primary" icon="o-magnifying-glass">
+                                Search
+                            </x-mary-button>
+                            @if(($search ?? '') || ($sortBy ?? 'name') !== 'name' || ($sortOrder ?? 'asc') !== 'asc')
+                                <x-mary-button link="{{ route('admin.groups.index') }}" class="btn-secondary" icon="o-x-mark">
+                                    Reset
+                                </x-mary-button>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+
                 @if($groups->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="table table-zebra w-full">
                             <thead>
                                 <tr>
-                                    <th class="w-1/4">Group Name</th>
+                                    <th class="w-1/5">Group Name</th>
                                     <th class="w-1/3">Description</th>
-                                    <th class="w-1/6 text-center">Members</th>
-                                    <th class="w-1/6 text-center">Status</th>
+                                    <th class="w-1/8 text-center">Members</th>
+                                    <th class="w-1/8 text-center">Status</th>
+                                    <th class="w-1/6">Created</th>
                                     <th class="w-1/6 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -42,10 +96,9 @@
                                     <tr>
                                         <td>
                                             <div class="font-medium text-gray-900">{{ $group->name }}</div>
-                                            <div class="text-sm text-gray-500">Created {{ $group->created_at->diffForHumans() }}</div>
                                         </td>
                                         <td>
-                                            <div class="text-sm">{{ Str::limit($group->description ?? 'No description', 100) }}</div>
+                                            <div class="text-sm">{{ Str::limit($group->description ?? 'No description', 80) }}</div>
                                         </td>
                                         <td class="text-center">
                                             <x-mary-badge value="{{ $group->group_members_count }}" class="badge-primary" />
@@ -56,6 +109,10 @@
                                             @else
                                                 <x-mary-badge value="Inactive" class="badge-error" />
                                             @endif
+                                        </td>
+                                        <td>
+                                            <div class="text-sm text-gray-900">{{ $group->created_at->format('M j, Y') }}</div>
+                                            <div class="text-xs text-gray-500">{{ $group->created_at->diffForHumans() }}</div>
                                         </td>
                                         <td class="text-center">
                                             <div class="flex justify-center space-x-2">

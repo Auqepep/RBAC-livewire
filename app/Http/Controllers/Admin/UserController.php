@@ -13,13 +13,33 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with(['groupMembers.group', 'groupMembers.role'])
-                    ->orderBy('name')
-                    ->paginate(15);
-                    
-        return view('admin.users.index', compact('users'));
+        $search = $request->get('search', '');
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'email', 'created_at'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'name';
+        $sortOrder = in_array($sortOrder, ['asc', 'desc']) ? $sortOrder : 'asc';
+
+        $query = User::with(['groupMembers.group', 'groupMembers.role']);
+
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply sorting
+        $query->orderBy($sortBy, $sortOrder);
+
+        $users = $query->paginate(15)->withQueryString();
+
+        return view('admin.users.index', compact('users', 'search', 'sortBy', 'sortOrder'));
     }
 
     /**
