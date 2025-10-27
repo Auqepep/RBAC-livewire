@@ -19,7 +19,7 @@
                         <div class="flex-1">
                             <x-mary-input 
                                 name="search" 
-                                value="{{ $search }}" 
+                                value="{{ $search ?? '' }}" 
                                 placeholder="Search users by name or email..."
                                 icon="o-magnifying-glass"
                             />
@@ -36,7 +36,7 @@
                                 ]"
                                 option-value="value"
                                 option-label="label"
-                                value="{{ $sortBy }}"
+                                value="{{ $sortBy ?? 'name' }}"
                                 placeholder="Sort by..."
                             />
                             
@@ -48,7 +48,7 @@
                                 ]"
                                 option-value="value"
                                 option-label="label"
-                                value="{{ $sortOrder }}"
+                                value="{{ $sortOrder ?? 'asc' }}"
                                 placeholder="Order..."
                             />
                             
@@ -59,7 +59,7 @@
                     </form>
                     
                     <!-- Clear filters if any are applied -->
-                    @if($search || $sortBy !== 'name' || $sortOrder !== 'asc')
+                    @if(($search ?? '') || ($sortBy ?? 'name') !== 'name' || ($sortOrder ?? 'asc') !== 'asc')
                         <div class="flex justify-between items-center">
                             <x-mary-button link="{{ route('admin.users.index') }}" class="btn-ghost btn-sm">
                                 Clear all filters
@@ -161,7 +161,7 @@
                     <div class="text-center py-12">
                         <x-mary-icon name="o-user-group" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
                         <h3 class="text-lg font-medium text-gray-900 mb-2">No Users Found</h3>
-                        @if($search)
+                        @if(($search ?? ''))
                             <p class="text-gray-500 mb-4">No users match your search criteria for "{{ $search }}".</p>
                             <div class="space-x-3">
                                 <x-mary-button link="{{ route('admin.users.index') }}" class="btn-primary">
