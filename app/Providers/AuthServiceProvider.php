@@ -49,15 +49,15 @@ class AuthServiceProvider extends ServiceProvider
             });
 
             Gate::define('manage-users', function (User $user) {
-                return $user->isAdmin() || Gate::forUser($user)->check('manage_users');
+                return Gate::forUser($user)->check('manage_users') || $user->isAdmin();
             });
 
             Gate::define('manage-groups', function (User $user) {
-                return $user->isAdmin() || Gate::forUser($user)->check('manage_groups');
+                return Gate::forUser($user)->check('manage_groups') || $user->isAdmin();
             });
 
             Gate::define('manage-permissions', function (User $user) {
-                return $user->isSuperAdmin() || Gate::forUser($user)->check('manage_permissions');
+                return Gate::forUser($user)->check('manage_permissions') || $user->isSuperAdmin();
             });
 
         } catch (\Exception $e) {

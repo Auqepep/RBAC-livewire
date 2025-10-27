@@ -20,19 +20,6 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            <!-- Debug Info -->
-            @if(session('debug_info'))
-            <x-mary-card title="🐛 Debug Information" class="bg-yellow-50 border-yellow-200">
-                <div class="text-sm">
-                    <p><strong>User:</strong> {{ session('debug_info.user_name') }} (ID: {{ session('debug_info.user_id') }})</p>
-                    <p><strong>Roles:</strong> {{ implode(', ', session('debug_info.roles')) }}</p>
-                    <p><strong>Groups:</strong> {{ implode(', ', session('debug_info.groups')) }}</p>
-                    <p><strong>Is Super Admin:</strong> {{ session('debug_info.is_super_admin') ? 'YES' : 'NO' }}</p>
-                    <p><strong>Is Admin:</strong> {{ session('debug_info.is_admin') ? 'YES' : 'NO' }}</p>
-                </div>
-            </x-mary-card>
-            @endif
-            
             <!-- Permissions Table -->
             <x-mary-card>
                 <x-slot name="title">

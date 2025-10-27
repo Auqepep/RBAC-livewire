@@ -11,29 +11,13 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class PermissionController extends Controller
 {
     use AuthorizesRequests;
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        // Temporarily allow all authenticated users for debugging
-        // TODO: Restore authorization after debugging
-        // $this->authorize('manage-permissions');
-
-        // Debug current user info
-        $currentUser = auth()->user();
-        $debugInfo = [
-            'user_id' => $currentUser->id,
-            'user_name' => $currentUser->name,
-            'roles' => $currentUser->roles->pluck('name')->toArray(),
-            'groups' => $currentUser->groups->pluck('name')->toArray(),
-            'is_super_admin' => $currentUser->isSuperAdmin(),
-            'is_admin' => $currentUser->isAdmin(),
-        ];
-        
-        // Add debug to session to display in view
-        session()->flash('debug_info', $debugInfo);
+        // Check if user can manage permissions
+        $this->authorize('manage-permissions');
 
         $permissions = Permission::paginate(15);
         return view('admin.permissions.index', compact('permissions'));
