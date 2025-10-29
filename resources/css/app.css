@@ -1,48 +1,67 @@
+/* ==========================================================================
+   Base Imports
+   ========================================================================== */
+
 @import "tailwindcss";
+
+/* ==========================================================================
+   Theme Configuration
+   ========================================================================== */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ==========================================================================
+   DaisyUI Plugin Configuration
+   ========================================================================== */
 
-
-/**
-    The lines above are intact.
-    The lines below were added by maryUI installer.
-*/
-
-/** daisyUI */
 @plugin "daisyui" {
     themes: light --default, dark --prefersdark;
 }
 
-/* maryUI */
+/* ==========================================================================
+   MaryUI Component Imports
+   ========================================================================== */
+
 @source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
 
-/* Theme toggle */
-@custom-variant dark (&:where(.dark, .dark *));
+/* ==========================================================================
+   Base Styling
+   ========================================================================== */
 
-/**
-* Paginator - Traditional style
-* Because Laravel defaults does not match well the design of daisyUI.
-*/
-
-.mary-table-pagination span[aria-current="page"] > span {
-    @apply bg-primary text-base-100
+body {
+    background: var(--background, #f3fafa);
 }
 
-.mary-table-pagination button {
-    @apply cursor-pointer
-}
+/* ==========================================================================
+   Button Components
+   ========================================================================== */
 
 /* Custom mary button colors */
 .mary-btn {
     @apply bg-blue-500 text-white hover:bg-blue-600;
 }
 
-/* Or override specific mary button variants */
+/* Button variants */
 .btn-primary {
     @apply bg-black text-white hover:bg-blue-900 shadow-none border-0;
 }
 
 .btn-secondary {
     @apply bg-gray-500 text-white hover:bg-gray-600 shadow-none border-0;
+}
+
+/* ==========================================================================
+   Table Components
+   ========================================================================== */
+
+/**
+ * Paginator - Traditional style
+ * Because Laravel defaults does not match well the design of daisyUI.
+ */
+.mary-table-pagination span[aria-current="page"] > span {
+    @apply bg-primary text-base-100;
+}
+
+.mary-table-pagination button {
+    @apply cursor-pointer;
 }

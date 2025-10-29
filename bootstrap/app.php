@@ -21,5 +21,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            // If CSRF token mismatch on logout, just redirect to home
+            if ($request->is('logout')) {
+                auth()->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('home');
+            }
+            
+            // For other routes, show the default error
+            return null;
+        });
     })->create();

@@ -25,8 +25,16 @@ Route::post('logout', function () {
     auth()->logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
-    return redirect('/');
-})->name('logout')->middleware('auth');
+    return redirect()->route('home');
+})->name('logout');
+
+// Also handle GET logout for expired sessions
+Route::get('logout', function () {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect()->route('home');
+})->name('logout.get');
 
 Route::get('dashboard', function () {
     // Redirect system administrators to admin dashboard
