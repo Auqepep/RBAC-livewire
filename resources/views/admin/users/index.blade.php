@@ -11,7 +11,39 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            
+            <!-- Quick Permission Testing Panel -->
+            <x-mary-card title="Quick Permission Testing" class="bg-orange-50 border-orange-200">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex-1">
+                        <p class="text-sm text-orange-800 mb-2">
+                            <strong>Test permissions instantly:</strong> Use the actions below to grant/remove admin privileges, then test on the permission testing page.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <x-mary-button 
+                                label="🧪 Open Permission Test Page" 
+                                link="{{ route('test.permissions') }}"
+                                target="_blank"
+                                class="btn-warning btn-sm"
+                                icon="o-eye"
+                            />
+                            <x-mary-button 
+                                label="Permission Details" 
+                                link="{{ route('admin.permissions.index') }}"
+                                target="_blank"
+                                class="btn-secondary btn-sm"
+                                icon="o-shield-check"
+                            />
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-orange-600 font-medium">Real-time Testing</p>
+                        <p class="text-xs text-orange-500">Changes reflect immediately</p>
+                    </div>
+                </div>
+            </x-mary-card>
+            
             <x-mary-card>
                 <!-- Search and Sort Form -->
                 <div class="mb-6 space-y-4">
@@ -127,16 +159,47 @@
                                             <div class="text-xs text-gray-400">{{ $user->created_at->diffForHumans() }}</div>
                                         </td>
                                         <td class="text-center">
-                                            @if($user->email_verified_at)
-                                                <x-mary-badge value="Verified" class="badge-success" />
-                                            @else
-                                                <x-mary-badge value="Unverified" class="badge-error" />
-                                            @endif
+                                            <div class="space-y-1">
+                                                @if($user->email_verified_at)
+                                                    <x-mary-badge value="Verified" class="badge-success badge-sm" />
+                                                @else
+                                                    <x-mary-badge value="Unverified" class="badge-error badge-sm" />
+                                                @endif
+                                                
+                                                @if($user->canManageSystem())
+                                                    <x-mary-badge value="Admin" class="badge-warning badge-sm" />
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <div class="flex justify-center space-x-2">
+                                            <div class="flex justify-center space-x-1 flex-wrap gap-1">
                                                 <x-mary-button icon="o-eye" class="btn-sm btn-ghost" link="{{ route('admin.users.show', $user) }}" />
                                                 <x-mary-button icon="o-pencil" class="btn-sm btn-primary" link="{{ route('admin.users.edit', $user) }}" />
+                                                
+                                                <!-- Quick Admin Toggle for Testing -->
+                                                @if($user->id !== auth()->id())
+                                                    @php
+                                                        $isAdmin = $user->canManageSystem();
+                                                    @endphp
+                                                    <form method="POST" action="{{ route('admin.users.toggle-admin', $user) }}" class="inline">
+                                                        @csrf
+                                                        <x-mary-button 
+                                                            icon="{{ $isAdmin ? 'o-shield-exclamation' : 'o-shield-check' }}" 
+                                                            class="btn-sm {{ $isAdmin ? 'btn-warning' : 'btn-success' }}" 
+                                                            type="submit"
+                                                            title="{{ $isAdmin ? 'Remove Admin' : 'Make Admin' }}"
+                                                        />
+                                                    </form>
+                                                @endif
+                                                
+                                                <!-- Permission Test Link -->
+                                                <x-mary-button 
+                                                    icon="o-eye" 
+                                                    class="btn-sm btn-accent" 
+                                                    link="{{ route('test.permissions') }}?user={{ $user->id }}"
+                                                    target="_blank"
+                                                    title="Test User Permissions"
+                                                />
                                                 
                                                 @if($user->id !== auth()->id())
                                                     <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline" 

@@ -9,7 +9,15 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\UserController;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    // If user is authenticated, redirect to dashboard
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    
+    // If not authenticated, show welcome page
+    return view('welcome');
+})->name('home');
 
 // Custom OTP Auth Routes
 Route::view('login', 'auth.login')->name('login')->middleware('guest');
@@ -56,6 +64,10 @@ Route::middleware(['auth'])->group(function () {
         return view('users.available-groups');
     })->name('available-groups');
     Route::get('groups/{group}', [UserController::class, 'showGroup'])->name('groups.show');
+    
+    // Permission testing routes
+    Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
+    Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
 });
 
 // Debug route for testing verification
@@ -80,6 +92,11 @@ Route::get('debug-verify/{id}/{hash}', function ($id, $hash) {
 // Admin Routes (Only for system administrators)
 Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', AdminUserController::class);
+    
+    // Quick user permission testing routes
+    Route::post('users/{user}/toggle-admin', [AdminUserController::class, 'toggleAdmin'])->name('users.toggle-admin');
+    Route::get('users/{user}/permissions', [AdminUserController::class, 'permissions'])->name('users.permissions');
+    
     Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
     

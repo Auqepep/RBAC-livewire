@@ -41,6 +41,10 @@
                             <a href="{{ route('my-groups') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('my-groups') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
                                 My Groups
                             </a>
+                            
+                            <a href="{{ route('test.permissions') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('test.*') ? 'border-orange-500 text-orange-600' : 'border-transparent text-orange-500' }} text-sm font-medium leading-5 hover:text-orange-600 focus:outline-none focus:text-orange-600 focus:border-orange-300 transition duration-150 ease-in-out">
+                                🧪 Test Permissions
+                            </a>
                         </div>
                     </div>
 

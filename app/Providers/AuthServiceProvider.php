@@ -31,8 +31,8 @@ class AuthServiceProvider extends ServiceProvider
             Permission::where('is_active', true)->each(function ($permission) {
                 Gate::define($permission->name, function (User $user) use ($permission) {
                     
-                    // 1. Check Super Admin permission (bypass all checks)
-                    if ($user->isSuperAdmin()) {
+                    // 1. Check System Admin permission (bypass all checks)
+                    if ($user->canManageSystem()) {
                         return true;
                     }
 
@@ -43,21 +43,14 @@ class AuthServiceProvider extends ServiceProvider
                 });
             });
 
-            // Register some common administrative gates
-            Gate::define('manage-system', function (User $user) {
-                return $user->isSuperAdmin();
-            });
-
-            Gate::define('manage-users', function (User $user) {
-                return Gate::forUser($user)->check('manage_users') || $user->isAdmin();
-            });
-
-            Gate::define('manage-groups', function (User $user) {
-                return Gate::forUser($user)->check('manage_groups') || $user->isAdmin();
-            });
-
-            Gate::define('manage-permissions', function (User $user) {
-                return Gate::forUser($user)->check('manage_permissions') || $user->isSuperAdmin();
+            // Register alias gates with hyphens for backwards compatibility
+            Permission::where('is_active', true)->each(function ($permission) {
+                $hyphenName = str_replace('_', '-', $permission->name);
+                if ($hyphenName !== $permission->name) {
+                    Gate::define($hyphenName, function (User $user) use ($permission) {
+                        return $user->can($permission->name);
+                    });
+                }
             });
 
         } catch (\Exception $e) {

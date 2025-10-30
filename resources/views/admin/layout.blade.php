@@ -57,10 +57,6 @@
                             </div>
                         </div>
                         
-                        <a href="{{ route('dashboard') }}" class="ml-4 text-gray-500 hover:text-gray-700">
-                            Main Site
-                        </a>
-                        
                         <form method="POST" action="{{ route('logout') }}" class="ml-4" onsubmit="handleLogout(event)">
                             @csrf
                             <button type="submit" class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 transition duration-150 ease-in-out">

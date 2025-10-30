@@ -41,6 +41,16 @@
                             <a href="{{ route('admin.groups.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
                                 Groups
                             </a>
+                            
+                            @can('manage-permissions')
+                            <a href="{{ route('admin.permissions.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
+                                Permissions
+                            </a>
+                            @endcan
+                            
+                            <a href="{{ route('test.permissions') }}" target="_blank" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-orange-500 text-sm font-medium leading-5 hover:text-orange-600 focus:outline-none focus:text-orange-600 focus:border-orange-300 transition duration-150 ease-in-out">
+                                🧪 Test Permissions
+                            </a>
                         </div>
                     </div>
 
@@ -56,10 +66,6 @@
                                 </button>
                             </div>
                         </div>
-                        
-                        <a href="{{ route('dashboard') }}" class="ml-4 text-gray-500 hover:text-gray-700">
-                            Main Site
-                        </a>
                         
                         <form method="POST" action="{{ route('logout') }}" class="ml-4" onsubmit="handleLogout(event)">
                             @csrf

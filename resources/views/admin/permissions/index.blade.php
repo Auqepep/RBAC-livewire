@@ -20,6 +20,37 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
+            <!-- Quick Testing Panel -->
+            <x-mary-card title="Quick Permission Testing" class="bg-blue-50 border-blue-200">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex-1">
+                        <p class="text-sm text-blue-800 mb-2">
+                            <strong>Test permissions instantly:</strong> Make changes below, then use the test page to see them in action.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <x-mary-button 
+                                label="Open Permission Test Page" 
+                                link="{{ route('test.permissions') }}"
+                                target="_blank"
+                                class="btn-primary btn-sm"
+                                icon="o-eye"
+                            />
+                            <x-mary-button 
+                                label="User Management" 
+                                link="{{ route('admin.users.index') }}"
+                                target="_blank"
+                                class="btn-secondary btn-sm"
+                                icon="o-users"
+                            />
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-blue-600 font-medium">Real-time Testing Available</p>
+                        <p class="text-xs text-blue-500">Changes reflect immediately</p>
+                    </div>
+                </div>
+            </x-mary-card>
+            
             <!-- Permissions Table -->
             <x-mary-card>
                 <x-slot name="title">

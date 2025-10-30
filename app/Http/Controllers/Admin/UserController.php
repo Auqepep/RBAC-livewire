@@ -159,4 +159,70 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
                         ->with('success', 'User deleted successfully.');
     }
+    
+    /**
+     * Quick toggle admin privileges for testing
+     */
+    public function toggleAdmin(User $user)
+    {
+        // Find or create the administrator group
+        $adminGroup = \App\Models\Group::firstOrCreate([
+            'name' => 'Administrators'
+        ], [
+            'description' => 'System administrators with full access',
+            'is_active' => true,
+            'created_by' => auth()->id()
+        ]);
+        
+        // Find or create the admin role
+        $adminRole = \App\Models\Role::firstOrCreate([
+            'name' => 'administrator'
+        ], [
+            'display_name' => 'Administrator',
+            'description' => 'Full system administrator access',
+            'is_active' => true
+        ]);
+        
+        // Check if user is already an admin
+        $isAdmin = $user->groupMembers()
+            ->where('group_id', $adminGroup->id)
+            ->where('role_id', $adminRole->id)
+            ->exists();
+            
+        if ($isAdmin) {
+            // Remove admin privileges
+            $user->groupMembers()
+                ->where('group_id', $adminGroup->id)
+                ->where('role_id', $adminRole->id)
+                ->delete();
+            $message = "Admin privileges removed from {$user->name}";
+        } else {
+            // Add admin privileges
+            \App\Models\GroupMember::updateOrCreate([
+                'user_id' => $user->id,
+                'group_id' => $adminGroup->id,
+            ], [
+                'role_id' => $adminRole->id,
+                'joined_at' => now()
+            ]);
+            $message = "Admin privileges granted to {$user->name}";
+        }
+        
+        return back()->with('success', $message);
+    }
+    
+    /**
+     * Show user permission testing page
+     */
+    public function permissions(User $user)
+    {
+        $allPermissions = \App\Models\Permission::where('is_active', true)
+            ->orderBy('category')
+            ->orderBy('display_name')
+            ->get();
+            
+        $permissionsByCategory = $allPermissions->groupBy('category');
+        
+        return view('admin.users.permissions', compact('user', 'permissionsByCategory'));
+    }
 }
