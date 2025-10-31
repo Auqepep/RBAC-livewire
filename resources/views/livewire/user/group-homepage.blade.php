@@ -1,3 +1,7 @@
+@php
+    use Illuminate\Support\Facades\Gate;
+@endphp
+
 <div>
     <x-mary-header 
         title="{{ $group->name }}" 
@@ -94,31 +98,83 @@
             @endif
         </x-mary-card>
 
-        <!-- Admin Actions (if user is admin) -->
-        @if(auth()->user()->canManageSystem())
-            <x-mary-card title="Admin Actions" shadow separator>
-                <div class="flex flex-wrap gap-3">
-                    <x-mary-button 
-                        label="Edit Group Details" 
-                        icon="o-pencil-square"
-                        link="/admin/groups/{{ $group->id }}/edit"
-                        class="btn-primary"
-                    />
-                    <x-mary-button 
-                        label="Manage Members" 
-                        icon="o-users"
-                        link="/admin/groups/{{ $group->id }}/members"
-                        class="btn-secondary"
-                    />
-                    <x-mary-button 
-                        label="Manage Roles" 
-                        icon="o-shield-check"
-                        link="/admin/groups/{{ $group->id }}/roles"
-                        class="btn-accent"
-                    />
+        <!-- DEBUG: Show current user and role info -->
+        @if(config('app.debug'))
+            <x-mary-card title="🐛 DEBUG INFO" class="bg-yellow-50">
+                <div class="text-xs space-y-1">
+                    <p><strong>Current User:</strong> {{ auth()->user()->name }} ({{ auth()->user()->email }})</p>
+                    <p><strong>User ID:</strong> {{ auth()->id() }}</p>
+                    @php
+                        $membership = $group->groupMembers()->where('user_id', auth()->id())->first();
+                        $userRole = $membership?->role;
+                    @endphp
+                    <p><strong>Membership Found:</strong> {{ $membership ? 'Yes' : 'No' }}</p>
+                    <p><strong>Role in Group:</strong> {{ $userRole?->name ?? 'None' }}</p>
+                    <p><strong>Role Hierarchy:</strong> {{ $userRole?->hierarchy_level ?? 'N/A' }}</p>
+                    <p><strong>Can Manage Group:</strong> {{ Gate::allows('manage-group', $group) ? 'YES ✅' : 'NO ❌' }}</p>
+                    <p><strong>Can Edit Description:</strong> {{ Gate::allows('edit-group-description', $group) ? 'YES ✅' : 'NO ❌' }}</p>
+                    <p><strong>Is System Admin:</strong> {{ auth()->user()->canManageSystem() ? 'YES' : 'NO' }}</p>
                 </div>
             </x-mary-card>
         @endif
+
+        <!-- Admin/Manager Actions (if user is system admin, group admin, or manager) -->
+        @can('manage-group', $group)
+            @php
+                $userRole = $group->groupMembers()->where('user_id', auth()->id())->first()?->role;
+                $isSystemAdmin = auth()->user()->canManageSystem();
+                $isGroupAdmin = $userRole?->name === 'admin';
+                $isManager = $userRole?->name === 'manager';
+                
+                if ($isSystemAdmin) {
+                    $cardTitle = 'System Admin Actions';
+                } elseif ($isGroupAdmin) {
+                    $cardTitle = 'Group Admin Actions';
+                } else {
+                    $cardTitle = 'Manager Actions';
+                }
+            @endphp
+            
+            <x-mary-card title="{{ $cardTitle }}" shadow separator>
+                <div class="flex flex-wrap gap-3">
+                    @can('edit-group-description', $group)
+                        <x-mary-button 
+                            label="Edit Group Details" 
+                            icon="o-pencil-square"
+                            link="{{ $isSystemAdmin ? '/admin/groups/' . $group->id . '/edit' : '/my-groups/' . $group->id . '/edit' }}"
+                            class="btn-primary"
+                        />
+                    @endcan
+                    
+                    @if($isSystemAdmin)
+                        <x-mary-button 
+                            label="Manage Members" 
+                            icon="o-users"
+                            link="/admin/groups/{{ $group->id }}/members"
+                            class="btn-secondary"
+                        />
+                        <x-mary-button 
+                            label="Manage Roles" 
+                            icon="o-shield-check"
+                            link="/admin/groups/{{ $group->id }}/roles"
+                            class="btn-accent"
+                        />
+                    @endif
+                </div>
+                
+                @if(!$isSystemAdmin)
+                    <div class="mt-3 p-3 {{ $isGroupAdmin ? 'bg-blue-50' : 'bg-purple-50' }} rounded-lg">
+                        <p class="text-sm {{ $isGroupAdmin ? 'text-blue-800' : 'text-purple-800' }}">
+                            @if($isGroupAdmin)
+                                <strong>Note:</strong> As a group admin, you can edit the group description and manage members within this group only.
+                            @else
+                                <strong>Note:</strong> As a manager, you can edit the group description and manage members within this group. You cannot manage roles or delete the group.
+                            @endif
+                        </p>
+                    </div>
+                @endif
+            </x-mary-card>
+        @endcan
 
         <!-- Navigation Actions -->
         <div class="flex flex-wrap justify-between items-center gap-4">

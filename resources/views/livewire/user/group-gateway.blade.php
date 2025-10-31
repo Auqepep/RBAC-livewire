@@ -29,6 +29,10 @@
                             <span class="font-medium">{{ $userRole?->display_name ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between">
+                            <span class="text-gray-600">Role Group:</span>
+                            <span class="font-medium">{{ $group->name }}</span>
+                        </div>
+                        <div class="flex justify-between">
                             <span class="text-gray-600">Access Level:</span>
                             <span class="font-medium text-green-600">Authorized</span>
                         </div>
@@ -87,6 +91,10 @@
                         <div class="flex justify-between">
                             <span class="text-gray-600">Your Role:</span>
                             <span class="font-medium">{{ $userRole->display_name }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Role Group:</span>
+                            <span class="font-medium">{{ $group->name }}</span>
                         </div>
                         @endif
                         <div class="flex justify-between">

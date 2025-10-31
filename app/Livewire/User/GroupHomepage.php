@@ -13,7 +13,7 @@ class GroupHomepage extends Component
 
     public function mount($groupId)
     {
-        $this->group = Group::with(['groupMembers.user', 'groupMembers.role', 'creator'])->findOrFail($groupId);
+        $this->group = Group::with(['groupMembers.user', 'groupMembers.role', 'creator', 'roles'])->findOrFail($groupId);
         $this->isMember = $this->group->hasMember(Auth::id());
         
         // Only allow access if user is a member or admin
