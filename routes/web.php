@@ -65,6 +65,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('available-groups');
     Route::get('groups/{group}', [UserController::class, 'showGroup'])->name('groups.show');
     
+    // Group Gateway routes
+    Route::get('my-groups/{group}/gateway', function ($groupId) {
+        return view('users.group-gateway', compact('groupId'));
+    })->name('groups.gateway');
+    
     // Permission testing routes
     Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
     Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');

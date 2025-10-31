@@ -121,7 +121,7 @@
         @endif
 
         <!-- Navigation Actions -->
-        <div class="flex justify-between items-center">
+        <div class="flex flex-wrap justify-between items-center gap-4">
             <x-mary-button 
                 label="Back to My Groups" 
                 icon="o-arrow-left"
@@ -129,14 +129,24 @@
                 class="btn-outline"
             />
             
-            @if(auth()->user()->canManageSystem())
+            <div class="flex flex-wrap gap-2">
+                <!-- Gateway Access Button -->
                 <x-mary-button 
-                    label="All Groups" 
-                    icon="o-rectangle-stack"
-                    link="/admin/groups"
-                    class="btn-outline btn-primary"
+                    label="🚪 Gateway Access" 
+                    icon="o-key"
+                    link="{{ route('groups.gateway', $group->id) }}"
+                    class="btn-accent"
                 />
-            @endif
+                
+                @if(auth()->user()->canManageSystem())
+                    <x-mary-button 
+                        label="All Groups" 
+                        icon="o-rectangle-stack"
+                        link="/admin/groups"
+                        class="btn-outline btn-primary"
+                    />
+                @endif
+            </div>
         </div>
     </div>
 </div>

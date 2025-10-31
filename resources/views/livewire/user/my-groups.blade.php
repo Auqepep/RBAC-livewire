@@ -123,13 +123,21 @@
                                     </div>
                                 </div>
                                 
-                                <div class="mt-3">
+                                <div class="mt-3 space-y-2">
                                     <x-mary-button 
                                         link="{{ route('groups.show', $group->id) }}" 
                                         class="btn-primary btn-sm w-full"
                                         icon="o-arrow-right"
                                     >
                                         View Group
+                                    </x-mary-button>
+                                    
+                                    <x-mary-button 
+                                        link="{{ route('groups.gateway', $group->id) }}" 
+                                        class="btn-accent btn-sm w-full"
+                                        icon="o-key"
+                                    >
+                                        🚪 Gateway Access
                                     </x-mary-button>
                                 </div>
                             </div>
