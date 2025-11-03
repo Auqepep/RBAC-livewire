@@ -41,6 +41,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Administrator',
                 'description' => 'Full system administrator access',
+                'badge_color' => '#dc2626',
+                'hierarchy_level' => 100,
                 'is_active' => true,
                 'group_id' => $adminGroup->id
             ]
@@ -86,6 +88,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Member',
                 'description' => 'Regular member access',
+                'badge_color' => '#6b7280',
+                'hierarchy_level' => 5,
                 'is_active' => true,
                 'group_id' => $userGroup->id
             ]
@@ -97,6 +101,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Staff',
                 'description' => 'Staff member with gateway access',
+                'badge_color' => '#3b82f6',
+                'hierarchy_level' => 10,
                 'is_active' => true,
                 'group_id' => $userGroup->id
             ]
@@ -108,6 +114,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Manager',
                 'description' => 'Manager with elevated gateway access',
+                'badge_color' => '#f59e0b',
+                'hierarchy_level' => 50,
                 'is_active' => true,
                 'group_id' => $userGroup->id
             ]
@@ -184,6 +192,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Gateway Administrator',
                 'description' => 'Administrator for Gateway Test Group',
+                'badge_color' => '#ef4444',
+                'hierarchy_level' => 100,
                 'is_active' => true,
                 'group_id' => $gatewayTestGroup->id
             ]
@@ -194,6 +204,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Gateway Staff',
                 'description' => 'Staff for Gateway Test Group',
+                'badge_color' => '#3b82f6',
+                'hierarchy_level' => 10,
                 'is_active' => true,
                 'group_id' => $gatewayTestGroup->id
             ]
@@ -204,6 +216,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Gateway Manager',
                 'description' => 'Manager for Gateway Test Group',
+                'badge_color' => '#f59e0b',
+                'hierarchy_level' => 50,
                 'is_active' => true,
                 'group_id' => $gatewayTestGroup->id
             ]
@@ -214,6 +228,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Gateway Member',
                 'description' => 'Regular member for Gateway Test Group (no gateway access)',
+                'badge_color' => '#6b7280',
+                'hierarchy_level' => 5,
                 'is_active' => true,
                 'group_id' => $gatewayTestGroup->id
             ]
@@ -372,6 +388,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'HR Manager',
                 'description' => 'Manager for HR Department',
+                'badge_color' => '#8b5cf6',
+                'hierarchy_level' => 50,
                 'is_active' => true,
                 'group_id' => $hrGroup->id
             ]
@@ -382,6 +400,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'HR Staff',
                 'description' => 'Staff for HR Department',
+                'badge_color' => '#3b82f6',
+                'hierarchy_level' => 10,
                 'is_active' => true,
                 'group_id' => $hrGroup->id
             ]

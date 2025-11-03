@@ -74,14 +74,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
     Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
     
-    // Group admin routes - accessible to both system admins and group admins
+    // Group management routes - accessible to managers and group admins
     Route::prefix('my-groups/{group}')->name('my-groups.')->group(function () {
-        Route::get('edit', [GroupController::class, 'edit'])->name('edit')
-             ->middleware('can:manage-group,group');
-        Route::put('update', [GroupController::class, 'update'])->name('update')
-             ->middleware('can:manage-group,group');
-        Route::delete('members/{user}', [GroupController::class, 'removeMember'])->name('members.remove')
-             ->middleware('can:manage-group-members,group');
+        Route::get('manage', function ($groupId) {
+            return view('users.manage-group', ['groupId' => $groupId]);
+        })->name('manage')->middleware('can:manage-group,group');
     });
 });
 

@@ -101,29 +101,56 @@
         <!-- DEBUG: Show current user and role info -->
         @if(config('app.debug'))
             <x-mary-card title="🐛 DEBUG INFO" class="bg-yellow-50">
-                <div class="text-xs space-y-1">
+                <div class="text-xs space-y-1 font-mono">
                     <p><strong>Current User:</strong> {{ auth()->user()->name }} ({{ auth()->user()->email }})</p>
                     <p><strong>User ID:</strong> {{ auth()->id() }}</p>
                     @php
                         $membership = $group->groupMembers()->where('user_id', auth()->id())->first();
                         $userRole = $membership?->role;
                     @endphp
-                    <p><strong>Membership Found:</strong> {{ $membership ? 'Yes' : 'No' }}</p>
+                    <p><strong>Membership Found:</strong> {{ $membership ? 'Yes ✅' : 'No ❌' }}</p>
                     <p><strong>Role in Group:</strong> {{ $userRole?->name ?? 'None' }}</p>
+                    <p><strong>Role Display Name:</strong> {{ $userRole?->display_name ?? 'N/A' }}</p>
                     <p><strong>Role Hierarchy:</strong> {{ $userRole?->hierarchy_level ?? 'N/A' }}</p>
-                    <p><strong>Can Manage Group:</strong> {{ Gate::allows('manage-group', $group) ? 'YES ✅' : 'NO ❌' }}</p>
-                    <p><strong>Can Edit Description:</strong> {{ Gate::allows('edit-group-description', $group) ? 'YES ✅' : 'NO ❌' }}</p>
-                    <p><strong>Is System Admin:</strong> {{ auth()->user()->canManageSystem() ? 'YES' : 'NO' }}</p>
+                    <p><strong>Role ID:</strong> {{ $userRole?->id ?? 'N/A' }}</p>
+                    <hr class="my-2">
+                    <p><strong>Is System Admin:</strong> {{ auth()->user()->canManageSystem() ? 'YES ✅' : 'NO ❌' }}</p>
+                    <p><strong>Can Manage Group (Gate):</strong> {{ Gate::allows('manage-group', $group) ? 'YES ✅' : 'NO ❌' }}</p>
+                    <p><strong>Can Edit Description (Gate):</strong> {{ Gate::allows('edit-group-description', $group) ? 'YES ✅' : 'NO ❌' }}</p>
+                    <p><strong>Can Manage Members (Gate):</strong> {{ Gate::allows('manage-group-members', $group) ? 'YES ✅' : 'NO ❌' }}</p>
+                    <hr class="my-2">
+                    <p><strong>Gate Check Details:</strong></p>
+                    @php
+                        $isAdmin = $userRole?->name === 'admin';
+                        $isManager = $userRole?->name === 'manager';
+                        $hasMinHierarchy = ($userRole?->hierarchy_level ?? 0) >= 50;
+                        $shouldSeeActions = ($isAdmin || $isManager) && $hasMinHierarchy;
+                    @endphp
+                    <p class="ml-4">• Role is 'admin': {{ $isAdmin ? 'YES' : 'NO' }}</p>
+                    <p class="ml-4">• Role is 'manager': {{ $isManager ? 'YES' : 'NO' }}</p>
+                    <p class="ml-4">• Hierarchy >= 50: {{ $hasMinHierarchy ? 'YES' : 'NO' }}</p>
+                    <p class="ml-4">• Should see Manager Actions: {{ $shouldSeeActions ? 'YES ✅' : 'NO ❌' }}</p>
                 </div>
             </x-mary-card>
         @endif
 
+        <!-- TEST: This should always show -->
+        <div class="bg-red-100 border-2 border-red-500 p-4 text-red-800 font-bold">
+            🚨 TEST MARKER - If you see this, the view is rendering correctly. 
+            Can manage group? {{ Gate::allows('manage-group', $group) ? 'YES' : 'NO' }}
+        </div>
+
         <!-- Admin/Manager Actions (if user is system admin, group admin, or manager) -->
         @can('manage-group', $group)
+            {{-- TEST: Inside @can block --}}
+            <div class="bg-green-100 border-2 border-green-500 p-4 text-green-800 font-bold mb-4">
+                ✅ INSIDE @can BLOCK - This proves the gate passed!
+            </div>
+            
             @php
                 $userRole = $group->groupMembers()->where('user_id', auth()->id())->first()?->role;
                 $isSystemAdmin = auth()->user()->canManageSystem();
-                $isGroupAdmin = $userRole?->name === 'admin';
+                $isGroupAdmin = $userRole?->name === 'admin' || $userRole?->name === 'administrator';
                 $isManager = $userRole?->name === 'manager';
                 
                 if ($isSystemAdmin) {
@@ -139,9 +166,9 @@
                 <div class="flex flex-wrap gap-3">
                     @can('edit-group-description', $group)
                         <x-mary-button 
-                            label="Edit Group Details" 
-                            icon="o-pencil-square"
-                            link="{{ $isSystemAdmin ? '/admin/groups/' . $group->id . '/edit' : '/my-groups/' . $group->id . '/edit' }}"
+                            label="Manage Group" 
+                            icon="o-cog-6-tooth"
+                            link="/my-groups/{{ $group->id }}/manage"
                             class="btn-primary"
                         />
                     @endcan
