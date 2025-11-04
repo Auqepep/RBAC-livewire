@@ -75,6 +75,20 @@ class PermissionSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'name' => 'edit_own_group',
+                'display_name' => 'Edit Own Group',
+                'description' => 'Edit the group where user is a manager',
+                'category' => 'groups',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'manage_own_group_members',
+                'display_name' => 'Manage Own Group Members',
+                'description' => 'Add, edit, and remove members in own group',
+                'category' => 'groups',
+                'is_active' => true,
+            ],
+            [
                 'name' => 'assign_group_members',
                 'display_name' => 'Assign Group Members',
                 'description' => 'Add and remove users from groups',

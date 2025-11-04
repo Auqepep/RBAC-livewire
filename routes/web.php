@@ -70,6 +70,15 @@ Route::middleware(['auth'])->group(function () {
         return view('users.group-gateway', compact('groupId'));
     })->name('groups.gateway');
     
+    // Group Management routes (for managers)
+    Route::prefix('my-groups/{group}')->name('users.groups.')->group(function () {
+        Route::get('edit', [\App\Http\Controllers\User\GroupManagementController::class, 'edit'])->name('edit');
+        Route::put('update', [\App\Http\Controllers\User\GroupManagementController::class, 'update'])->name('update');
+        Route::post('members', [\App\Http\Controllers\User\GroupManagementController::class, 'addMember'])->name('members.add');
+        Route::put('members/{member}', [\App\Http\Controllers\User\GroupManagementController::class, 'updateMember'])->name('members.update');
+        Route::delete('members/{member}', [\App\Http\Controllers\User\GroupManagementController::class, 'removeMember'])->name('members.remove');
+    });
+    
     // Permission testing routes
     Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
     Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');

@@ -94,9 +94,54 @@
             @endif
         </x-mary-card>
 
-        <!-- Admin Actions (if user is admin) -->
+        <!-- Manager Actions (if user is manager or admin) -->
+        @if($canEdit || $canManageMembers)
+            <x-mary-card title="Manager Actions" shadow separator class="border-l-4 border-l-warning">
+                <div class="mb-4">
+                    <x-mary-alert 
+                        icon="o-shield-check" 
+                        class="alert-info"
+                        title="Manager Privileges"
+                    >
+                        You have manager-level access to this group. You can edit group details and manage members.
+                    </x-mary-alert>
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    @if($canEdit)
+                        <x-mary-button 
+                            label="Edit Group Details" 
+                            icon="o-pencil-square"
+                            link="{{ route('users.groups.edit', $group->id) }}"
+                            class="btn-warning"
+                        />
+                    @endif
+                    
+                    @if($canManageMembers)
+                        <x-mary-button 
+                            label="Manage Members" 
+                            icon="o-users"
+                            link="{{ route('users.groups.edit', $group->id) }}"
+                            class="btn-secondary"
+                        />
+                    @endif
+                </div>
+            </x-mary-card>
+        @endif
+
+        <!-- Admin Actions (if user is system admin) -->
         @if(auth()->user()->canManageSystem())
-            <x-mary-card title="Admin Actions" shadow separator>
+            <x-mary-card title="System Admin Actions" shadow separator class="border-l-4 border-l-error">
+                <div class="mb-4">
+                    <x-mary-alert 
+                        icon="o-shield-exclamation" 
+                        class="alert-error"
+                        title="System Administrator"
+                    >
+                        You have full system access. These actions are available to system administrators only.
+                    </x-mary-alert>
+                </div>
+
                 <div class="flex flex-wrap gap-3">
                     <x-mary-button 
                         label="Edit Group Details" 
@@ -115,6 +160,12 @@
                         icon="o-shield-check"
                         link="/admin/groups/{{ $group->id }}/roles"
                         class="btn-accent"
+                    />
+                    <x-mary-button 
+                        label="Delete Group" 
+                        icon="o-trash"
+                        class="btn-error"
+                        onclick="confirm('Are you sure you want to delete this group?') || event.stopImmediatePropagation()"
                     />
                 </div>
             </x-mary-card>

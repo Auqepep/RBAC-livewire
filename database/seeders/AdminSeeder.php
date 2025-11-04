@@ -41,6 +41,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Administrator',
                 'description' => 'Full system administrator access',
+                'hierarchy_level' => 100,
+                'badge_color' => '#dc2626',
                 'is_active' => true
             ]
         );
@@ -85,6 +87,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Member',
                 'description' => 'Regular member access',
+                'hierarchy_level' => 10,
+                'badge_color' => '#6b7280',
                 'is_active' => true
             ]
         );
@@ -95,6 +99,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Staff',
                 'description' => 'Staff member with gateway access',
+                'hierarchy_level' => 30,
+                'badge_color' => '#059669',
                 'is_active' => true
             ]
         );
@@ -105,6 +111,8 @@ class AdminSeeder extends Seeder
             [
                 'display_name' => 'Manager',
                 'description' => 'Manager with elevated gateway access',
+                'hierarchy_level' => 70,
+                'badge_color' => '#f59e0b',
                 'is_active' => true
             ]
         );
@@ -137,7 +145,8 @@ class AdminSeeder extends Seeder
             'edit_content',
             'manage_group_roles',
             'assign_group_members',
-            'manage_groups'
+            'edit_own_group',
+            'manage_own_group_members'
         ])->get();
         $managerRole->permissions()->syncWithoutDetaching($managerPermissions->pluck('id')->toArray());
 

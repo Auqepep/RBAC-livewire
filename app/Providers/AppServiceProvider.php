@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Group;
+use App\Policies\GroupPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register model policies
+        Gate::policy(Group::class, GroupPolicy::class);
+
         // Register custom Blade directives for permission checking
         \Blade::if('can', function ($permission) {
             return \Gate::check($permission);

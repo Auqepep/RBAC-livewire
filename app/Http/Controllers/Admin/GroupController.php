@@ -7,14 +7,19 @@ use App\Models\Group;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class GroupController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Group::class);
+
         $search = $request->get('search');
         $sortBy = $request->get('sort_by', 'name'); // Default sort by name
         $sortOrder = $request->get('sort_order', 'asc'); // Default ascending
@@ -49,6 +54,8 @@ class GroupController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Group::class);
+
         $users = User::whereNotNull('email_verified_at')->get();
         return view('admin.groups.create', compact('users'));
     }
@@ -107,6 +114,8 @@ class GroupController extends Controller
      */
     public function edit(Group $group)
     {
+        $this->authorize('update', $group);
+
         $users = User::whereNotNull('email_verified_at')->get();
         $groupUsers = $group->users->pluck('id')->toArray();
         return view('admin.groups.edit', compact('group', 'users', 'groupUsers'));
@@ -117,6 +126,8 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group)
     {
+        $this->authorize('update', $group);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('groups')->ignore($group->id)],
             'description' => 'nullable|string',
@@ -157,6 +168,8 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
+        $this->authorize('delete', $group);
+
         // Check if group has users
         if ($group->groupMembers()->count() > 0) {
             return back()->with('error', 'Cannot delete group that has members. Remove all members first.');
