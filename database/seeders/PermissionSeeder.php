@@ -13,65 +13,83 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            // System Management
+            // ============================================
+            // GLOBAL PERMISSIONS (System-wide access)
+            // ============================================
+            
+            // System Management (Admin Only)
             [
                 'name' => 'manage_system',
                 'display_name' => 'Manage System',
-                'description' => 'Full system administration access',
-                'category' => 'system',
+                'description' => 'Full system administration access - highest level permission',
+                'category' => 'global_system',
                 'is_active' => true,
             ],
             [
                 'name' => 'manage_permissions',
                 'display_name' => 'Manage Permissions',
-                'description' => 'Create, edit, and delete permissions',
-                'category' => 'system',
+                'description' => 'Create, edit, and delete system-wide permissions',
+                'category' => 'global_system',
                 'is_active' => true,
             ],
             [
-                'name' => 'manage_roles',
-                'display_name' => 'Manage Roles',
-                'description' => 'Create, edit, and delete roles',
-                'category' => 'system',
-                'is_active' => true,
-            ],
-
-            // User Management
-            [
-                'name' => 'manage_users',
-                'display_name' => 'Manage Users',
-                'description' => 'Create, edit, and delete users',
-                'category' => 'users',
+                'name' => 'manage_global_roles',
+                'display_name' => 'Manage Global Roles',
+                'description' => 'Create, edit, and delete roles across all groups',
+                'category' => 'global_system',
                 'is_active' => true,
             ],
             [
-                'name' => 'view_users',
-                'display_name' => 'View Users',
-                'description' => 'View user profiles and information',
-                'category' => 'users',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'edit_user_roles',
-                'display_name' => 'Edit User Roles',
-                'description' => 'Assign and remove user roles',
-                'category' => 'users',
+                'name' => 'view_system_logs',
+                'display_name' => 'View System Logs',
+                'description' => 'Access system audit logs and activity history',
+                'category' => 'global_system',
                 'is_active' => true,
             ],
 
-            // Group Management
+            // Global User Management
             [
-                'name' => 'manage_groups',
-                'display_name' => 'Manage Groups',
-                'description' => 'Create, edit, and delete groups',
-                'category' => 'groups',
+                'name' => 'view_all_users',
+                'display_name' => 'View All Users',
+                'description' => 'View all users across the entire system',
+                'category' => 'global_users',
                 'is_active' => true,
             ],
             [
-                'name' => 'view_groups',
-                'display_name' => 'View Groups',
-                'description' => 'View group information and members',
-                'category' => 'groups',
+                'name' => 'manage_all_users',
+                'display_name' => 'Manage All Users',
+                'description' => 'Create, edit, delete, and manage any user in the system',
+                'category' => 'global_users',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'edit_any_user_roles',
+                'display_name' => 'Edit Any User Roles',
+                'description' => 'Assign and remove roles for any user in any group',
+                'category' => 'global_users',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'impersonate_users',
+                'display_name' => 'Impersonate Users',
+                'description' => 'Log in as another user for support purposes',
+                'category' => 'global_users',
+                'is_active' => true,
+            ],
+
+            // Global Group Management
+            [
+                'name' => 'view_all_groups',
+                'display_name' => 'View All Groups',
+                'description' => 'View all groups and their members across the system',
+                'category' => 'global_groups',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'create_groups',
+                'display_name' => 'Create Groups',
+                'description' => 'Create new groups in the system',
+                'category' => 'global_groups',
                 'is_active' => true,
             ],
             [
@@ -96,106 +114,202 @@ class PermissionSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => 'manage_group_roles',
-                'display_name' => 'Manage Group Roles',
-                'description' => 'Assign roles within groups',
-                'category' => 'groups',
+                'name' => 'assign_members_any_group',
+                'display_name' => 'Assign Members to Any Group',
+                'description' => 'Add and remove users from any group',
+                'category' => 'global_groups',
                 'is_active' => true,
             ],
 
-            // Content Management
+            // Global Reports & Analytics
             [
-                'name' => 'create_content',
-                'display_name' => 'Create Content',
-                'description' => 'Create new content items',
-                'category' => 'content',
+                'name' => 'view_all_reports',
+                'display_name' => 'View All Reports',
+                'description' => 'Access all system reports and analytics across all groups',
+                'category' => 'global_reports',
                 'is_active' => true,
             ],
             [
-                'name' => 'edit_content',
-                'display_name' => 'Edit Content',
-                'description' => 'Modify existing content',
-                'category' => 'content',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'delete_content',
-                'display_name' => 'Delete Content',
-                'description' => 'Remove content items',
-                'category' => 'content',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'publish_content',
-                'display_name' => 'Publish Content',
-                'description' => 'Make content publicly visible',
-                'category' => 'content',
+                'name' => 'export_system_data',
+                'display_name' => 'Export System Data',
+                'description' => 'Export data from entire system to files',
+                'category' => 'global_reports',
                 'is_active' => true,
             ],
 
-            // Reports & Analytics
+            // ============================================
+            // LOCAL PERMISSIONS (Group-specific access)
+            // ============================================
+
+            // Group Administration (Group Admins)
             [
-                'name' => 'view_reports',
-                'display_name' => 'View Reports',
-                'description' => 'Access system reports and analytics',
-                'category' => 'reports',
+                'name' => 'manage_own_group',
+                'display_name' => 'Manage Own Group',
+                'description' => 'Edit group details (name, description) for groups you admin',
+                'category' => 'local_group_admin',
                 'is_active' => true,
             ],
             [
-                'name' => 'export_data',
-                'display_name' => 'Export Data',
-                'description' => 'Export system data to files',
-                'category' => 'reports',
+                'name' => 'manage_group_members',
+                'display_name' => 'Manage Group Members',
+                'description' => 'Add and remove members within your group',
+                'category' => 'local_group_admin',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'edit_member_roles_in_group',
+                'display_name' => 'Edit Member Roles in Group',
+                'description' => 'Change roles of members within your group',
+                'category' => 'local_group_admin',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'view_group_members',
+                'display_name' => 'View Group Members',
+                'description' => 'View all members and their roles in your group',
+                'category' => 'local_group_admin',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'create_group_roles',
+                'display_name' => 'Create Group Roles',
+                'description' => 'Create custom roles within your group',
+                'category' => 'local_group_admin',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'delete_group_members',
+                'display_name' => 'Remove Group Members',
+                'description' => 'Remove members from your group',
+                'category' => 'local_group_admin',
                 'is_active' => true,
             ],
 
-            // Profile Management
+            // Manager/Supervisor Permissions
             [
-                'name' => 'view_profile',
-                'display_name' => 'View Profile',
-                'description' => 'View user profile information',
-                'category' => 'profile',
+                'name' => 'view_team_members',
+                'display_name' => 'View Team Members',
+                'description' => 'View members in your team/group',
+                'category' => 'local_manager',
                 'is_active' => true,
             ],
             [
-                'name' => 'edit_profile',
-                'display_name' => 'Edit Profile',
-                'description' => 'Modify profile information',
-                'category' => 'profile',
+                'name' => 'assign_tasks',
+                'display_name' => 'Assign Tasks',
+                'description' => 'Assign tasks to team members',
+                'category' => 'local_manager',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'approve_team_requests',
+                'display_name' => 'Approve Team Requests',
+                'description' => 'Approve or reject requests from team members',
+                'category' => 'local_manager',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'view_team_reports',
+                'display_name' => 'View Team Reports',
+                'description' => 'Access reports for your team/group only',
+                'category' => 'local_manager',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'edit_team_content',
+                'display_name' => 'Edit Team Content',
+                'description' => 'Edit content created by team members',
+                'category' => 'local_manager',
+                'is_active' => true,
+            ],
+
+            // Staff/Member Permissions
+            [
+                'name' => 'view_own_group',
+                'display_name' => 'View Own Group',
+                'description' => 'View basic information about groups you belong to',
+                'category' => 'local_member',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'view_group_content',
+                'display_name' => 'View Group Content',
+                'description' => 'Access content shared within your group',
+                'category' => 'local_member',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'create_own_content',
+                'display_name' => 'Create Own Content',
+                'description' => 'Create content within your group',
+                'category' => 'local_member',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'edit_own_content',
+                'display_name' => 'Edit Own Content',
+                'description' => 'Edit content you created',
+                'category' => 'local_member',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'submit_requests',
+                'display_name' => 'Submit Requests',
+                'description' => 'Submit requests for approval',
+                'category' => 'local_member',
+                'is_active' => true,
+            ],
+
+            // ============================================
+            // COMMON PERMISSIONS (Available to all)
+            // ============================================
+
+            // Profile & Dashboard
+            [
+                'name' => 'view_own_profile',
+                'display_name' => 'View Own Profile',
+                'description' => 'View your own profile information',
+                'category' => 'common',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'edit_own_profile',
+                'display_name' => 'Edit Own Profile',
+                'description' => 'Modify your own profile information',
+                'category' => 'common',
                 'is_active' => true,
             ],
             [
                 'name' => 'view_dashboard',
                 'display_name' => 'View Dashboard',
                 'description' => 'Access main dashboard',
-                'category' => 'profile',
+                'category' => 'common',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'view_notifications',
+                'display_name' => 'View Notifications',
+                'description' => 'View your notifications',
+                'category' => 'common',
                 'is_active' => true,
             ],
 
-            // Department Management
+            // ============================================
+            // SPECIAL PERMISSIONS
+            // ============================================
+
+            // Gateway Access
             [
-                'name' => 'manage_department',
-                'display_name' => 'Manage Department',
-                'description' => 'Oversee department operations',
-                'category' => 'department',
+                'name' => 'gateway_test',
+                'display_name' => 'Gateway Test',
+                'description' => 'Access to test gateway functionality',
+                'category' => 'special',
                 'is_active' => true,
             ],
-
-            // Team Management  
             [
-                'name' => 'view_team_data',
-                'display_name' => 'View Team Data',
-                'description' => 'Access team information and metrics',
-                'category' => 'team',
-                'is_active' => true,
-            ],
-
-            // Approvals
-            [
-                'name' => 'approve_requests',
-                'display_name' => 'Approve Requests',
-                'description' => 'Approve or reject system requests',
-                'category' => 'approvals',
+                'name' => 'access_api',
+                'display_name' => 'Access API',
+                'description' => 'Access system API endpoints',
+                'category' => 'special',
                 'is_active' => true,
             ],
         ];
@@ -208,5 +322,15 @@ class PermissionSeeder extends Seeder
         }
 
         $this->command->info('Permissions seeded successfully!');
+        $this->command->info('Total permissions: ' . count($permissions));
+        $this->command->info('- Global System: 4');
+        $this->command->info('- Global Users: 4');
+        $this->command->info('- Global Groups: 4');
+        $this->command->info('- Global Reports: 2');
+        $this->command->info('- Local Group Admin: 6');
+        $this->command->info('- Local Manager: 5');
+        $this->command->info('- Local Member: 5');
+        $this->command->info('- Common: 4');
+        $this->command->info('- Special: 2');
     }
 }

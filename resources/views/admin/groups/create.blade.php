@@ -53,17 +53,36 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Initial Members (Optional)</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto border rounded-lg p-4">
+                            <div id="group-members-list" class="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
                                 @foreach($users as $user)
-                                    <x-mary-checkbox 
-                                        label="{{ $user->name }} ({{ $user->email }})" 
-                                        name="users[]" 
-                                        value="{{ $user->id }}" 
-                                        checked="{{ in_array($user->id, old('users', [])) }}"
-                                    />
+                                    @php
+                                        $isChecked = in_array($user->id, old('users', []));
+                                    @endphp
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg member-row">
+                                        <x-mary-checkbox 
+                                            name="users[]" 
+                                            value="{{ $user->id }}" 
+                                            checked="{{ $isChecked }}"
+                                            class="member-checkbox"
+                                            data-user-id="{{ $user->id }}"
+                                        />
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-900">{{ $user->name }}</div>
+                                            <div class="text-sm text-gray-500">{{ $user->email }}</div>
+                                        </div>
+                                        <div class="role-selector" style="{{ !$isChecked ? 'display: none;' : '' }}">
+                                            <input type="hidden" name="user_roles[{{ $user->id }}]" value="staff" class="role-value">
+                                            <select class="select select-sm select-bordered role-select" {{ !$isChecked ? 'disabled' : '' }}>
+                                                <option value="staff" selected>Staff (Default)</option>
+                                                <option value="manager">Manager</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                            <small class="text-gray-500 block mt-1">Role will be created for this group</small>
+                                        </div>
+                                    </div>
                                 @endforeach
                             </div>
-                            <p class="text-sm text-gray-500 mt-2">Selected users will be added as regular members with default permissions.</p>
+                            <p class="text-sm text-gray-500 mt-2">Select users and assign them roles. Default role is "Staff".</p>
                         </div>
 
                         <div class="flex justify-end space-x-4 pt-4 border-t">
@@ -84,4 +103,34 @@
             </x-mary-card>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle checkbox changes to show/hide role selectors
+            document.querySelectorAll('.member-checkbox input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const memberRow = this.closest('.member-row');
+                    const roleSelector = memberRow.querySelector('.role-selector');
+                    const selectElement = roleSelector.querySelector('.role-select');
+                    
+                    if (this.checked) {
+                        roleSelector.style.display = 'block';
+                        selectElement.disabled = false;
+                    } else {
+                        roleSelector.style.display = 'none';
+                        selectElement.disabled = true;
+                    }
+                });
+            });
+
+            // Update hidden input when role changes
+            document.querySelectorAll('.role-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const memberRow = this.closest('.member-row');
+                    const hiddenInput = memberRow.querySelector('.role-value');
+                    hiddenInput.value = this.value;
+                });
+            });
+        });
+    </script>
 </x-admin.layout>

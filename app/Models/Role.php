@@ -15,13 +15,22 @@ class Role extends Model
         'description',
         'badge_color',
         'hierarchy_level',
-        'is_active'
+        'is_active',
+        'group_id'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'hierarchy_level' => 'integer',
     ];
+
+    /**
+     * Get the group this role belongs to
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
 
     /**
      * Get permissions assigned to this role

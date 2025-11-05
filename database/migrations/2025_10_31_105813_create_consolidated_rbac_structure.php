@@ -33,20 +33,23 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Roles table - generic roles (Manager, Supervisor, Staff, etc.)
-        // NOT tied to specific groups - can be used in any group
+        // Roles table - NOW GROUP-SPECIFIC (roles are unique per group, not global)
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // manager, supervisor, staff, admin
+            $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
+            $table->string('name'); // manager, supervisor, staff, admin (can be same name in different groups)
             $table->string('display_name');
             $table->string('description')->nullable();
             $table->string('badge_color')->default('#6366f1');
             $table->integer('hierarchy_level')->default(0); // 0 = lowest, higher = more senior
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            
+            // Role names are unique per group (not globally unique)
+            $table->unique(['name', 'group_id'], 'roles_name_group_unique');
         });
 
-        // Role permissions - what each role can do (global permissions for roles)
+        // Role permissions - what each role can do (permissions for group-specific roles)
         Schema::create('role_permissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');

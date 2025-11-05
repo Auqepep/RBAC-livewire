@@ -82,6 +82,13 @@ Route::middleware(['auth'])->group(function () {
     // Permission testing routes
     Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
     Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
+    
+    // Group management routes - accessible to managers and group admins
+    Route::prefix('my-groups/{group}')->name('my-groups.')->group(function () {
+        Route::get('manage', function ($groupId) {
+            return view('users.manage-group', ['groupId' => $groupId]);
+        })->name('manage')->middleware('can:manage-group,group');
+    });
 });
 
 // Debug route for testing verification

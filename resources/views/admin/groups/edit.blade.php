@@ -55,19 +55,44 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Group Members</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto border rounded-lg p-4">
+                            <div id="group-members-list" class="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
                                 @foreach($users as $user)
-                                    <x-mary-checkbox 
-                                        label="{{ $user->name }} ({{ $user->email }})" 
-                                        name="users[]" 
-                                        value="{{ $user->id }}" 
-                                        checked="{{ in_array($user->id, old('users', $groupUsers)) }}"
-                                    />
+                                    @php
+                                        $isChecked = in_array($user->id, old('users', $groupUsers));
+                                        $userMembership = $group->groupMembers()->where('user_id', $user->id)->first();
+                                        $currentRole = $userMembership ? $userMembership->role : null;
+                                    @endphp
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg member-row">
+                                        <x-mary-checkbox 
+                                            name="users[]" 
+                                            value="{{ $user->id }}" 
+                                            checked="{{ $isChecked }}"
+                                            class="member-checkbox"
+                                            data-user-id="{{ $user->id }}"
+                                        />
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-900">{{ $user->name }}</div>
+                                            <div class="text-sm text-gray-500">{{ $user->email }}</div>
+                                        </div>
+                                        <div class="role-selector" style="{{ !$isChecked ? 'display: none;' : '' }}">
+                                            <select 
+                                                name="user_roles[{{ $user->id }}]" 
+                                                class="select select-sm select-bordered"
+                                                {{ !$isChecked ? 'disabled' : '' }}
+                                            >
+                                                @foreach($group->roles as $role)
+                                                    <option value="{{ $role->id }}" 
+                                                        {{ (old("user_roles.{$user->id}", $currentRole?->id) == $role->id) ? 'selected' : '' }}>
+                                                        {{ $role->display_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
                                 @endforeach
                             </div>
                             <p class="text-sm text-gray-500 mt-2">
-                                Note: Changing members here will reset all their roles in this group to "Member". 
-                                Use the group details page to manage individual member roles.
+                                Select users and assign them roles. Unchecking a user will remove them from the group.
                             </p>
                         </div>
 
@@ -89,4 +114,25 @@
             </x-mary-card>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle checkbox changes to show/hide role selectors
+            document.querySelectorAll('.member-checkbox input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const memberRow = this.closest('.member-row');
+                    const roleSelector = memberRow.querySelector('.role-selector');
+                    const selectElement = roleSelector.querySelector('select');
+                    
+                    if (this.checked) {
+                        roleSelector.style.display = 'block';
+                        selectElement.disabled = false;
+                    } else {
+                        roleSelector.style.display = 'none';
+                        selectElement.disabled = true;
+                    }
+                });
+            });
+        });
+    </script>
 </x-admin.layout>

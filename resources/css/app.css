@@ -50,6 +50,10 @@ body {
     @apply bg-gray-500 text-white hover:bg-gray-600 shadow-none border-0;
 }
 
+.btn-error {
+    @apply bg-red-500 text-black hover:bg-red-600 shadow-none border-0;
+}
+
 /* ==========================================================================
    Table Components
    ========================================================================== */

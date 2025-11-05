@@ -35,24 +35,31 @@ class GroupGateway extends Component
 
     private function checkGatewayAccess($membership)
     {
-        // Define roles that can access the gateway
-        $gatewayRoles = ['admin', 'administrator', 'staff', 'manager'];
-        
         if (!$membership->role) {
             $this->accessDeniedReason = 'You do not have a role assigned in this group.';
             $this->hasGatewayAccess = false;
             return;
         }
 
-        // Check if user's role is in the allowed gateway roles
-        if (in_array(strtolower($membership->role->name), $gatewayRoles)) {
+        // Check if the role belongs to this specific group
+        if ($membership->role->group_id !== $this->group->id) {
+            $this->accessDeniedReason = 'Your role does not belong to this group.';
+            $this->hasGatewayAccess = false;
+            return;
+        }
+
+        // Define role names that can access the gateway (group-specific roles)
+        $gatewayRoleNames = ['admin', 'administrator', 'staff', 'manager', 'supervisor'];
+        
+        // Check if user's role in this specific group has gateway access
+        if (in_array(strtolower($membership->role->name), $gatewayRoleNames)) {
             $this->hasGatewayAccess = true;
         } else {
-            $this->accessDeniedReason = "Your role '{$membership->role->display_name}' does not have gateway access for this group.";
+            $this->accessDeniedReason = "Your role '{$membership->role->display_name}' in the '{$this->group->name}' group does not have gateway access.";
             $this->hasGatewayAccess = false;
         }
 
-        // System admins always have access
+        // System admins always have access (bypass group-specific restrictions)
         if (Auth::user()->canManageSystem()) {
             $this->hasGatewayAccess = true;
             $this->accessDeniedReason = '';
