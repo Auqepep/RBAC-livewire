@@ -50,8 +50,8 @@ Route::get('dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
     
-    // Show regular user dashboard for non-admin users
-    return view('dashboard');
+    // Redirect regular users to their groups page
+    return redirect()->route('groups.index');
 })
     ->middleware(['auth'])
     ->name('dashboard');
@@ -59,19 +59,19 @@ Route::get('dashboard', function () {
 // User routes for regular users
 Route::middleware(['auth'])->group(function () {
     Route::get('users', [UserController::class, 'index'])->name('users.index');
-    Route::get('my-groups', [UserController::class, 'myGroups'])->name('my-groups');
+    Route::get('groups', [UserController::class, 'myGroups'])->name('groups.index');
     Route::get('available-groups', function () {
         return view('users.available-groups');
     })->name('available-groups');
     Route::get('groups/{group}', [UserController::class, 'showGroup'])->name('groups.show');
     
     // Group Gateway routes
-    Route::get('my-groups/{group}/gateway', function ($groupId) {
+    Route::get('groups/{group}/gateway', function ($groupId) {
         return view('users.group-gateway', compact('groupId'));
     })->name('groups.gateway');
     
     // Group Management routes (for managers)
-    Route::prefix('my-groups/{group}')->name('users.groups.')->group(function () {
+    Route::prefix('groups/{group}')->name('groups.')->group(function () {
         Route::get('edit', [\App\Http\Controllers\User\GroupManagementController::class, 'edit'])->name('edit');
         Route::put('update', [\App\Http\Controllers\User\GroupManagementController::class, 'update'])->name('update');
         Route::post('members', [\App\Http\Controllers\User\GroupManagementController::class, 'addMember'])->name('members.add');
@@ -84,11 +84,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
     
     // Group management routes - accessible to managers and group admins
-    Route::prefix('my-groups/{group}')->name('my-groups.')->group(function () {
-        Route::get('manage', function ($groupId) {
-            return view('users.manage-group', ['groupId' => $groupId]);
-        })->name('manage')->middleware('can:manage-group,group');
-    });
+    Route::get('groups/{group}/manage', function ($groupId) {
+        return view('users.manage-group', ['groupId' => $groupId]);
+    })->name('groups.manage')->middleware('can:manage-group,group');
 });
 
 // Debug route for testing verification

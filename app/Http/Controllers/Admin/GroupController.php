@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
 
 class GroupController extends Controller
 {
@@ -146,26 +147,18 @@ class GroupController extends Controller
      */
     public function edit(Group $group)
     {
-<<<<<<< HEAD
         $this->authorize('update', $group);
-
-=======
-        // Check if user can manage this group
-        if (!Gate::allows('manage-group', $group)) {
-            abort(403, 'You do not have permission to edit this group.');
-        }
         
->>>>>>> 1a70e8e24b5a2554f7838c00d19ce0037f28628a
         $users = User::whereNotNull('email_verified_at')->get();
         $groupUsers = $group->users->pluck('id')->toArray();
         
-        // Load group roles
-        $group->load('roles');
+        // Load group roles directly
+        $groupRoles = $group->roles()->get();
         
         // Check if user is group admin (not system admin)
         $isGroupAdminOnly = !auth()->user()->canManageSystem() && Gate::allows('manage-group', $group);
         
-        return view('admin.groups.edit', compact('group', 'users', 'groupUsers', 'isGroupAdminOnly'));
+        return view('admin.groups.edit', compact('group', 'users', 'groupUsers', 'groupRoles', 'isGroupAdminOnly'));
     }
 
     /**
@@ -173,16 +166,8 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group)
     {
-<<<<<<< HEAD
         $this->authorize('update', $group);
-
-=======
-        // Check if user can manage this group
-        if (!Gate::allows('manage-group', $group)) {
-            abort(403, 'You do not have permission to update this group.');
-        }
         
->>>>>>> 1a70e8e24b5a2554f7838c00d19ce0037f28628a
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('groups')->ignore($group->id)],
             'description' => 'nullable|string',
@@ -268,10 +253,7 @@ class GroupController extends Controller
      */
     public function removeMember(Request $request, Group $group, User $user)
     {
-        // Check if user can manage this group's members
-        if (!Gate::allows('manage-group-members', $group)) {
-            abort(403, 'You do not have permission to remove members from this group.');
-        }
+        $this->authorize('update', $group);
         
         // Prevent group admin from removing themselves
         if ($user->id === auth()->id()) {

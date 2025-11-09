@@ -38,7 +38,7 @@
                                 Users
                             </a>
                             
-                            <a href="{{ route('my-groups') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('my-groups') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
+                            <a href="{{ route('groups.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('groups.index') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
                                 My Groups
                             </a>
                             

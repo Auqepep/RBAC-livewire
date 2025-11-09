@@ -53,7 +53,7 @@
                     />
                     <x-mary-button 
                         label="My Groups" 
-                        link="{{ route('my-groups') }}"
+                        link="{{ route('groups.index') }}"
                         class="btn-secondary"
                         icon="o-home"
                     />
@@ -114,7 +114,7 @@
                     />
                     <x-mary-button 
                         label="My Groups" 
-                        link="{{ route('my-groups') }}"
+                        link="{{ route('groups.index') }}"
                         class="btn-primary"
                         icon="o-home"
                     />

@@ -72,7 +72,7 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <a href="{{ route('my-groups') }}" class="text-sm text-blue-600 hover:underline">
+                        <a href="{{ route('groups.index') }}" class="text-sm text-blue-600 hover:underline">
                             View all groups →
                         </a>
                     </div>

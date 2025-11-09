@@ -38,7 +38,7 @@ $logout = function (Logout $logout) {
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate>
                             {{ __('Users') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('my-groups')" :active="request()->routeIs('my-groups')" wire:navigate>
+                        <x-nav-link :href="route('groups.index')" :active="request()->routeIs('groups.index')" wire:navigate>
                             {{ __('My Groups') }}
                         </x-nav-link>
                         <x-nav-link :href="route('available-groups')" :active="request()->routeIs('available-groups')" wire:navigate>
@@ -103,7 +103,7 @@ $logout = function (Logout $logout) {
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate>
                     {{ __('Users') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('my-groups')" :active="request()->routeIs('my-groups')" wire:navigate>
+                <x-responsive-nav-link :href="route('groups.index')" :active="request()->routeIs('groups.index')" wire:navigate>
                     {{ __('My Groups') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('available-groups')" :active="request()->routeIs('available-groups')" wire:navigate>

@@ -98,7 +98,7 @@
                             <x-mary-button label="Manage Permissions" link="{{ route('admin.permissions.index') }}" target="_blank" class="btn-sm btn-accent" />
                         @else
                             <x-mary-button label="User Dashboard" link="{{ route('dashboard') }}" target="_blank" class="btn-sm btn-primary" />
-                            <x-mary-button label="My Groups" link="{{ route('my-groups') }}" target="_blank" class="btn-sm btn-secondary" />
+                            <x-mary-button label="My Groups" link="{{ route('groups.index') }}" target="_blank" class="btn-sm btn-secondary" />
                         @endif
                     </div>
                 </div>

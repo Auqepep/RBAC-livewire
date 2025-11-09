@@ -49,7 +49,7 @@ class GroupManagementController extends Controller
             'description' => $validated['description'],
         ]);
 
-        return redirect()->route('users.groups.edit', $group->id)
+        return redirect()->route('groups.edit', $group->id)
             ->with('success', 'Group updated successfully!');
     }
 

@@ -49,7 +49,7 @@
                         <div class="flex justify-end gap-2">
                             <x-mary-button 
                                 label="Cancel" 
-                                link="/my-groups/{{ $group->id }}"
+                                link="{{ route('groups.show', $group->id) }}"
                                 class="btn-ghost"
                             />
                             <x-mary-button 
