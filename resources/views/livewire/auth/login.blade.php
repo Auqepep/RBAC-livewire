@@ -80,7 +80,7 @@
                                 <span class="label-text font-medium">Enter OTP Code</span>
                             </label>
                             <div class="relative">
-                                <input wire:model.live="otp" 
+                                <input wire:model.defer="otp" 
                                        id="otp" 
                                        name="otp" 
                                        type="text" 
@@ -101,11 +101,9 @@
                             @enderror
                         </div>
 
-                        <div class="form-control mt-6">
+                        <div class="form-control mt-6 flex justify-center">
                             <button type="submit" 
-                                    class="btn btn-primary"
-                                    :class="{ 'btn-disabled': $wire.loading || $wire.otp.length !== 6 }"
-                                    :disabled="$wire.loading || $wire.otp.length !== 6"
+                                    class="btn btn-primary w-64"
                                     wire:loading.attr="disabled">
                                 <span wire:loading wire:target="verifyOtpAndLogin" class="loading loading-spinner loading-sm"></span>
                                 <span wire:loading.remove wire:target="verifyOtpAndLogin">Sign In</span>

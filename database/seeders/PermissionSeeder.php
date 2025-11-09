@@ -194,30 +194,9 @@ class PermissionSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => 'assign_tasks',
-                'display_name' => 'Assign Tasks',
-                'description' => 'Assign tasks to team members',
-                'category' => 'local_manager',
-                'is_active' => true,
-            ],
-            [
                 'name' => 'approve_team_requests',
                 'display_name' => 'Approve Team Requests',
                 'description' => 'Approve or reject requests from team members',
-                'category' => 'local_manager',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'view_team_reports',
-                'display_name' => 'View Team Reports',
-                'description' => 'Access reports for your team/group only',
-                'category' => 'local_manager',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'edit_team_content',
-                'display_name' => 'Edit Team Content',
-                'description' => 'Edit content created by team members',
                 'category' => 'local_manager',
                 'is_active' => true,
             ],
@@ -230,34 +209,7 @@ class PermissionSeeder extends Seeder
                 'category' => 'local_member',
                 'is_active' => true,
             ],
-            [
-                'name' => 'view_group_content',
-                'display_name' => 'View Group Content',
-                'description' => 'Access content shared within your group',
-                'category' => 'local_member',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'create_own_content',
-                'display_name' => 'Create Own Content',
-                'description' => 'Create content within your group',
-                'category' => 'local_member',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'edit_own_content',
-                'display_name' => 'Edit Own Content',
-                'description' => 'Edit content you created',
-                'category' => 'local_member',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'submit_requests',
-                'display_name' => 'Submit Requests',
-                'description' => 'Submit requests for approval',
-                'category' => 'local_member',
-                'is_active' => true,
-            ],
+            // NOTE: Removed content & task related permissions - not required for gateway-only groups
 
             // ============================================
             // COMMON PERMISSIONS (Available to all)
@@ -328,8 +280,8 @@ class PermissionSeeder extends Seeder
         $this->command->info('- Global Groups: 4');
         $this->command->info('- Global Reports: 2');
         $this->command->info('- Local Group Admin: 6');
-        $this->command->info('- Local Manager: 5');
-        $this->command->info('- Local Member: 5');
+    $this->command->info('- Local Manager: 2');
+    $this->command->info('- Local Member: 1');
         $this->command->info('- Common: 4');
         $this->command->info('- Special: 2');
     }
