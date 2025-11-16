@@ -48,15 +48,23 @@ class UserController extends Controller
     public function create()
     {
         $groups = \App\Models\Group::where('is_active', true)->get();
-        $roles = \App\Models\Role::where('is_active', true)->get();
         
         // Get roles available per group (for JavaScript)
         $groupRoles = [];
         foreach ($groups as $group) {
-            $groupRoles[$group->id] = \App\Models\Role::where('is_active', true)->get();
+            $groupRoles[$group->id] = \App\Models\Role::where('group_id', $group->id)
+                ->where('is_active', true)
+                ->get()
+                ->map(function($role) {
+                    return [
+                        'id' => $role->id,
+                        'name' => $role->name,
+                        'display_name' => $role->display_name
+                    ];
+                });
         }
         
-        return view('admin.users.create', compact('groups', 'roles', 'groupRoles'));
+        return view('admin.users.create', compact('groups', 'groupRoles'));
     }
 
     /**
@@ -165,6 +173,11 @@ class UserController extends Controller
      */
     public function toggleAdmin(User $user)
     {
+        // Prevent removing super admin privileges
+        if ($user->isSuperAdmin()) {
+            return back()->with('error', "Cannot remove admin privileges from {$user->name}. This is a permanent administrator.");
+        }
+        
         // Find or create the administrator group
         $adminGroup = \App\Models\Group::firstOrCreate([
             'name' => 'Administrators'
@@ -176,11 +189,13 @@ class UserController extends Controller
         
         // Find or create the admin role
         $adminRole = \App\Models\Role::firstOrCreate([
-            'name' => 'administrator'
+            'name' => 'administrator',
+            'group_id' => $adminGroup->id
         ], [
             'display_name' => 'Administrator',
             'description' => 'Full system administrator access',
-            'is_active' => true
+            'is_active' => true,
+            'group_id' => $adminGroup->id
         ]);
         
         // Check if user is already an admin

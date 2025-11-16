@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 // Custom OTP Auth Routes
 Route::view('login', 'auth.login')->name('login')->middleware('guest');
-Route::view('register', 'auth.register')->name('register')->middleware('guest');
+// Note: Registration is only available to admins through admin.users.create
 
 // Email verification route (for clickable links in emails)
 Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
@@ -45,13 +45,8 @@ Route::get('logout', function () {
 })->name('logout.get');
 
 Route::get('dashboard', function () {
-    // Redirect system administrators to admin dashboard
-    if (Auth::user()->canManageSystem()) {
-        return redirect()->route('admin.dashboard');
-    }
-    
-    // Redirect regular users to their groups page
-    return redirect()->route('groups.index');
+    // Return the dashboard view for all authenticated users
+    return view('dashboard');
 })
     ->middleware(['auth'])
     ->name('dashboard');
@@ -75,17 +70,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('edit', [\App\Http\Controllers\User\GroupManagementController::class, 'edit'])->name('edit');
         Route::put('update', [\App\Http\Controllers\User\GroupManagementController::class, 'update'])->name('update');
         Route::post('members', [\App\Http\Controllers\User\GroupManagementController::class, 'addMember'])->name('members.add');
-        Route::put('members/{member}', [\App\Http\Controllers\User\GroupManagementController::class, 'updateMember'])->name('members.update');
-        Route::delete('members/{member}', [\App\Http\Controllers\User\GroupManagementController::class, 'removeMember'])->name('members.remove');
+        Route::put('members/{user}/role', [\App\Http\Controllers\User\GroupManagementController::class, 'updateMemberRole'])->name('members.update-role');
+        Route::delete('members/{user}', [\App\Http\Controllers\User\GroupManagementController::class, 'removeMemberByUser'])->name('members.remove');
+        
+        // Join request management (using request ID instead of group prefix)
     });
+    
+    Route::post('requests/{request}/approve', [\App\Http\Controllers\User\GroupManagementController::class, 'approveRequest'])->name('requests.approve');
+    Route::post('requests/{request}/reject', [\App\Http\Controllers\User\GroupManagementController::class, 'rejectRequest'])->name('requests.reject');
     
     // Permission testing routes
     Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
     Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
     
-    // Group management routes - accessible to managers and group admins
+    // Group management route (legacy) - redirect to unified edit page
     Route::get('groups/{group}/manage', function ($groupId) {
-        return view('users.manage-group', ['groupId' => $groupId]);
+        return redirect()->route('groups.edit', $groupId);
     })->name('groups.manage')->middleware('can:manage-group,group');
 });
 

@@ -21,8 +21,15 @@ class SystemAdminMiddleware
 
         $user = auth()->user();
 
-        // Check if user is a system administrator (has admin role in Administrators group)
+        // Check if user is a system administrator
         if (!$user->canManageSystem()) {
+            \Log::error('SystemAdminMiddleware: Access denied', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'canManageSystem' => $user->canManageSystem(),
+                'isSystemAdmin' => $user->isSystemAdmin(),
+                'url' => $request->url()
+            ]);
             abort(403, 'Unauthorized. You need system administrator privileges to access this area.');
         }
 

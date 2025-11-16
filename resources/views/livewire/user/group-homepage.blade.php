@@ -158,18 +158,32 @@
                             onclick="confirm('Are you sure you want to delete this group?') || event.stopImmediatePropagation()"
                         />
                     @else
+                        @php
+                            $pendingRequestsCount = \App\Models\GroupJoinRequest::where('group_id', $group->id)
+                                ->where('status', 'pending')
+                                ->count();
+                        @endphp
+                        
                         <x-mary-button 
                             label="Edit Group Details" 
                             icon="o-pencil-square"
-                            link="{{ route('groups.edit', $group->id) }}"
+                            link="{{ route('groups.edit', $group->id) }}?tab=details"
                             class="btn-warning"
                         />
                         <x-mary-button 
                             label="Manage Members" 
                             icon="o-users"
-                            link="{{ route('groups.edit', $group->id) }}"
+                            link="{{ route('groups.edit', $group->id) }}?tab=members"
                             class="btn-secondary"
                         />
+                        @if($pendingRequestsCount > 0)
+                            <x-mary-button 
+                                label="Pending Requests ({{ $pendingRequestsCount }})" 
+                                icon="o-bell-alert"
+                                link="{{ route('groups.edit', $group->id) }}?tab=requests"
+                                class="btn-info"
+                            />
+                        @endif
                     @endif
                 </div>
             </x-mary-card>

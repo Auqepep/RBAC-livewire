@@ -97,88 +97,15 @@
         </form>
     </x-mary-card>
 
-    {{-- JavaScript for Dynamic Group/Role Selection --}}
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let assignmentIndex = 0;
-            const roles = @json($roles->groupBy('id'));
-            const groupRoles = @json($groupRoles); // roles available per group
-
-            // Add new assignment row
-            document.getElementById('add-assignment').addEventListener('click', function() {
-                assignmentIndex++;
-                const container = document.getElementById('group-assignments');
-                const newRow = createAssignmentRow(assignmentIndex);
-                container.appendChild(newRow);
-                setupRowEventListeners(newRow, assignmentIndex);
-            });
-
-            // Setup initial row
-            setupRowEventListeners(document.querySelector('.group-assignment-row'), 0);
-
-            function createAssignmentRow(index) {
-                const row = document.createElement('div');
-                row.className = 'group-assignment-row grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border';
-                row.innerHTML = `
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Group</label>
-                        <select name="group_assignments[${index}][group_id]" class="group-select w-full rounded-md border-gray-300">
-                            <option value="">Select a group</option>
-                            @foreach($groups as $group)
-                                <option value="{{ $group->id }}">{{ $group->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Role in Group</label>
-                        <select name="group_assignments[${index}][role_id]" class="role-select w-full rounded-md border-gray-300" disabled>
-                            <option value="">Select a role</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button type="button" class="remove-assignment btn btn-error btn-outline">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            Remove
-                        </button>
-                    </div>
-                `;
-                return row;
-            }
-
-            function setupRowEventListeners(row, index) {
-                const groupSelect = row.querySelector('.group-select');
-                const roleSelect = row.querySelector('.role-select');
-                const removeBtn = row.querySelector('.remove-assignment');
-
-                // Group selection changes role options
-                groupSelect.addEventListener('change', function() {
-                    const groupId = this.value;
-                    roleSelect.innerHTML = '<option value="">Select a role</option>';
-                    
-                    if (groupId && groupRoles[groupId]) {
-                        roleSelect.disabled = false;
-                        groupRoles[groupId].forEach(role => {
-                            const option = document.createElement('option');
-                            option.value = role.id;
-                            option.textContent = role.display_name;
-                            roleSelect.appendChild(option);
-                        });
-                    } else {
-                        roleSelect.disabled = true;
-                    }
-                });
-
-                // Remove row
-                removeBtn.addEventListener('click', function() {
-                    if (document.querySelectorAll('.group-assignment-row').length > 1) {
-                        row.remove();
-                    }
-                });
-            }
-        });
+    {{-- Data for JavaScript (hidden) --}}
+    <script type="application/json" id="groups-data">
+        @json($groups->map(fn($g) => ['id' => $g->id, 'name' => $g->name]))
     </script>
-    @endpush
+    
+    <script type="application/json" id="group-roles-data">
+        @json($groupRoles)
+    </script>
+
+    {{-- Include external JavaScript file --}}
+    @vite(['resources/js/admin-user-create.js'])
 </x-admin.layout>

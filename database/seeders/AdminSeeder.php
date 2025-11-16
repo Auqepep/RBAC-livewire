@@ -22,8 +22,14 @@ class AdminSeeder extends Seeder
             [
                 'name' => 'System Administrator',
                 'email_verified_at' => now(),
+                'is_super_admin' => true,
             ]
         );
+        
+        // Ensure is_super_admin is set for existing admin
+        if (!$admin->is_super_admin) {
+            $admin->update(['is_super_admin' => true]);
+        }
 
         // Create Administrators group
         $adminGroup = Group::firstOrCreate(

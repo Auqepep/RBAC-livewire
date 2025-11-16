@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'email_verified_at',
+        'is_super_admin',
     ];
 
     /**
@@ -41,6 +42,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_super_admin' => 'boolean',
         ];
     }
 
@@ -118,10 +120,21 @@ class User extends Authenticatable
      */
     public function isSystemAdmin(): bool
     {
-        // Check if user has admin role or system_admin permission
-        return $this->hasAnyRole(['admin', 'administrator', 'super_admin']) || 
-               $this->hasPermission('manage_system') ||
-               $this->hasPermission('system_admin');
+        // Check global permissions first
+        if ($this->hasPermission('manage_system') || $this->hasPermission('system_admin')) {
+            return true;
+        }
+
+        // Check if user is member of the global "Administrators" group
+        $adminGroup = \App\Models\Group::where('name', 'Administrators')->first();
+        
+        if (!$adminGroup) {
+            return false;
+        }
+        
+        return $this->groupMembers()
+            ->where('group_id', $adminGroup->id)
+            ->exists();
     }
 
     /**
@@ -129,6 +142,11 @@ class User extends Authenticatable
      */
     public function canManageSystem(): bool
     {
+        // Super admins (permanent admins) always have system access
+        if ($this->is_super_admin) {
+            return true;
+        }
+        
         return $this->isSystemAdmin();
     }
 
@@ -185,11 +203,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is Super Admin
+     * Check if user is Super Admin (permanent admin from database field)
      */
     public function isSuperAdmin(): bool
     {
-        return $this->hasAnyRole(['Super Admin', 'administrator', 'super_admin']);
+        return $this->is_super_admin === true;
     }
 
     /**

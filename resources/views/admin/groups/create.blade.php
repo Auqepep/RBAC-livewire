@@ -104,33 +104,5 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle checkbox changes to show/hide role selectors
-            document.querySelectorAll('.member-checkbox input[type="checkbox"]').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const memberRow = this.closest('.member-row');
-                    const roleSelector = memberRow.querySelector('.role-selector');
-                    const selectElement = roleSelector.querySelector('.role-select');
-                    
-                    if (this.checked) {
-                        roleSelector.style.display = 'block';
-                        selectElement.disabled = false;
-                    } else {
-                        roleSelector.style.display = 'none';
-                        selectElement.disabled = true;
-                    }
-                });
-            });
-
-            // Update hidden input when role changes
-            document.querySelectorAll('.role-select').forEach(select => {
-                select.addEventListener('change', function() {
-                    const memberRow = this.closest('.member-row');
-                    const hiddenInput = memberRow.querySelector('.role-value');
-                    hiddenInput.value = this.value;
-                });
-            });
-        });
-    </script>
+    @vite(['resources/js/admin/group-member-selector.js'])
 </x-admin.layout>

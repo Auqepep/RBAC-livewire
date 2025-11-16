@@ -21,17 +21,71 @@
                                 Welcome back, {{ Auth::user()->name }}!
                             </h3>
                             <p class="text-sm text-gray-500">{{ Auth::user()->email }}</p>
-                            <div class="mt-2 flex items-center space-x-2">
-                                <span class="text-xs text-gray-500">Access Level:</span>
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    {{ Auth::user()->getUserLevel() }}
-                                </span>
-                            </div>
-                            <div class="mt-1 flex flex-wrap gap-1">
-                                @foreach(Auth::user()->roles as $role)
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" style="background-color: {{ $role->badge_color }}">
-                                        {{ $role->display_name }}
-                                    </span>
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                @php
+                                    // Get user's groups with pivot data
+                                    $userGroups = Auth::user()->groups;
+                                    
+                                    // Get all unique role IDs from the groups
+                                    $roleIds = $userGroups->pluck('pivot.role_id')->unique();
+                                    
+                                    // Load all roles at once
+                                    $roles = \App\Models\Role::whereIn('id', $roleIds)->get()->keyBy('id');
+                                    
+                                    // Group by role_id and collect the groups for each role
+                                    $roleGroups = $userGroups->groupBy(function($group) {
+                                        return $group->pivot->role_id;
+                                    })->map(function($groups) use ($roles) {
+                                        $roleId = $groups->first()->pivot->role_id;
+                                        return [
+                                            'role' => $roles[$roleId] ?? null,
+                                            'groups' => $groups
+                                        ];
+                                    })->filter(function($roleGroup) {
+                                        return $roleGroup['role'] !== null;
+                                    });
+                                @endphp
+                                
+                                @foreach($roleGroups as $roleGroup)
+                                    <button 
+                                        onclick="role_modal_{{ $roleGroup['role']->id }}.showModal()" 
+                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white cursor-pointer hover:opacity-80 transition-opacity" 
+                                        style="background-color: {{ $roleGroup['role']->badge_color }}">
+                                        {{ $roleGroup['role']->display_name }}
+                                    </button>
+
+                                    <!-- Modal for this role -->
+                                    <dialog id="role_modal_{{ $roleGroup['role']->id }}" class="modal">
+                                        <div class="modal-box">
+                                            <form method="dialog">
+                                                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                                            </form>
+                                            <h3 class="font-bold text-lg mb-4">
+                                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full text-white mr-2" style="background-color: {{ $roleGroup['role']->badge_color }}">
+                                                    {{ $roleGroup['role']->display_name }}
+                                                </span>
+                                            </h3>
+                                            <p class="text-sm text-gray-600 mb-4">You have this role in the following groups:</p>
+                                            <div class="space-y-2">
+                                                @foreach($roleGroup['groups'] as $group)
+                                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <div class="flex items-center space-x-3">
+                                                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                            </svg>
+                                                            <span class="font-medium text-gray-900">{{ $group->name }}</span>
+                                                        </div>
+                                                        <a href="{{ route('groups.show', $group->id) }}" class="btn btn-xs btn-primary">
+                                                            View
+                                                        </a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <form method="dialog" class="modal-backdrop">
+                                            <button>close</button>
+                                        </form>
+                                    </dialog>
                                 @endforeach
                             </div>
                         </div>

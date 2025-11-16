@@ -13,6 +13,11 @@ class GroupPolicy
      */
     public function viewAny(User $user): bool
     {
+        // System admins can view all groups
+        if ($user->isSystemAdmin()) {
+            return true;
+        }
+        
         return $user->hasPermission('view_groups') || $user->hasPermission('manage_groups');
     }
 
@@ -22,7 +27,7 @@ class GroupPolicy
     public function view(User $user, Group $group): bool
     {
         // System admins can view any group
-        if ($user->hasPermission('manage_groups')) {
+        if ($user->isSystemAdmin() || $user->hasPermission('manage_groups')) {
             return true;
         }
 
@@ -35,7 +40,7 @@ class GroupPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermission('manage_groups');
+        return $user->isSystemAdmin() || $user->hasPermission('manage_groups');
     }
 
     /**
@@ -44,7 +49,7 @@ class GroupPolicy
     public function update(User $user, Group $group): bool
     {
         // System admins can update any group
-        if ($user->hasPermission('manage_groups')) {
+        if ($user->isSystemAdmin() || $user->hasPermission('manage_groups')) {
             return true;
         }
 
@@ -58,7 +63,7 @@ class GroupPolicy
     public function delete(User $user, Group $group): bool
     {
         // Only system admins can delete groups
-        return $user->hasPermission('manage_groups');
+        return $user->isSystemAdmin() || $user->hasPermission('manage_groups');
     }
 
     /**
@@ -67,7 +72,7 @@ class GroupPolicy
     public function manageMembers(User $user, Group $group): bool
     {
         // System admins can manage members in any group
-        if ($user->hasPermission('assign_group_members')) {
+        if ($user->isSystemAdmin() || $user->hasPermission('assign_group_members')) {
             return true;
         }
 
@@ -81,7 +86,7 @@ class GroupPolicy
     public function assignRoles(User $user, Group $group): bool
     {
         // System admins can assign roles in any group
-        if ($user->hasPermission('manage_group_roles')) {
+        if ($user->isSystemAdmin() || $user->hasPermission('manage_group_roles')) {
             return true;
         }
 
@@ -103,8 +108,9 @@ class GroupPolicy
             return false;
         }
 
-        // Manager role has hierarchy_level >= 70 (adjust as needed)
-        // You can also check by role name: $membership->role->name === 'manager'
-        return $membership->role->hierarchy_level >= 70;
+        // Treat supervisor and above as managers for management actions.
+        // Using hierarchy levels where: 6=SuperAdmin,5=Admin,4=Manager,3=Supervisor,2=Staff
+        // Allow supervisors (>= 3) to access manager-level commands when permissions apply.
+        return $membership->role->hierarchy_level >= 3;
     }
 }

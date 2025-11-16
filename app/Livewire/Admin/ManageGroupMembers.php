@@ -19,11 +19,13 @@ class ManageGroupMembers extends Component
     public $selectedUserId = null;
     public $selectedRoleId = null;
     public $selectedMemberId = null;
+    public $selectedUserIds = [];
     public $search = '';
 
     protected $rules = [
-        'selectedUserId' => 'required|exists:users,id',
         'selectedRoleId' => 'required|exists:roles,id',
+        'selectedUserIds' => 'required|array|min:1',
+        'selectedUserIds.*' => 'exists:users,id',
     ];
 
     public function mount(Group $group)
@@ -35,6 +37,7 @@ class ManageGroupMembers extends Component
     {
         $this->selectedUserId = null;
         $this->selectedRoleId = null;
+        $this->selectedUserIds = [];
         $this->showAddMemberModal = true;
     }
 
@@ -50,7 +53,16 @@ class ManageGroupMembers extends Component
 
     public function addMember()
     {
-        $this->validate();
+        // If multiple users selected, use bulk add
+        if (count($selectedUserIds) > 0) {
+            return $this->bulkAddMembers();
+        }
+
+        // Single user add (legacy, not used anymore)
+        $this->validate([
+            'selectedUserId' => 'required|exists:users,id',
+            'selectedRoleId' => 'required|exists:roles,id',
+        ]);
 
         // Check if user is already a member
         if ($this->group->hasMember($this->selectedUserId)) {
@@ -81,6 +93,55 @@ class ManageGroupMembers extends Component
             
         } catch (\Exception $e) {
             session()->flash('error', 'An error occurred while adding the member: ' . $e->getMessage());
+        }
+    }
+
+    public function bulkAddMembers()
+    {
+        $this->validate([
+            'selectedRoleId' => 'required|exists:roles,id',
+            'selectedUserIds' => 'required|array|min:1',
+            'selectedUserIds.*' => 'exists:users,id',
+        ]);
+
+        // Check permissions
+        if (!auth()->user()->canAssignRolesInGroup($this->group->id)) {
+            session()->flash('error', 'You do not have permission to add members to this group.');
+            return;
+        }
+
+        try {
+            $addedCount = 0;
+            $skippedCount = 0;
+            
+            foreach ($this->selectedUserIds as $userId) {
+                // Skip if already a member
+                if ($this->group->hasMember($userId)) {
+                    $skippedCount++;
+                    continue;
+                }
+                
+                $this->group->addMember(
+                    $userId,
+                    $this->selectedRoleId,
+                    auth()->id()
+                );
+                $addedCount++;
+            }
+
+            $role = Role::find($this->selectedRoleId);
+            $message = "Successfully added {$addedCount} member(s) as {$role->display_name}.";
+            if ($skippedCount > 0) {
+                $message .= " ({$skippedCount} user(s) were already members)";
+            }
+            
+            session()->flash('message', $message);
+            
+            $this->showAddMemberModal = false;
+            $this->resetForm();
+            
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while adding members: ' . $e->getMessage());
         }
     }
 
@@ -154,6 +215,7 @@ class ManageGroupMembers extends Component
         $this->selectedUserId = null;
         $this->selectedRoleId = null;
         $this->selectedMemberId = null;
+        $this->selectedUserIds = [];
     }
 
     public function closeModals()
@@ -186,8 +248,10 @@ class ManageGroupMembers extends Component
             $query->where('group_id', $this->group->id);
         })->orderBy('name')->get();
 
-        // Get available roles for this specific group
-        $availableRoles = $this->group->roles()->where('is_active', true)->get();
+        // Get all active roles (roles are global, not group-specific)
+        $availableRoles = Role::where('is_active', true)
+                              ->orderBy('hierarchy_level', 'desc')
+                              ->get();
 
         return view('livewire.admin.manage-group-members', compact('members', 'availableUsers', 'availableRoles'));
     }

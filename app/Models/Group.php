@@ -216,10 +216,12 @@ class Group extends Model
     }
 
     /**
-     * Get the roles that belong to this group
+     * Get the roles that are currently used in this group (through group members)
+     * This returns roles that have been assigned to at least one member.
      */
-    public function roles(): HasMany
+    public function roles(): BelongsToMany
     {
-        return $this->hasMany(Role::class);
+        return $this->belongsToMany(Role::class, 'group_members', 'group_id', 'role_id')
+                    ->distinct();
     }
 }

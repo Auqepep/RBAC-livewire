@@ -24,6 +24,7 @@ class Login extends Component
     public $resending = false;
     public $countdown = 0;
     public $autoVerifying = false;
+    public $otpLength = 0; // Track OTP length to prevent multiple updates
 
     protected $messages = [
         'email.exists' => 'No account found with this email address.',
@@ -37,22 +38,10 @@ class Login extends Component
         $this->dispatch('focus-email');
     }
 
-    public function updatedEmail()
-    {
-        // Real-time validation
-        $this->validateOnly('email');
-    }
+    // Removed updatedEmail() to prevent database queries on every keystroke
+    // Validation will happen when the form is submitted
 
-    public function updatedOtp()
-    {
-        // Real-time validation and auto-submit when 6 digits entered
-        $this->validateOnly('otp');
-        
-        if (strlen($this->otp) === 6 && !$this->loading) {
-            $this->autoVerifying = true;
-            $this->verifyOtpAndLogin();
-        }
-    }
+    // Removed updatedOtp() - auto-submit is now handled by JavaScript to prevent network spam
 
     public function sendOtp()
     {

@@ -32,7 +32,7 @@
                                 <span class="label-text font-medium">Email Address</span>
                             </label>
                             <div class="relative">
-                                <input wire:model.live.debounce.300ms="email" 
+                                <input wire:model.defer="email" 
                                        id="email" 
                                        name="email" 
                                        type="email" 
@@ -74,7 +74,7 @@
                         </p>
                     </div>
 
-                    <form wire:submit.prevent="verifyOtpAndLogin" class="space-y-6">
+                    <form wire:submit.prevent="verifyOtpAndLogin" class="space-y-6" data-auto-submit>
                         <div class="form-control">
                             <label class="label" for="otp">
                                 <span class="label-text font-medium">Enter OTP Code</span>
@@ -142,49 +142,9 @@
                         </button>
                     </div>
                 @endif
-
-                <div class="divider"></div>
-                
-                <div class="text-center">
-                    <p class="text-sm">
-                        Don't have an account? 
-                        <a href="{{ route('register') }}" class="link link-primary font-medium">
-                            Sign up
-                        </a>
-                    </p>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        // Focus management
-        Livewire.on('focus-email', () => {
-            setTimeout(() => document.getElementById('email')?.focus(), 100);
-        });
-        
-        Livewire.on('focus-otp', () => {
-            setTimeout(() => document.getElementById('otp')?.focus(), 100);
-        });
-
-        // Countdown timer
-        let countdownInterval;
-        
-        Livewire.on('start-countdown', () => {
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            countdownInterval = setInterval(() => {
-                @this.call('decrementCountdown');
-            }, 1000);
-        });
-
-        // Auto-format OTP input
-        document.addEventListener('input', (e) => {
-            if (e.target.id === 'otp') {
-                e.target.value = e.target.value.replace(/\D/g, '');
-            }
-        });
-    });
-</script>
+@vite(['resources/js/auth/otp-common.js'])

@@ -13,37 +13,6 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            <!-- Quick Permission Testing Panel -->
-            <x-mary-card title="Quick Permission Testing" class="bg-orange-50 border-orange-200">
-                <div class="flex flex-wrap items-center gap-4">
-                    <div class="flex-1">
-                        <p class="text-sm text-orange-800 mb-2">
-                            <strong>Test permissions instantly:</strong> Use the actions below to grant/remove admin privileges, then test on the permission testing page.
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <x-mary-button 
-                                label="🧪 Open Permission Test Page" 
-                                link="{{ route('test.permissions') }}"
-                                target="_blank"
-                                class="btn-warning btn-sm"
-                                icon="o-eye"
-                            />
-                            <x-mary-button 
-                                label="Permission Details" 
-                                link="{{ route('admin.permissions.index') }}"
-                                target="_blank"
-                                class="btn-secondary btn-sm"
-                                icon="o-shield-check"
-                            />
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs text-orange-600 font-medium">Real-time Testing</p>
-                        <p class="text-xs text-orange-500">Changes reflect immediately</p>
-                    </div>
-                </div>
-            </x-mary-card>
-            
             <x-mary-card>
                 <!-- Search and Sort Form -->
                 <div class="mb-6 space-y-4">
@@ -136,20 +105,23 @@
                                         </td>
                                         <td>
                                             @if($user->groupMembers->count() > 0)
-                                                <div class="flex flex-wrap gap-1">
-                                                    @foreach($user->groupMembers->take(3) as $membership)
+                                                <button 
+                                                    onclick="showGroupsModal{{ $user->id }}.showModal()" 
+                                                    class="flex flex-wrap gap-1 items-center hover:opacity-75 transition-opacity"
+                                                >
+                                                    @foreach($user->groupMembers->take(2) as $membership)
                                                         <x-mary-badge 
                                                             value="{{ $membership->group->name }}" 
                                                             class="badge-primary badge-sm" 
                                                         />
                                                     @endforeach
-                                                    @if($user->groupMembers->count() > 3)
+                                                    @if($user->groupMembers->count() > 2)
                                                         <x-mary-badge 
-                                                            value="+{{ $user->groupMembers->count() - 3 }} more" 
-                                                            class="badge-neutral badge-sm" 
+                                                            value="+{{ $user->groupMembers->count() - 2 }} more" 
+                                                            class="badge-neutral badge-sm cursor-pointer" 
                                                         />
                                                     @endif
-                                                </div>
+                                                </button>
                                             @else
                                                 <span class="text-gray-400 text-sm">No groups</span>
                                             @endif
@@ -166,7 +138,9 @@
                                                     <x-mary-badge value="Unverified" class="badge-error badge-sm" />
                                                 @endif
                                                 
-                                                @if($user->canManageSystem())
+                                                @if($user->isSuperAdmin())
+                                                    <x-mary-badge value="Super Admin" class="badge-error badge-sm" />
+                                                @elseif($user->canManageSystem())
                                                     <x-mary-badge value="Admin" class="badge-warning badge-sm" />
                                                 @endif
                                             </div>
@@ -176,12 +150,13 @@
                                                 <x-mary-button icon="o-eye" class="btn-sm btn-ghost" link="{{ route('admin.users.show', $user) }}" />
                                                 <x-mary-button icon="o-pencil" class="btn-sm btn-primary" link="{{ route('admin.users.edit', $user) }}" />
                                                 
-                                                <!-- Quick Admin Toggle for Testing -->
-                                                @if($user->id !== auth()->id())
+                                                <!-- Quick Admin Toggle - Hidden for Super Admins -->
+                                                @if($user->id !== auth()->id() && !$user->isSuperAdmin())
                                                     @php
                                                         $isAdmin = $user->canManageSystem();
                                                     @endphp
-                                                    <form method="POST" action="{{ route('admin.users.toggle-admin', $user) }}" class="inline">
+                                                    <form method="POST" action="{{ route('admin.users.toggle-admin', $user) }}" class="inline"
+                                                          onsubmit="return confirm('Are you sure you want to {{ $isAdmin ? 'remove admin privileges from' : 'grant admin privileges to' }} {{ $user->name }}?')">
                                                         @csrf
                                                         <x-mary-button 
                                                             icon="{{ $isAdmin ? 'o-shield-exclamation' : 'o-shield-check' }}" 
@@ -191,15 +166,6 @@
                                                         />
                                                     </form>
                                                 @endif
-                                                
-                                                <!-- Permission Test Link -->
-                                                <x-mary-button 
-                                                    icon="o-eye" 
-                                                    class="btn-sm btn-accent" 
-                                                    link="{{ route('test.permissions') }}?user={{ $user->id }}"
-                                                    target="_blank"
-                                                    title="Test User Permissions"
-                                                />
                                                 
                                                 @if($user->id !== auth()->id())
                                                     <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline" 
@@ -216,6 +182,69 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Modals for all users - outside the table -->
+                    @foreach($users as $user)
+                        <dialog id="showGroupsModal{{ $user->id }}" class="modal">
+                            <div class="modal-box max-w-2xl">
+                                <form method="dialog">
+                                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                                </form>
+                                <h3 class="font-bold text-lg mb-4">{{ $user->name }}'s Groups & Roles</h3>
+                                
+                                @if($user->groupMembers->count() > 0)
+                                    <div class="overflow-x-auto">
+                                        <table class="table table-zebra w-full">
+                                            <thead>
+                                                <tr>
+                                                    <th>Group</th>
+                                                    <th>Role</th>
+                                                    <th>Joined</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($user->groupMembers as $membership)
+                                                    <tr>
+                                                        <td>
+                                                            <div class="font-medium">{{ $membership->group->name }}</div>
+                                                            @if($membership->group->description)
+                                                                <div class="text-xs text-gray-500">{{ Str::limit($membership->group->description, 50) }}</div>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            <x-mary-badge 
+                                                                value="{{ $membership->role->display_name ?? $membership->role->name }}" 
+                                                                class="badge-sm"
+                                                                style="background-color: {{ $membership->role->badge_color ?? '#6b7280' }}; color: white;"
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <div class="text-sm">{{ $membership->joined_at ? $membership->joined_at->format('M j, Y') : 'N/A' }}</div>
+                                                            <div class="text-xs text-gray-400">{{ $membership->joined_at ? $membership->joined_at->diffForHumans() : '' }}</div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="text-center py-8">
+                                        <x-mary-icon name="o-user-group" class="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                                        <p class="text-gray-500">This user is not a member of any groups.</p>
+                                    </div>
+                                @endif
+                                
+                                <div class="modal-action">
+                                    <form method="dialog">
+                                        <button class="btn">Close</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <form method="dialog" class="modal-backdrop">
+                                <button>close</button>
+                            </form>
+                        </dialog>
+                    @endforeach
 
                     <div class="mt-4">
                         {{ $users->links() }}

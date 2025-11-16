@@ -167,7 +167,10 @@ class BulkManageMembers extends Component
                              ->orderBy('created_at', 'desc')
                              ->paginate(15);
 
-        $groupRoles = $this->group->roles()->where('is_active', true)->orderBy('hierarchy_level', 'desc')->get();
+        // Get all active roles (roles are global, not group-specific)
+        $groupRoles = Role::where('is_active', true)
+                         ->orderBy('hierarchy_level', 'desc')
+                         ->get();
 
         return view('livewire.admin.bulk-manage-members', [
             'members' => $members,
