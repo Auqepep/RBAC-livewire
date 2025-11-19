@@ -80,28 +80,12 @@ class GroupCentricSeeder extends Seeder
                 'permissions' => ['view_users', 'view_content', 'create_content', 'edit_content', 'publish_content', 'view_reports', 'generate_reports']
             ],
             [
-                'name' => 'supervisor',
-                'display_name' => 'Supervisor',
-                'description' => 'Supervisory role with limited management capabilities',
-                'hierarchy_level' => 50,
-                'badge_color' => '#7c3aed',
-                'permissions' => ['view_users', 'view_content', 'create_content', 'edit_content', 'view_reports']
-            ],
-            [
                 'name' => 'staff',
                 'display_name' => 'Staff Member',
                 'description' => 'Regular staff with basic access',
                 'hierarchy_level' => 30,
                 'badge_color' => '#059669',
                 'permissions' => ['view_content', 'create_content', 'edit_content']
-            ],
-            [
-                'name' => 'intern',
-                'display_name' => 'Intern',
-                'description' => 'Intern with limited access',
-                'hierarchy_level' => 10,
-                'badge_color' => '#d97706',
-                'permissions' => ['view_content']
             ],
         ];
 
@@ -161,8 +145,7 @@ class GroupCentricSeeder extends Seeder
         $users = [
             ['name' => 'John Manager', 'email' => 'john.manager@example.com'],
             ['name' => 'Jane Staff', 'email' => 'jane.staff@example.com'],
-            ['name' => 'Bob Supervisor', 'email' => 'bob.supervisor@example.com'],
-            ['name' => 'Alice Intern', 'email' => 'alice.intern@example.com'],
+            ['name' => 'Bob Manager', 'email' => 'bob.manager@example.com'],
         ];
 
         foreach ($users as $userData) {
@@ -180,9 +163,7 @@ class GroupCentricSeeder extends Seeder
         
         $adminRole = Role::where('name', 'admin')->first();
         $managerRole = Role::where('name', 'manager')->first();
-        $supervisorRole = Role::where('name', 'supervisor')->first();
         $staffRole = Role::where('name', 'staff')->first();
-        $internRole = Role::where('name', 'intern')->first();
         
         $systemAdminPermission = Permission::where('name', 'system_admin')->first();
         
@@ -203,16 +184,14 @@ class GroupCentricSeeder extends Seeder
         $assignments = [
             // IT Support Group
             ['user_email' => 'john.manager@example.com', 'group' => $itGroup, 'role' => $managerRole],
-            ['user_email' => 'bob.supervisor@example.com', 'group' => $itGroup, 'role' => $supervisorRole],
+            ['user_email' => 'bob.manager@example.com', 'group' => $itGroup, 'role' => $managerRole],
             ['user_email' => 'jane.staff@example.com', 'group' => $itGroup, 'role' => $staffRole],
             
             // HR Group  
-            ['user_email' => 'jane.staff@example.com', 'group' => $hrGroup, 'role' => $supervisorRole], // Jane is staff in IT but supervisor in HR
-            ['user_email' => 'alice.intern@example.com', 'group' => $hrGroup, 'role' => $internRole],
+            ['user_email' => 'jane.staff@example.com', 'group' => $hrGroup, 'role' => $managerRole], // Jane is staff in IT but manager in HR
             
             // Marketing Group
-            ['user_email' => 'bob.supervisor@example.com', 'group' => $marketingGroup, 'role' => $managerRole], // Bob is supervisor in IT but manager in Marketing
-            ['user_email' => 'alice.intern@example.com', 'group' => $marketingGroup, 'role' => $staffRole], // Alice is intern in HR but staff in Marketing
+            ['user_email' => 'bob.manager@example.com', 'group' => $marketingGroup, 'role' => $managerRole],
         ];
 
         foreach ($assignments as $assignment) {
@@ -235,8 +214,7 @@ class GroupCentricSeeder extends Seeder
         $this->command->info('Example users:');
         $this->command->info('- admin@example.com (System Admin)');
         $this->command->info('- john.manager@example.com (Manager in IT Support)');
-        $this->command->info('- jane.staff@example.com (Staff in IT Support, Supervisor in HR)');
-        $this->command->info('- bob.supervisor@example.com (Supervisor in IT Support, Manager in Marketing)');
-        $this->command->info('- alice.intern@example.com (Intern in HR, Staff in Marketing)');
+        $this->command->info('- jane.staff@example.com (Staff in IT Support, Manager in HR)');
+        $this->command->info('- bob.manager@example.com (Manager in IT Support and Marketing)');
     }
 }

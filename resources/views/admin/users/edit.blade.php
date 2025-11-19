@@ -154,7 +154,7 @@
                                             <h4 class="font-semibold text-gray-900">{{ $membership->group->name }}</h4>
                                             <div class="flex items-center gap-2 mt-1">
                                                 <span class="badge text-xs" style="background-color: {{ $membership->role->badge_color ?? '#6366f1' }}; color: white;">
-                                                    {{ $membership->role?->name ?? 'No Role' }}
+                                                    {{ $membership->role?->display_name ?? $membership->role?->name ?? 'No Role' }}
                                                 </span>
                                                 <span class="text-xs text-gray-500">
                                                     • Joined {{ $membership->created_at->diffForHumans() }}

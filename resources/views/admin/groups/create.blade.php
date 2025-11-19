@@ -52,37 +52,95 @@
                         />
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Initial Members (Optional)</label>
-                            <div id="group-members-list" class="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                <span class="text-lg">Initial Members (Optional)</span>
+                            </label>
+                            <div class="bg-base-200 rounded-lg p-4 mb-3">
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Select users and assign them roles. Default role is "Staff".</span>
+                                </div>
+                            </div>
+
+                            {{-- Search Box --}}
+                            <div class="mb-3">
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="user-search"
+                                        placeholder="Search users by name or email..."
+                                        class="input input-bordered w-full pl-10"
+                                    />
+                                    <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div id="group-members-list" class="space-y-3 max-h-[500px] overflow-y-auto border-2 border-base-300 rounded-lg p-4 bg-base-100">
                                 @foreach($users as $user)
                                     @php
                                         $isChecked = in_array($user->id, old('users', []));
+                                        $selectedRole = old('user_roles.' . $user->id, 'staff');
                                     @endphp
-                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg member-row">
-                                        <x-mary-checkbox 
-                                            name="users[]" 
-                                            value="{{ $user->id }}" 
-                                            checked="{{ $isChecked }}"
-                                            class="member-checkbox"
-                                            data-user-id="{{ $user->id }}"
-                                        />
-                                        <div class="flex-1">
-                                            <div class="font-medium text-gray-900">{{ $user->name }}</div>
-                                            <div class="text-sm text-gray-500">{{ $user->email }}</div>
-                                        </div>
-                                        <div class="role-selector" style="{{ !$isChecked ? 'display: none;' : '' }}">
-                                            <input type="hidden" name="user_roles[{{ $user->id }}]" value="staff" class="role-value">
-                                            <select class="select select-sm select-bordered role-select" {{ !$isChecked ? 'disabled' : '' }}>
-                                                <option value="staff" selected>Staff (Default)</option>
-                                                <option value="manager">Manager</option>
-                                                <option value="admin">Admin</option>
-                                            </select>
-                                            <small class="text-gray-500 block mt-1">Role will be created for this group</small>
+                                    <div class="member-row border-2 border-base-300 rounded-lg p-4 hover:border-primary transition-colors {{ $isChecked ? 'bg-primary/5 border-primary' : 'bg-base-100' }}">
+                                        <div class="flex items-start gap-4">
+                                            {{-- Checkbox --}}
+                                            <div class="pt-1">
+                                                <input type="checkbox" 
+                                                       name="users[]" 
+                                                       value="{{ $user->id }}" 
+                                                       {{ $isChecked ? 'checked' : '' }}
+                                                       class="checkbox checkbox-primary member-checkbox"
+                                                       data-user-id="{{ $user->id }}"
+                                                       id="user_{{ $user->id }}">
+                                            </div>
+                                            
+                                            {{-- User Info --}}
+                                            <label for="user_{{ $user->id }}" class="flex-1 cursor-pointer">
+                                                <div class="font-semibold text-base text-gray-900">{{ $user->name }}</div>
+                                                <div class="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    {{ $user->email }}
+                                                </div>
+                                            </label>
+                                            
+                                            {{-- Role Selector --}}
+                                            <div class="role-selector min-w-[200px]" style="{{ !$isChecked ? 'display: none;' : '' }}">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Assign Role</label>
+                                                <input type="hidden" name="user_roles[{{ $user->id }}]" value="{{ $selectedRole }}" class="role-value">
+                                                <select class="select select-bordered select-sm w-full role-select" {{ !$isChecked ? 'disabled' : '' }}>
+                                                    <option value="staff" {{ $selectedRole === 'staff' ? 'selected' : '' }}>
+                                                        👤 Staff
+                                                    </option>
+                                                    <option value="manager" {{ $selectedRole === 'manager' ? 'selected' : '' }}>
+                                                        👔 Manager
+                                                    </option>
+                                                </select>
+                                                <div class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <span>Role will be created for this group</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
+                                
+                                @if($users->isEmpty())
+                                    <div class="text-center py-8 text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <p>No users available to add</p>
+                                    </div>
+                                @endif
                             </div>
-                            <p class="text-sm text-gray-500 mt-2">Select users and assign them roles. Default role is "Staff".</p>
                         </div>
 
                         <div class="flex justify-end space-x-4 pt-4 border-t">

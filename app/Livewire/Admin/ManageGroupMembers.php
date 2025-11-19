@@ -15,17 +15,23 @@ class ManageGroupMembers extends Component
 
     public Group $group;
     public $showAddMemberModal = false;
-    public $showChangeRoleModal = false;
+    public $showEditUserModal = false;
     public $selectedUserId = null;
     public $selectedRoleId = null;
-    public $selectedMemberId = null;
     public $selectedUserIds = [];
     public $search = '';
+    
+    // Edit user fields
+    public $editUserId = null;
+    public $editUserName = '';
+    public $editUserEmail = '';
 
     protected $rules = [
         'selectedRoleId' => 'required|exists:roles,id',
         'selectedUserIds' => 'required|array|min:1',
         'selectedUserIds.*' => 'exists:users,id',
+        'editUserName' => 'required|string|max:255',
+        'editUserEmail' => 'required|email|max:255',
     ];
 
     public function mount(Group $group)
@@ -39,16 +45,6 @@ class ManageGroupMembers extends Component
         $this->selectedRoleId = null;
         $this->selectedUserIds = [];
         $this->showAddMemberModal = true;
-    }
-
-    public function openChangeRoleModal($memberId)
-    {
-        $member = GroupMember::find($memberId);
-        if ($member && $member->group_id === $this->group->id) {
-            $this->selectedMemberId = $memberId;
-            $this->selectedRoleId = $member->role_id;
-            $this->showChangeRoleModal = true;
-        }
     }
 
     public function addMember()
@@ -145,40 +141,6 @@ class ManageGroupMembers extends Component
         }
     }
 
-    public function changeRole()
-    {
-        $this->validate(['selectedRoleId' => 'required|exists:roles,id']);
-
-        $member = GroupMember::find($this->selectedMemberId);
-        if (!$member || $member->group_id !== $this->group->id) {
-            session()->flash('error', 'Invalid member selected.');
-            return;
-        }
-
-        // Check permissions
-        if (!auth()->user()->canAssignRolesInGroup($this->group->id)) {
-            session()->flash('error', 'You do not have permission to change roles in this group.');
-            return;
-        }
-
-        try {
-            $this->group->changeUserRole(
-                $member->user_id,
-                $this->selectedRoleId,
-                auth()->id()
-            );
-
-            $role = Role::find($this->selectedRoleId);
-            session()->flash('message', "Successfully changed {$member->user->name}'s role to {$role->display_name}.");
-            
-            $this->showChangeRoleModal = false;
-            $this->resetForm();
-            
-        } catch (\Exception $e) {
-            session()->flash('error', 'An error occurred while changing the role: ' . $e->getMessage());
-        }
-    }
-
     public function removeMember($memberId)
     {
         $member = GroupMember::find($memberId);
@@ -218,11 +180,61 @@ class ManageGroupMembers extends Component
         $this->selectedUserIds = [];
     }
 
+    public function openEditUserModal($userId)
+    {
+        // Debug logging
+        logger()->info('openEditUserModal called with userId: ' . $userId);
+        
+        $user = User::find($userId);
+        if ($user) {
+            logger()->info('User found: ' . $user->name);
+            $this->editUserId = $user->id;
+            $this->editUserName = $user->name;
+            $this->editUserEmail = $user->email;
+            $this->showEditUserModal = true;
+            logger()->info('showEditUserModal set to: ' . ($this->showEditUserModal ? 'true' : 'false'));
+        } else {
+            logger()->error('User not found with ID: ' . $userId);
+        }
+    }
+
+    public function updateUser()
+    {
+        $this->validate([
+            'editUserName' => 'required|string|max:255',
+            'editUserEmail' => 'required|email|max:255|unique:users,email,' . $this->editUserId,
+        ]);
+
+        try {
+            $user = User::find($this->editUserId);
+            if ($user) {
+                $user->name = $this->editUserName;
+                $user->email = $this->editUserEmail;
+                $user->save();
+
+                session()->flash('message', "Successfully updated {$user->name}'s information.");
+                $this->showEditUserModal = false;
+                $this->resetEditForm();
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while updating the user: ' . $e->getMessage());
+        }
+    }
+
+    public function resetEditForm()
+    {
+        $this->editUserId = null;
+        $this->editUserName = '';
+        $this->editUserEmail = '';
+        $this->resetValidation(['editUserName', 'editUserEmail']);
+    }
+
     public function closeModals()
     {
         $this->showAddMemberModal = false;
-        $this->showChangeRoleModal = false;
+        $this->showEditUserModal = false;
         $this->resetForm();
+        $this->resetEditForm();
     }
 
     public function updatingSearch()

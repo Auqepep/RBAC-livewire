@@ -72,12 +72,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('members', [\App\Http\Controllers\User\GroupManagementController::class, 'addMember'])->name('members.add');
         Route::put('members/{user}/role', [\App\Http\Controllers\User\GroupManagementController::class, 'updateMemberRole'])->name('members.update-role');
         Route::delete('members/{user}', [\App\Http\Controllers\User\GroupManagementController::class, 'removeMemberByUser'])->name('members.remove');
-        
-        // Join request management (using request ID instead of group prefix)
     });
-    
-    Route::post('requests/{request}/approve', [\App\Http\Controllers\User\GroupManagementController::class, 'approveRequest'])->name('requests.approve');
-    Route::post('requests/{request}/reject', [\App\Http\Controllers\User\GroupManagementController::class, 'rejectRequest'])->name('requests.reject');
     
     // Permission testing routes
     Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
@@ -130,7 +125,11 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     
     // Group member management
     Route::get('groups/{group}/members', function (\App\Models\Group $group) {
-        return view('admin.group-members', compact('group'));
+        $allUsers = \App\Models\User::whereNotNull('email_verified_at')->get();
+        $currentMemberIds = $group->groupMembers()->pluck('user_id')->toArray();
+        $groupRoles = $group->roles()->get();
+        
+        return view('admin.group-members', compact('group', 'allUsers', 'currentMemberIds', 'groupRoles'));
     })->name('groups.members');
     
     // Remove member from group
@@ -152,12 +151,6 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     Route::get('manage-group-roles', function () {
         return view('admin.manage-group-roles');
     })->name('manage-group-roles');
-    
-    // Group join requests
-    Route::get('group-join-requests', function () {
-        return view('admin.group-join-requests');
-    })->name('group-join-requests');
-    
     // Admin Dashboard
     Route::get('/', function () {
         $stats = [
@@ -179,3 +172,4 @@ Route::get('/tailwind-test', function () {
 
 // Comment out the default auth routes since we're using custom OTP auth
 // require __DIR__.'/auth.php';
+//yahudi

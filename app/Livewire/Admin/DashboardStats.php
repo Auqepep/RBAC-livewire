@@ -37,7 +37,6 @@ class DashboardStats extends Component
                         'users_count' => $role->users_count
                     ];
                 }),
-            'pending_join_requests' => 0, // Remove if GroupJoinRequest exists
         ];
     }
 

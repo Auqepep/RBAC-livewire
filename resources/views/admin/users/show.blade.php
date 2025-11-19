@@ -78,12 +78,11 @@
                                         </td>
                                         <td>
                                             @if($membership->role)
-                                                <x-mary-badge 
-                                                    value="{{ $membership->role->name }}" 
-                                                    class="badge-primary" 
-                                                />
+                                                <span class="badge text-xs text-white" style="background-color: {{ $membership->role->badge_color ?? '#6366f1' }};">
+                                                    {{ $membership->role->display_name ?? $membership->role->name }}
+                                                </span>
                                             @else
-                                                <x-mary-badge value="No Role" class="badge-error" />
+                                                <span class="badge badge-error">No Role</span>
                                             @endif
                                         </td>
                                         <td>

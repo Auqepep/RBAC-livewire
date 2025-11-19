@@ -118,22 +118,6 @@ class Group extends Model
     }
 
     /**
-     * Get join requests for this group
-     */
-    public function joinRequests(): HasMany
-    {
-        return $this->hasMany(GroupJoinRequest::class);
-    }
-
-    /**
-     * Get pending join requests for this group
-     */
-    public function pendingJoinRequests(): HasMany
-    {
-        return $this->hasMany(GroupJoinRequest::class)->where('status', 'pending');
-    }
-
-    /**
      * Get user's roles in this group
      */
     public function getUserRoles($userId)

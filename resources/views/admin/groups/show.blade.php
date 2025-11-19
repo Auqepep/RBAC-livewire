@@ -120,63 +120,6 @@
                 @endif
             </x-mary-card>
 
-            <!-- Group Roles Summary Card -->
-            <x-mary-card title="Group Roles Overview">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-medium text-gray-900 mb-3">Available Roles in This Group</h4>
-                        @php
-                            $groupRoles = \App\Models\Role::whereIn('id', $group->groupMembers->pluck('role_id'))->distinct()->get();
-                        @endphp
-                        
-                        @if($groupRoles->count() > 0)
-                            <div class="space-y-2">
-                                @foreach($groupRoles as $role)
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                        <div>
-                                            <x-mary-badge value="{{ $role->name }}" class="badge-primary" />
-                                            @if($role->description)
-                                                <p class="text-sm text-gray-600 mt-1">{{ $role->description }}</p>
-                                            @endif
-                                        </div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ $group->groupMembers->where('role_id', $role->id)->count() }} members
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-gray-500 italic">No roles assigned to members yet.</p>
-                        @endif
-                    </div>
-                    
-                    <div>
-                        <h4 class="font-medium text-gray-900 mb-3">Role Management</h4>
-                        <div class="space-y-3">
-                            <x-mary-button 
-                                icon="o-cog-6-tooth" 
-                                class="btn-primary w-full" 
-                                link="{{ route('admin.groups.roles.index', $group) }}"
-                            >
-                                Manage Group Roles
-                            </x-mary-button>
-                            
-                            <x-mary-button 
-                                icon="o-plus" 
-                                class="btn-secondary w-full" 
-                                link="{{ route('admin.groups.roles.create', $group) }}"
-                            >
-                                Create New Role
-                            </x-mary-button>
-                            
-                            <p class="text-sm text-gray-600">
-                                Roles are specific to this group. Create and assign roles to control what members can do within "{{ $group->name }}".
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </x-mary-card>
-
             <!-- Actions Card -->
             <x-mary-card title="Group Actions">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

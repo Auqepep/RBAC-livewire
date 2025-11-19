@@ -1,68 +1,45 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manage Group') }}: {{ $group->name }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Edit Group') }}: {{ $group->name }}
+            </h2>
+            <a href="{{ route('groups.show', $group) }}" class="btn btn-secondary btn-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Group
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
+    <div class="py-6">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
             @if (session('success'))
                 <x-mary-alert icon="o-check-circle" class="alert-success" dismissible>
                     {{ session('success') }}
                 </x-mary-alert>
             @endif
 
-            @if (session('error'))
-                <x-mary-alert icon="o-x-circle" class="alert-error" dismissible>
-                    {{ session('error') }}
-                </x-mary-alert>
-            @endif
+            <x-mary-card>
+                @if($errors->any())
+                    <x-mary-alert icon="o-x-circle" class="alert-error mb-6">
+                        <strong>Please fix the following errors:</strong>
+                        <ul class="mt-2 list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </x-mary-alert>
+                @endif
 
-            <!-- Tab Navigation -->
-            <div class="border-b border-gray-200 mb-6">
-                <nav class="-mb-px flex space-x-8">
-                    <a href="{{ route('groups.edit', $group->id) }}?tab=details" 
-                       class="border-transparent {{ request('tab', 'details') === 'details' ? 'border-yellow-500 text-yellow-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                        Group Details
-                    </a>
-                    @can('manageMembers', $group)
-                        <a href="{{ route('groups.edit', $group->id) }}?tab=members" 
-                           class="border-transparent {{ request('tab') === 'members' ? 'border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            Manage Members
-                        </a>
-                        @php
-                            $pendingRequests = \App\Models\GroupJoinRequest::where('group_id', $group->id)
-                                ->where('status', 'pending')
-                                ->with(['user'])
-                                ->orderBy('created_at', 'desc')
-                                ->get();
-                        @endphp
-                        <a href="{{ route('groups.edit', $group->id) }}?tab=requests" 
-                           class="border-transparent {{ request('tab') === 'requests' ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            Pending Requests
-                            @if($pendingRequests->count() > 0)
-                                <span class="ml-2 bg-red-100 text-red-800 py-0.5 px-2 rounded-full text-xs font-medium">
-                                    {{ $pendingRequests->count() }}
-                                </span>
-                            @endif
-                        </a>
-                    @endcan
-                </nav>
-            </div>
-
-            <!-- Tab Content -->
-            @if(request('tab', 'details') === 'details')
-                <!-- Group Details Tab Content -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">Edit Group Information</h3>
-                    <form method="POST" action="{{ route('groups.update', $group->id) }}">
-                    <form method="POST" action="{{ route('groups.update', $group->id) }}">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="space-y-4">
+                <form method="POST" action="{{ route('groups.update', $group) }}">
+                    @csrf
+                    @method('PUT')
+                    
+                    <div class="space-y-6">
+                        <!-- Group Basic Info -->
+                        <div class="grid grid-cols-1 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Group Name <span class="text-red-500">*</span></label>
                                 <input 
@@ -76,14 +53,15 @@
                                 @error('name')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
+                                <p class="text-sm text-gray-500 mt-1">This name must be unique</p>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                 <textarea 
                                     name="description" 
-                                    rows="4"
-                                    placeholder="Enter group description (optional)"
+                                    rows="3"
+                                    placeholder="Describe the purpose of this group"
                                     class="textarea textarea-bordered w-full @error('description') textarea-error @enderror"
                                 >{{ old('description', $group->description) }}</textarea>
                                 @error('description')
@@ -91,299 +69,228 @@
                                 @enderror
                             </div>
 
-                            <div class="flex gap-3">
-                                <button type="submit" class="btn btn-warning">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Update Group
-                                </button>
-                                <a href="{{ route('dashboard') }}" class="btn btn-ghost">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Cancel
-                                </a>
+                            <div class="flex items-center gap-3">
+                                <input 
+                                    type="checkbox"
+                                    name="is_active" 
+                                    value="1" 
+                                    {{ old('is_active', $group->is_active) ? 'checked' : '' }}
+                                    class="checkbox checkbox-primary"
+                                    id="is_active"
+                                />
+                                <label for="is_active" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                    Active
+                                    <span class="block text-xs text-gray-500 font-normal">Inactive groups cannot be assigned to users</span>
+                                </label>
                             </div>
                         </div>
-                    </form>
-                </div>
-            
-            @elseif(request('tab') === 'members')
-                <!-- Manage Members Tab Content -->
-                @can('manageMembers', $group)
-                    <x-mary-card title="Group Members" shadow separator>
-                    
-                    <!-- Add Member Form -->
-                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                        <h3 class="font-semibold mb-3">Add New Member</h3>
-                        <form method="POST" action="{{ route('groups.members.add', $group->id) }}" class="flex gap-3">
-                            @csrf
-                            
-                            <select name="user_id" class="select select-bordered flex-1" required>
-                                <option value="">Select User</option>
-                                @foreach($availableUsers as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                                @endforeach
-                            </select>
-                            
-                            <select name="role_id" class="select select-bordered flex-1" required>
-                                <option value="">Select Role</option>
-                                @foreach($roles as $role)
-                                    @if($role->level <= auth()->user()->groups()->where('group_id', $group->id)->first()?->pivot->role?->level)
-                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Add Member
-                            </button>
-                        </form>
-                    </div>
 
-                    <!-- Members List -->
-                    <div class="space-y-3">
-                        @forelse($group->members()->with('user', 'role')->get() as $membership)
-                            <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                                <div class="flex items-center gap-3">
-                                    <!-- Avatar with role color -->
-                                    <div class="avatar placeholder">
-                                        <div class="w-12 h-12 rounded-full text-white" style="background-color: {{ $membership->role->badge_color }}">
-                                            <span class="text-lg">{{ strtoupper(substr($membership->user->name, 0, 1)) }}</span>
-                                        </div>
+                        <!-- Group Members Section -->
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Group Members</h3>
+                            
+                            <div class="bg-base-200 rounded-lg p-4 mb-4">
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Select users and assign them roles. Unchecking a user will remove them from the group.</span>
+                                </div>
+                            </div>
+
+                            {{-- Search Box --}}
+                            <div class="mb-4">
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="user-search"
+                                        placeholder="Search users by name or email..."
+                                        class="input input-bordered w-full pl-10"
+                                    />
+                                    <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            @php
+                                $checkedUsers = $users->filter(fn($u) => in_array($u->id, old('users', $groupUsers)));
+                                $uncheckedUsers = $users->reject(fn($u) => in_array($u->id, old('users', $groupUsers)));
+                            @endphp
+
+                            {{-- Current Members Section --}}
+                            @if($checkedUsers->isNotEmpty())
+                                <div class="mb-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Current Members
+                                        </h4>
+                                        <span class="badge badge-success badge-lg">{{ $checkedUsers->count() }} member(s)</span>
                                     </div>
                                     
-                                    <div>
-                                        <p class="font-semibold">{{ $membership->user->name }}</p>
-                                        <p class="text-sm text-gray-600">{{ $membership->user->email }}</p>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <span class="badge" style="background-color: {{ $membership->role->badge_color }}; color: white;">
-                                                {{ $membership->role->name }}
-                                            </span>
-                                            <span class="text-xs text-gray-500">
-                                                Joined {{ $membership->created_at->diffForHumans() }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex gap-2">
-                                    <!-- Change Role Button -->
-                                    <button 
-                                        type="button"
-                                        onclick="change_role_modal_{{ $membership->id }}.showModal()"
-                                        class="btn btn-sm btn-ghost"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                        Change Role
-                                    </button>
-
-                                    <!-- Change Role Modal -->
-                                    <dialog id="change_role_modal_{{ $membership->id }}" class="modal">
-                                        <div class="modal-box">
-                                            <h3 class="font-bold text-lg mb-4">Change Role for {{ $membership->user->name }}</h3>
-                                            <form method="POST" action="{{ route('groups.members.update-role', [$group->id, $membership->user_id]) }}">
-                                                @csrf
-                                                @method('PUT')
-                                                
-                                                <div class="mb-4">
-                                                    <label class="block text-sm font-medium mb-2">New Role</label>
-                                                    <select name="role_id" class="select select-bordered w-full" required>
-                                                        @foreach($roles as $role)
-                                                            @if($role->level <= auth()->user()->groups()->where('group_id', $group->id)->first()?->pivot->role?->level)
-                                                                <option value="{{ $role->id }}" {{ $membership->role_id == $role->id ? 'selected' : '' }}>
-                                                                    {{ $role->name }}
-                                                                </option>
-                                                            @endif
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-
-                                                <div class="modal-action">
-                                                    <button type="submit" class="btn btn-warning">Update Role</button>
-                                                    <button type="button" class="btn btn-ghost" onclick="change_role_modal_{{ $membership->id }}.close()">Cancel</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-                                    </dialog>
-
-                                    <!-- Remove Member Button -->
-                                    <form method="POST" action="{{ route('groups.members.remove', [$group->id, $membership->user_id]) }}" 
-                                          onsubmit="return confirm('Are you sure you want to remove {{ $membership->user->name }} from this group?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-error btn-outline">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                            Remove
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-center py-8 text-gray-500">
-                                <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <p>No members yet</p>
-                            </div>
-                        @endforelse
-                    </div>
-                </x-mary-card>
-                @endcan
-
-            @elseif(request('tab') === 'requests')
-                <!-- Pending Requests Tab Content -->
-                @can('manageMembers', $group)
-                    <x-mary-card title="Pending Join Requests" shadow separator>
-                        @php
-                            $pendingRequests = \App\Models\GroupJoinRequest::where('group_id', $group->id)
-                                ->where('status', 'pending')
-                                ->with('user')
-                                ->orderBy('created_at', 'desc')
-                                ->get();
-                        @endphp
-
-                        <div class="space-y-4">
-                            @forelse($pendingRequests as $request)
-                                <div class="p-4 border-2 border-yellow-300 bg-yellow-50 rounded-lg">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex items-center gap-3 flex-1">
-                                            <!-- User Avatar -->
-                                            <div class="avatar placeholder">
-                                                <div class="w-12 h-12 rounded-full bg-yellow-500 text-white">
-                                                    <span class="text-lg">{{ strtoupper(substr($request->user->name, 0, 1)) }}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="flex-1">
-                                                <p class="font-semibold text-lg">{{ $request->user->name }}</p>
-                                                <p class="text-sm text-gray-600">{{ $request->user->email }}</p>
-                                                <p class="text-xs text-gray-500 mt-1">Requested {{ $request->created_at->diffForHumans() }}</p>
-                                                
-                                                @if($request->message)
-                                                    <div class="mt-2 p-2 bg-white rounded border">
-                                                        <p class="text-sm"><strong>Message:</strong> {{ $request->message }}</p>
+                                    <div id="current-members-list" class="space-y-3 max-h-[400px] overflow-y-auto border-2 border-success rounded-lg p-4 bg-success/5">
+                                        @foreach($checkedUsers as $user)
+                                            @php
+                                                $userMembership = $group->groupMembers()->where('user_id', $user->id)->first();
+                                                $currentRole = $userMembership ? $userMembership->role : null;
+                                            @endphp
+                                            <div class="member-row border-2 border-success bg-base-100 rounded-lg p-4 hover:shadow-lg transition-all">
+                                                <div class="flex items-start gap-4">
+                                                    {{-- Checkbox --}}
+                                                    <div class="pt-1">
+                                                        <input 
+                                                            type="checkbox"
+                                                            name="users[]" 
+                                                            value="{{ $user->id }}" 
+                                                            checked
+                                                            class="checkbox checkbox-success member-checkbox"
+                                                            data-user-id="{{ $user->id }}"
+                                                            id="user_{{ $user->id }}"
+                                                        />
                                                     </div>
-                                                @endif
+                                                    
+                                                    {{-- User Info --}}
+                                                    <label for="user_{{ $user->id }}" class="flex-1 cursor-pointer">
+                                                        <div class="font-semibold text-base text-gray-900">{{ $user->name }}</div>
+                                                        <div class="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                            {{ $user->email }}
+                                                        </div>
+                                                    </label>
+                                                    
+                                                    {{-- Role Selector --}}
+                                                    <div class="role-selector min-w-[220px]">
+                                                        <label class="block text-xs font-medium text-gray-700 mb-1">Role</label>
+                                                        <select 
+                                                            name="user_roles[{{ $user->id }}]" 
+                                                            class="select select-bordered select-sm w-full"
+                                                        >
+                                                            @foreach($roles as $role)
+                                                                <option value="{{ $role->id }}" 
+                                                                    {{ (old("user_roles.{$user->id}", $currentRole?->id) == $role->id) ? 'selected' : '' }}>
+                                                                    {{ $role->display_name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @if($currentRole)
+                                                            <div class="mt-1 text-xs text-success flex items-center gap-1">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                </svg>
+                                                                <span>Current: {{ $currentRole->display_name }}</span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div class="flex gap-2 ml-4">
-                                            <!-- Accept Button -->
-                                            <button 
-                                                type="button"
-                                                onclick="accept_request_modal_{{ $request->id }}.showModal()"
-                                                class="btn btn-sm btn-success"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                                Accept
-                                            </button>
-
-                                            <!-- Accept Modal -->
-                                            <dialog id="accept_request_modal_{{ $request->id }}" class="modal">
-                                                <div class="modal-box">
-                                                    <h3 class="font-bold text-lg mb-4">Accept Join Request</h3>
-                                                    <p class="mb-4">Approve <strong>{{ $request->user->name }}</strong> to join this group.</p>
-                                                    
-                                                    <form method="POST" action="{{ route('requests.approve', $request->id) }}">
-                                                        @csrf
-                                                        
-                                                        <div class="mb-4">
-                                                            <label class="block text-sm font-medium mb-2">Assign Role <span class="text-red-500">*</span></label>
-                                                            <select name="role_id" class="select select-bordered w-full" required>
-                                                                <option value="">Select a role</option>
-                                                                @foreach($roles as $role)
-                                                                    @if($role->level <= auth()->user()->groups()->where('group_id', $group->id)->first()?->pivot->role?->level)
-                                                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                                                    @endif
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-
-                                                        <div class="mb-4">
-                                                            <label class="block text-sm font-medium mb-2">Welcome Message (Optional)</label>
-                                                            <textarea 
-                                                                name="admin_message" 
-                                                                rows="3"
-                                                                placeholder="Add a welcome message..."
-                                                                class="textarea textarea-bordered w-full"
-                                                            ></textarea>
-                                                        </div>
-
-                                                        <div class="modal-action">
-                                                            <button type="submit" class="btn btn-success">Approve & Add Member</button>
-                                                            <button type="button" class="btn btn-ghost" onclick="accept_request_modal_{{ $request->id }}.close()">Cancel</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <form method="dialog" class="modal-backdrop"><button>close</button></form>
-                                            </dialog>
-
-                                            <!-- Reject Button -->
-                                            <button 
-                                                type="button"
-                                                onclick="reject_request_modal_{{ $request->id }}.showModal()"
-                                                class="btn btn-sm btn-error btn-outline"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                                Reject
-                                            </button>
-
-                                            <!-- Reject Modal -->
-                                            <dialog id="reject_request_modal_{{ $request->id }}" class="modal">
-                                                <div class="modal-box">
-                                                    <h3 class="font-bold text-lg mb-4">Reject Join Request</h3>
-                                                    <p class="mb-4">Are you sure you want to reject <strong>{{ $request->user->name }}</strong>'s request?</p>
-                                                    
-                                                    <form method="POST" action="{{ route('requests.reject', $request->id) }}">
-                                                        @csrf
-                                                        
-                                                        <div class="mb-4">
-                                                            <label class="block text-sm font-medium mb-2">Reason (Optional)</label>
-                                                            <textarea 
-                                                                name="admin_message" 
-                                                                rows="3"
-                                                                placeholder="Optionally provide a reason for rejection..."
-                                                                class="textarea textarea-bordered w-full"
-                                                            ></textarea>
-                                                        </div>
-
-                                                        <div class="modal-action">
-                                                            <button type="submit" class="btn btn-error">Reject Request</button>
-                                                            <button type="button" class="btn btn-ghost" onclick="reject_request_modal_{{ $request->id }}.close()">Cancel</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <form method="dialog" class="modal-backdrop"><button>close</button></form>
-                                            </dialog>
-                                        </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                            @empty
-                                <div class="text-center py-8 text-gray-500">
-                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <p>No pending requests</p>
+                            @endif
+
+                            {{-- Available Users Section --}}
+                            @if($uncheckedUsers->isNotEmpty())
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="text-md font-semibold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                            </svg>
+                                            Available Users
+                                        </h4>
+                                        <span class="badge badge-ghost badge-lg">{{ $uncheckedUsers->count() }} available</span>
+                                    </div>
+                                    
+                                    <div id="available-members-list" class="space-y-3 max-h-[400px] overflow-y-auto border-2 border-base-300 rounded-lg p-4 bg-base-100">
+                                        @foreach($uncheckedUsers as $user)
+                                            <div class="member-row border-2 border-base-300 rounded-lg p-4 hover:border-primary transition-colors bg-base-100">
+                                                <div class="flex items-start gap-4">
+                                                    {{-- Checkbox --}}
+                                                    <div class="pt-1">
+                                                        <input 
+                                                            type="checkbox"
+                                                            name="users[]" 
+                                                            value="{{ $user->id }}" 
+                                                            class="checkbox checkbox-primary member-checkbox"
+                                                            data-user-id="{{ $user->id }}"
+                                                            id="user_{{ $user->id }}"
+                                                        />
+                                                    </div>
+                                                    
+                                                    {{-- User Info --}}
+                                                    <label for="user_{{ $user->id }}" class="flex-1 cursor-pointer">
+                                                        <div class="font-semibold text-base text-gray-900">{{ $user->name }}</div>
+                                                        <div class="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                            {{ $user->email }}
+                                                        </div>
+                                                    </label>
+                                                    
+                                                    {{-- Role Selector (Hidden by default) --}}
+                                                    <div class="role-selector min-w-[220px]" style="display: none;">
+                                                        <label class="block text-xs font-medium text-gray-700 mb-1">Role</label>
+                                                        <select 
+                                                            name="user_roles[{{ $user->id }}]" 
+                                                            class="select select-bordered select-sm w-full"
+                                                            disabled
+                                                        >
+                                                            @foreach($roles as $role)
+                                                                <option value="{{ $role->id }}" {{ $loop->first ? 'selected' : '' }}>
+                                                                    {{ $role->display_name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span>Select to assign role</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                            @endforelse
+                            @endif
+
+                            @if($users->isEmpty())
+                                <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium">No users available to add</p>
+                                </div>
+                            @endif
                         </div>
-                    </x-mary-card>
-                @endcan
-            @endif
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end gap-3 pt-6 border-t">
+                            <a href="{{ route('groups.show', $group) }}" class="btn btn-ghost">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Update Group
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </x-mary-card>
         </div>
     </div>
+
+    @vite(['resources/js/admin/group-member-selector.js'])
 </x-app-layout>

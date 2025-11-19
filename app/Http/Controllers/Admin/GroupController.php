@@ -73,7 +73,7 @@ class GroupController extends Controller
             'users' => 'array',
             'users.*' => 'exists:users,id',
             'user_roles' => 'array',
-            'user_roles.*' => 'in:staff,manager,admin'
+            'user_roles.*' => 'in:staff,manager' // Only staff and manager
         ]);
 
         $group = Group::create([
@@ -83,33 +83,30 @@ class GroupController extends Controller
             'created_by' => auth()->id(),
         ]);
 
-        // Create default roles for this group
+        // Create default roles for this group (Manager and Staff only)
+        $groupName = $validated['name']; // e.g., "HR", "Gateway"
+        
         $defaultRoles = [
-            'staff' => [
-                'display_name' => 'Staff',
-                'description' => 'Regular staff member',
-                'badge_color' => '#3b82f6',
-                'hierarchy_level' => 10,
-            ],
             'manager' => [
-                'display_name' => 'Manager',
-                'description' => 'Team manager with elevated permissions',
+                'name' => "{$groupName} Manager",
+                'display_name' => "{$groupName} Manager",
+                'description' => "Manager role for {$groupName} group",
                 'badge_color' => '#8b5cf6',
-                'hierarchy_level' => 50,
+                'hierarchy_level' => 70, // Manager level
             ],
-            'admin' => [
-                'display_name' => 'Group Admin',
-                'description' => 'Group administrator with full group management access',
-                'badge_color' => '#ef4444',
-                'hierarchy_level' => 100,
+            'staff' => [
+                'name' => "{$groupName} Staff",
+                'display_name' => "{$groupName} Staff",
+                'description' => "Staff role for {$groupName} group",
+                'badge_color' => '#3b82f6',
+                'hierarchy_level' => 30, // Staff level
             ],
         ];
 
         $createdRoles = [];
-        foreach ($defaultRoles as $roleName => $roleData) {
-            $createdRoles[$roleName] = \App\Models\Role::create([
-                'name' => $roleName,
-                'group_id' => $group->id,
+        foreach ($defaultRoles as $roleKey => $roleData) {
+            $createdRoles[$roleKey] = \App\Models\Role::create([
+                'name' => $roleData['name'],
                 'display_name' => $roleData['display_name'],
                 'description' => $roleData['description'],
                 'badge_color' => $roleData['badge_color'],
@@ -150,15 +147,14 @@ class GroupController extends Controller
         $this->authorize('update', $group);
         
         $users = User::whereNotNull('email_verified_at')->get();
-        $groupUsers = $group->users->pluck('id')->toArray();
         
-        // Load group roles directly
-        $groupRoles = $group->roles()->get();
+        // Get only roles that are currently used in this specific group
+        $groupRoleIds = $group->groupMembers()->distinct()->pluck('role_id')->toArray();
+        $roles = \App\Models\Role::whereIn('id', $groupRoleIds)->get();
         
-        // Check if user is group admin (not system admin)
-        $isGroupAdminOnly = !auth()->user()->canManageSystem() && Gate::allows('manage-group', $group);
+        $groupUsers = $group->groupMembers()->pluck('user_id')->toArray();
         
-        return view('admin.groups.edit', compact('group', 'users', 'groupUsers', 'groupRoles', 'isGroupAdminOnly'));
+        return view('admin.groups.edit', compact('group', 'users', 'roles', 'groupUsers'));
     }
 
     /**

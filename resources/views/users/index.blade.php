@@ -117,15 +117,20 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($user->groups->count() > 0)
-                                                <div class="flex flex-wrap gap-1">
-                                                    @foreach($user->groups->take(2) as $group)
-                                                        <x-mary-badge value="{{ $group->name }}" class="badge-outline text-xs" />
-                                                    @endforeach
-                                                    @if($user->groups->count() > 2)
-                                                        <x-mary-badge value="+{{ $user->groups->count() - 2 }}" class="badge-ghost text-xs" />
-                                                    @endif
-                                                </div>
+                                            @if($user->groupMembers->count() > 0)
+                                                <button 
+                                                    onclick="showGroupsModal{{ $user->id }}.showModal()"
+                                                    class="text-left hover:underline cursor-pointer"
+                                                >
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach($user->groupMembers->take(2) as $membership)
+                                                            <span class="badge badge-outline text-xs">{{ $membership->group->name }}</span>
+                                                        @endforeach
+                                                        @if($user->groupMembers->count() > 2)
+                                                            <span class="badge badge-ghost text-xs">+{{ $user->groupMembers->count() - 2 }} more</span>
+                                                        @endif
+                                                    </div>
+                                                </button>
                                             @else
                                                 <span class="text-sm text-gray-400">No groups</span>
                                             @endif
@@ -139,6 +144,55 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Group Modals (placed outside table for proper overlay) --}}
+                    @foreach($users as $user)
+                        @if($user->groupMembers->count() > 0)
+                            <dialog id="showGroupsModal{{ $user->id }}" class="modal">
+                                <div class="modal-box max-w-2xl">
+                                    <h3 class="font-bold text-lg mb-4">
+                                        {{ $user->name }}'s Groups & Roles
+                                    </h3>
+                                    
+                                    <div class="space-y-3">
+                                        @foreach($user->groupMembers as $membership)
+                                            <div class="border rounded-lg p-4 hover:bg-base-200 transition-colors">
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1">
+                                                        <h4 class="font-semibold text-base">{{ $membership->group->name }}</h4>
+                                                        @if($membership->group->description)
+                                                            <p class="text-sm text-gray-500 mt-1">{{ $membership->group->description }}</p>
+                                                        @endif
+                                                        
+                                                        <div class="flex items-center gap-3 mt-3">
+                                                            @if($membership->role)
+                                                                <span class="badge text-xs text-white" style="background-color: {{ $membership->role->badge_color ?? '#6366f1' }};">
+                                                                    {{ $membership->role->display_name ?? $membership->role->name }}
+                                                                </span>
+                                                            @endif
+                                                            
+                                                            <span class="text-xs text-gray-500">
+                                                                Joined {{ $membership->joined_at ? $membership->joined_at->diffForHumans() : 'recently' }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    
+                                    <div class="modal-action">
+                                        <form method="dialog">
+                                            <button class="btn">Close</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>close</button>
+                                </form>
+                            </dialog>
+                        @endif
+                    @endforeach
 
                     <!-- Pagination -->
                     @if($users->hasPages())

@@ -96,12 +96,6 @@
                         icon="o-rectangle-group" 
                         class="btn-outline btn-sm w-full"
                         link="{{ route('admin.groups.index') }}" />
-                        
-                    <x-mary-button 
-                        label="Join Requests" 
-                        icon="o-envelope" 
-                        class="btn-ghost btn-sm w-full"
-                        link="{{ route('admin.group-join-requests') }}" />
                 </div>
             </x-mary-card>
 

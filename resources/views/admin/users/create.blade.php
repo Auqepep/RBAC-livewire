@@ -43,39 +43,47 @@
                     <div id="group-assignments" class="space-y-4">
                         {{-- Initial Assignment Row --}}
                         <div class="group-assignment-row grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border">
-                            <x-mary-select 
-                                label="Group"
-                                name="group_assignments[0][group_id]"
-                                :options="$groups->map(fn($g) => ['id' => $g->id, 'name' => $g->name])->toArray()"
-                                option-value="id"
-                                option-label="name"
-                                placeholder="Select a group"
-                                class="group-select" />
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Group</label>
+                                <select name="group_assignments[0][group_id]" 
+                                        class="group-select w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 select select-bordered">
+                                    <option value="">Select a group</option>
+                                    @foreach($groups as $group)
+                                        <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                            <x-mary-select 
-                                label="Role in Group"
-                                name="group_assignments[0][role_id]"
-                                placeholder="Select a role"
-                                class="role-select"
-                                disabled />
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Role in Group</label>
+                                <select name="group_assignments[0][role_id]" 
+                                        class="role-select w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 select select-bordered"
+                                        disabled>
+                                    <option value="">Select a role</option>
+                                </select>
+                            </div>
 
                             <div class="flex items-end">
-                                <x-mary-button 
-                                    label="Remove"
-                                    icon="o-trash"
-                                    class="btn-error btn-outline remove-assignment"
-                                    type="button" />
+                                <button type="button" 
+                                        class="remove-assignment btn btn-error btn-outline w-full">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Remove
+                                </button>
                             </div>
                         </div>
                     </div>
 
                     <div class="mt-4">
-                        <x-mary-button 
-                            label="Add Another Group"
-                            icon="o-plus"
-                            class="btn-success btn-outline"
-                            type="button"
-                            id="add-assignment" />
+                        <button type="button" 
+                                id="add-assignment"
+                                class="btn btn-success btn-outline">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Another Group
+                        </button>
                     </div>
                 </x-mary-card>
             </div>

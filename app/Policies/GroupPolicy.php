@@ -53,8 +53,8 @@ class GroupPolicy
             return true;
         }
 
-        // Check if user is a manager in this specific group
-        return $this->isManagerOfGroup($user, $group) && $user->hasPermission('edit_own_group');
+        // Group managers can update their own group
+        return $this->isManagerOfGroup($user, $group);
     }
 
     /**
@@ -76,8 +76,8 @@ class GroupPolicy
             return true;
         }
 
-        // Check if user is a manager in this specific group
-        return $this->isManagerOfGroup($user, $group) && $user->hasPermission('manage_own_group_members');
+        // Group managers can manage members in their own group
+        return $this->isManagerOfGroup($user, $group);
     }
 
     /**
@@ -90,8 +90,8 @@ class GroupPolicy
             return true;
         }
 
-        // Check if user is a manager in this specific group
-        return $this->isManagerOfGroup($user, $group) && $user->hasPermission('manage_own_group_members');
+        // Group managers can assign roles in their own group
+        return $this->isManagerOfGroup($user, $group);
     }
 
     /**
@@ -108,9 +108,8 @@ class GroupPolicy
             return false;
         }
 
-        // Treat supervisor and above as managers for management actions.
-        // Using hierarchy levels where: 6=SuperAdmin,5=Admin,4=Manager,3=Supervisor,2=Staff
-        // Allow supervisors (>= 3) to access manager-level commands when permissions apply.
-        return $membership->role->hierarchy_level >= 3;
+        // Hierarchy levels: admin (90), manager (70), staff (30)
+        // Only managers and admins can perform management actions
+        return $membership->role->hierarchy_level >= 70;
     }
 }

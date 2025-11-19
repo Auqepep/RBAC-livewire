@@ -7,7 +7,6 @@ use App\Models\Group;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\GroupMember;
-use App\Models\GroupJoinRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Gate;
@@ -26,10 +25,14 @@ class GroupManagementController extends Controller
         $this->authorize('update', $group);
 
         $users = User::whereNotNull('email_verified_at')->get();
-        $roles = Role::where('is_active', true)->get();
-        $groupMembers = $group->groupMembers()->with(['user', 'role'])->get();
+        
+        // Get only roles that are currently used in this specific group
+        $groupRoleIds = $group->groupMembers()->distinct()->pluck('role_id')->toArray();
+        $roles = Role::whereIn('id', $groupRoleIds)->get();
+        
+        $groupUsers = $group->groupMembers()->pluck('user_id')->toArray();
 
-        return view('users.group-edit', compact('group', 'users', 'roles', 'groupMembers'));
+        return view('users.group-edit', compact('group', 'users', 'roles', 'groupUsers'));
     }
 
     /**
@@ -177,116 +180,6 @@ class GroupManagementController extends Controller
         $member->delete();
 
         return back()->with('success', 'Member removed successfully!');
-    }
-
-    /**
-     * Approve a join request
-     */
-    public function approveRequest(Request $request, GroupJoinRequest $joinRequest)
-    {
-        // Get the group from the join request
-        $group = $joinRequest->group;
-        
-        // Check if user can manage members in this group
-        $this->authorize('manageMembers', $group);
-
-        // Ensure the request belongs to this group
-        if ($joinRequest->group_id !== $group->id) {
-            abort(404);
-        }
-
-        // Ensure the request is still pending
-        if ($joinRequest->status !== 'pending') {
-            return back()->with('error', 'This request has already been processed.');
-        }
-
-        $validated = $request->validate([
-            'role_id' => 'required|exists:roles,id',
-            'admin_message' => 'nullable|string',
-        ]);
-
-        // Get the manager's role to check hierarchy
-        $managerMembership = GroupMember::where('user_id', auth()->id())
-            ->where('group_id', $group->id)
-            ->with('role')
-            ->first();
-
-        $assignedRole = Role::find($validated['role_id']);
-
-        // Managers can't assign roles higher than their own
-        if ($managerMembership && $assignedRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
-            return back()->with('error', 'You cannot assign a role equal to or higher than your own.');
-        }
-
-        // Check if user is already a member
-        $existing = GroupMember::where('group_id', $group->id)
-            ->where('user_id', $joinRequest->user_id)
-            ->first();
-
-        if ($existing) {
-            $joinRequest->update([
-                'status' => 'rejected',
-                'reviewed_by' => auth()->id(),
-                'admin_message' => 'User is already a member of this group.',
-                'reviewed_at' => now(),
-            ]);
-            return back()->with('error', 'User is already a member of this group.');
-        }
-
-        // Add the user to the group
-        GroupMember::create([
-            'group_id' => $group->id,
-            'user_id' => $joinRequest->user_id,
-            'role_id' => $validated['role_id'],
-            'assigned_by' => auth()->id(),
-            'joined_at' => now(),
-        ]);
-
-        // Update the join request status
-        $joinRequest->update([
-            'status' => 'approved',
-            'reviewed_by' => auth()->id(),
-            'admin_message' => $validated['admin_message'],
-            'reviewed_at' => now(),
-        ]);
-
-        return back()->with('success', 'Join request approved! Member added to the group.');
-    }
-
-    /**
-     * Reject a join request
-     */
-    public function rejectRequest(Request $request, GroupJoinRequest $joinRequest)
-    {
-        // Get the group from the join request
-        $group = $joinRequest->group;
-        
-        // Check if user can manage members in this group
-        $this->authorize('manageMembers', $group);
-
-        // Ensure the request belongs to this group
-        if ($joinRequest->group_id !== $group->id) {
-            abort(404);
-        }
-
-        // Ensure the request is still pending
-        if ($joinRequest->status !== 'pending') {
-            return back()->with('error', 'This request has already been processed.');
-        }
-
-        $validated = $request->validate([
-            'admin_message' => 'nullable|string',
-        ]);
-
-        // Update the join request status
-        $joinRequest->update([
-            'status' => 'rejected',
-            'reviewed_by' => auth()->id(),
-            'admin_message' => $validated['admin_message'] ?? 'Your request has been rejected.',
-            'reviewed_at' => now(),
-        ]);
-
-        return back()->with('success', 'Join request rejected.');
     }
 
     /**
