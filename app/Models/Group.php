@@ -13,11 +13,15 @@ class Group extends Model
         'name',
         'description',
         'is_active',
-        'created_by'
+        'created_by',
+        'third_party_app_url',
+        'oauth_client_id',
+        'enable_gateway_redirect',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'enable_gateway_redirect' => 'boolean',
     ];
 
     /**

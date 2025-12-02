@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Policies\GroupPolicy;
 use App\Observers\GroupMemberObserver;
 use App\Observers\RoleObserver;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Configure Passport
+        Passport::enablePasswordGrant();
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
+        Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+
         // Register model observers for cache invalidation
         GroupMember::observe(GroupMemberObserver::class);
         Role::observe(RoleObserver::class);

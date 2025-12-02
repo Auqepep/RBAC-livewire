@@ -86,6 +86,92 @@
                             </div>
                         </div>
 
+                        <!-- OAuth / Third-Party App Integration -->
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Gateway & Third-Party App Integration
+                            </h3>
+                            
+                            <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-start gap-2 text-sm text-blue-800">
+                                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div>
+                                        <p class="font-semibold">Configure OAuth 2.0 Integration</p>
+                                        <p class="text-xs mt-1">When enabled, users accessing the gateway will be redirected to your third-party application with authentication details.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <input 
+                                        type="checkbox"
+                                        name="enable_gateway_redirect" 
+                                        value="1" 
+                                        {{ old('enable_gateway_redirect', $group->enable_gateway_redirect) ? 'checked' : '' }}
+                                        class="checkbox checkbox-primary"
+                                        id="enable_gateway_redirect"
+                                    />
+                                    <label for="enable_gateway_redirect" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                        Enable Gateway Redirect
+                                        <span class="block text-xs text-gray-500 font-normal">Automatically redirect authenticated users to third-party app</span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Third-Party App URL
+                                        <span class="text-xs text-gray-500 ml-1">(Optional)</span>
+                                    </label>
+                                    <input 
+                                        type="url"
+                                        name="third_party_app_url" 
+                                        value="{{ old('third_party_app_url', $group->third_party_app_url) }}"
+                                        placeholder="https://your-app.com/oauth/callback"
+                                        class="input input-bordered w-full @error('third_party_app_url') input-error @enderror"
+                                    />
+                                    @error('third_party_app_url')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                    <p class="text-sm text-gray-500 mt-1">URL where users will be redirected after gateway authentication</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        OAuth Client ID
+                                        <span class="text-xs text-gray-500 ml-1">(Optional)</span>
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        name="oauth_client_id" 
+                                        value="{{ old('oauth_client_id', $group->oauth_client_id) }}"
+                                        placeholder="9d425c82-aa6c-4a1b-9c3d-1234567890ab"
+                                        class="input input-bordered w-full font-mono text-sm @error('oauth_client_id') input-error @enderror"
+                                    />
+                                    @error('oauth_client_id')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                    <p class="text-sm text-gray-500 mt-1">OAuth 2.0 Client ID for the third-party application</p>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
+                                    <p class="font-semibold mb-1">📋 What gets sent to the third-party app:</p>
+                                    <ul class="list-disc list-inside space-y-0.5 ml-2">
+                                        <li>User ID, Email, Name</li>
+                                        <li>Group ID & Name</li>
+                                        <li>User's Role in this group</li>
+                                        <li>OAuth Client ID (if configured)</li>
+                                        <li>Timestamp</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Group Members Section -->
                         <div class="border-t pt-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-3">Group Members</h3>

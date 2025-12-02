@@ -1,5 +1,34 @@
 <div>
-    @if($hasGatewayAccess)
+    @if($redirectUrl)
+        <!-- Redirecting to Third-Party App -->
+        <div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+            <div class="text-center">
+                <div class="mb-8">
+                    <div class="w-32 h-32 mx-auto bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-6 shadow-lg animate-pulse">
+                        <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-4xl font-bold text-gray-800 mb-4">Redirecting...</h1>
+                    <p class="text-xl text-gray-600">Taking you to {{ $group->name }} app</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
+                    <p class="text-sm text-gray-600 mb-4">If you are not redirected automatically,</p>
+                    <a href="{{ $redirectUrl }}" class="btn btn-primary">
+                        Click Here to Continue
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Auto-redirect after 1 second
+            setTimeout(function() {
+                window.location.href = @js($redirectUrl);
+            }, 1000);
+        </script>
+    @elseif($hasGatewayAccess)
         <!-- Gateway Access Granted -->
         <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
             <div class="text-center">

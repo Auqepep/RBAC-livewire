@@ -169,6 +169,9 @@ class GroupController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('groups')->ignore($group->id)],
             'description' => 'nullable|string',
             'is_active' => 'boolean',
+            'third_party_app_url' => 'nullable|url|max:500',
+            'oauth_client_id' => 'nullable|string|max:255',
+            'enable_gateway_redirect' => 'boolean',
             'users' => 'array',
             'users.*' => 'exists:users,id',
             'user_roles' => 'array',
@@ -179,6 +182,9 @@ class GroupController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'],
             'is_active' => $validated['is_active'] ?? true,
+            'third_party_app_url' => $validated['third_party_app_url'] ?? null,
+            'oauth_client_id' => $validated['oauth_client_id'] ?? null,
+            'enable_gateway_redirect' => $validated['enable_gateway_redirect'] ?? false,
         ]);
 
         // Get current members

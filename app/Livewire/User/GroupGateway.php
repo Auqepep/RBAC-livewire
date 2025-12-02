@@ -31,6 +31,38 @@ class GroupGateway extends Component
         
         // Check if user's role in this group has gateway access
         $this->checkGatewayAccess($membership);
+        
+        // If access granted and redirect is enabled, redirect to third-party app
+        if ($this->hasGatewayAccess && $this->group->enable_gateway_redirect && $this->group->third_party_app_url) {
+            $this->redirectToThirdPartyApp();
+        }
+    }
+    
+    public $redirectUrl = null;
+    
+    private function redirectToThirdPartyApp()
+    {
+        $baseUrl = $this->group->third_party_app_url;
+        
+        // Add user information as query parameters for the third-party app
+        $params = [
+            'user_id' => Auth::id(),
+            'user_email' => Auth::user()->email,
+            'user_name' => Auth::user()->name,
+            'group_id' => $this->group->id,
+            'group_name' => $this->group->name,
+            'role' => $this->userRole?->name,
+            'role_display' => $this->userRole?->display_name,
+            'timestamp' => now()->timestamp,
+        ];
+        
+        // If OAuth client is configured, add it
+        if ($this->group->oauth_client_id) {
+            $params['client_id'] = $this->group->oauth_client_id;
+        }
+        
+        // Build the full redirect URL
+        $this->redirectUrl = $baseUrl . '?' . http_build_query($params);
     }
 
     private function checkGatewayAccess($membership)
