@@ -7,10 +7,19 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Services\RbacCacheService;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    /**
+     * Get RBAC Cache Service instance
+     */
+    protected function cacheService(): RbacCacheService
+    {
+        return app(RbacCacheService::class);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -104,15 +113,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user has permission (through their roles)
+     * Check if user has permission (through their roles) - CACHED
      */
     public function hasPermission(string $permissionName): bool
     {
-        return $this->roles()
-                    ->whereHas('permissions', function($query) use ($permissionName) {
-                        $query->where('name', $permissionName);
-                    })
-                    ->exists();
+        // Use cache service for better performance
+        return $this->cacheService()->userHasPermission($this->id, $permissionName);
     }
 
     /**
@@ -315,22 +321,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user has a specific permission in a specific group
+     * Check if user has a specific permission in a specific group - CACHED
      */
     public function hasPermissionInGroup(int $groupId, string $permissionName): bool
     {
-        $groupMembership = $this->groupMemberships()
-                              ->where('group_id', $groupId)
-                              ->with('role.permissions')
-                              ->first();
-        
-        if (!$groupMembership || !$groupMembership->role) {
-            return false;
-        }
-        
-        return $groupMembership->role->permissions()
-                              ->where('name', $permissionName)
-                              ->exists();
+        // Use cache service for better performance
+        return $this->cacheService()->userHasPermissionInGroup($this->id, $groupId, $permissionName);
     }
 
     /**

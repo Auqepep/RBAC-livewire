@@ -43,15 +43,20 @@ body {
 
 /* Button variants */
 .btn-primary {
-    @apply bg-black text-white hover:bg-blue-900 shadow-none border-0;
+    @apply text-white hover:opacity-90 shadow-none border-0;
+    background-color: #009634;
+}
+
+.btn-primary:hover {
+    background-color: #007a2a;
 }
 
 .btn-secondary {
-    @apply bg-gray-500 text-white hover:bg-gray-600 shadow-none border-0;
+    @apply bg-blue-500 text-white hover:bg-blue-600 shadow-none border-0;
 }
 
 .btn-error {
-    @apply bg-red-500 text-black hover:bg-red-600 shadow-none border-0;
+    @apply bg-red-500 text-white hover:bg-red-600 shadow-none border-0;
 }
 
 /* ==========================================================================
@@ -63,9 +68,109 @@ body {
  * Because Laravel defaults does not match well the design of daisyUI.
  */
 .mary-table-pagination span[aria-current="page"] > span {
-    @apply bg-primary text-base-100;
+    background-color: #009634 !important;
+    @apply text-white;
 }
 
 .mary-table-pagination button {
     @apply cursor-pointer;
+}
+
+/* ==========================================================================
+   Custom Color Theme - Primary: #009634 (Green), Secondary: Blue
+   ========================================================================== */
+
+/* Badge Colors */
+.badge-primary {
+    background-color: #009634 !important;
+    @apply text-white border-0;
+}
+
+.badge-success {
+    background-color: #009634 !important;
+    @apply text-white border-0;
+}
+
+.badge-secondary {
+    @apply bg-blue-500 text-white border-0;
+}
+
+/* Checkbox Colors */
+.checkbox-primary:checked,
+.checkbox-success:checked {
+    background-color: #009634 !important;
+    border-color: #009634 !important;
+}
+
+.checkbox-secondary:checked {
+    @apply bg-blue-500 border-blue-500;
+}
+
+/* Alert Colors */
+.alert-success {
+    background-color: #e6f7ed !important;
+    border-left: 4px solid #009634 !important;
+    color: #005a1f !important;
+}
+
+.alert-info {
+    @apply bg-blue-50 text-blue-900;
+    border-left: 4px solid #3b82f6 !important;
+}
+
+/* Border Colors */
+.border-primary {
+    border-color: #009634 !important;
+}
+
+.border-success {
+    border-color: #009634 !important;
+}
+
+.border-secondary {
+    @apply border-blue-500;
+}
+
+/* Background Colors */
+.bg-primary {
+    background-color: #009634 !important;
+}
+
+.bg-primary\/5 {
+    background-color: rgba(0, 150, 52, 0.05) !important;
+}
+
+.bg-success\/5 {
+    background-color: rgba(0, 150, 52, 0.05) !important;
+}
+
+/* Text Colors */
+.text-primary {
+    color: #009634 !important;
+}
+
+.text-success {
+    color: #009634 !important;
+}
+
+.text-secondary {
+    @apply text-blue-500;
+}
+
+/* Hover States */
+.hover\:bg-primary:hover {
+    background-color: #007a2a !important;
+}
+
+.hover\:text-primary:hover {
+    color: #009634 !important;
+}
+
+/* Focus States */
+.focus\:border-primary:focus {
+    border-color: #009634 !important;
+}
+
+.focus\:ring-primary:focus {
+    --tw-ring-color: #009634 !important;
 }

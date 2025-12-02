@@ -5,7 +5,11 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\Role;
 use App\Policies\GroupPolicy;
+use App\Observers\GroupMemberObserver;
+use App\Observers\RoleObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register model observers for cache invalidation
+        GroupMember::observe(GroupMemberObserver::class);
+        Role::observe(RoleObserver::class);
+
         // Register model policies
         Gate::policy(Group::class, GroupPolicy::class);
 
