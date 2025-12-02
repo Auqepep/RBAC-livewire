@@ -1,17 +1,18 @@
 <x-admin.layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
                 {{ __('Groups Management') }}
             </h2>
-            <x-mary-button icon="o-plus" class="btn-primary" link="{{ route('admin.groups.create') }}">
-                Create Group
+            <x-mary-button icon="o-plus" class="btn-primary btn-sm sm:btn-md" link="{{ route('admin.groups.create') }}">
+                <span class="hidden sm:inline">Create Group</span>
+                <span class="sm:hidden">New</span>
             </x-mary-button>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <x-mary-card>
                 @if(session('success'))
                     <x-mary-alert icon="o-check-circle" class="alert-success mb-4">
@@ -26,19 +27,19 @@
                 @endif
 
                 <!-- Search and Sort Form -->
-                <div class="mb-6 space-y-4">
-                    <form method="GET" action="{{ route('admin.groups.index') }}" class="flex flex-col lg:flex-row gap-4">
+                <div class="mb-4 sm:mb-6 space-y-4">
+                    <form method="GET" action="{{ route('admin.groups.index') }}" class="flex flex-col gap-3 sm:gap-4">
                         <div class="flex-1">
                             <x-mary-input 
                                 name="search" 
                                 value="{{ $search ?? '' }}" 
-                                placeholder="Search groups by name or description..."
+                                placeholder="Search groups..."
                                 icon="o-magnifying-glass"
                             />
                         </div>
                         
                         <!-- Sort Controls -->
-                        <div class="flex gap-2">
+                        <div class="grid grid-cols-2 gap-2">
                             <x-mary-select 
                                 name="sort_by" 
                                 :options="[
@@ -55,8 +56,8 @@
                             <x-mary-select 
                                 name="sort_order" 
                                 :options="[
-                                    ['value' => 'asc', 'label' => 'A-Z / Oldest / Least'],
-                                    ['value' => 'desc', 'label' => 'Z-A / Newest / Most']
+                                    ['value' => 'asc', 'label' => 'Ascending'],
+                                    ['value' => 'desc', 'label' => 'Descending']
                                 ]"
                                 option-value="value"
                                 option-label="label"
@@ -66,11 +67,11 @@
                         </div>
                         
                         <div class="flex gap-2">
-                            <x-mary-button type="submit" class="btn-primary" icon="o-magnifying-glass">
+                            <x-mary-button type="submit" class="btn-primary flex-1 sm:flex-none" icon="o-magnifying-glass">
                                 Search
                             </x-mary-button>
                             @if(($search ?? '') || ($sortBy ?? 'name') !== 'name' || ($sortOrder ?? 'asc') !== 'asc')
-                                <x-mary-button link="{{ route('admin.groups.index') }}" class="btn-secondary" icon="o-x-mark">
+                                <x-mary-button link="{{ route('admin.groups.index') }}" class="btn-secondary flex-1 sm:flex-none" icon="o-x-mark">
                                     Reset
                                 </x-mary-button>
                             @endif
@@ -79,7 +80,8 @@
                 </div>
 
                 @if($groups->count() > 0)
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View (hidden on mobile) -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="table table-zebra w-full">
                             <thead>
                                 <tr>
@@ -101,13 +103,13 @@
                                             <div class="text-sm">{{ Str::limit($group->description ?? 'No description', 80) }}</div>
                                         </td>
                                         <td class="text-center">
-                                            <x-mary-badge value="{{ $group->group_members_count }}" class="badge-primary" />
+                                            <x-mary-badge value="{{ $group->group_members_count }}" class="badge-primary badge-xs sm:badge-sm" />
                                         </td>
                                         <td class="text-center">
                                             @if($group->is_active)
-                                                <x-mary-badge value="Active" class="badge-success" />
+                                                <x-mary-badge value="Active" class="badge-success badge-xs sm:badge-sm" />
                                             @else
-                                                <x-mary-badge value="Inactive" class="badge-error" />
+                                                <x-mary-badge value="Inactive" class="badge-error badge-xs sm:badge-sm" />
                                             @endif
                                         </td>
                                         <td>
@@ -133,6 +135,50 @@
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Mobile Card View (shown on mobile only) -->
+                    <div class="md:hidden space-y-4">
+                        @foreach($groups as $group)
+                            <div class="card bg-base-100 shadow-sm border">
+                                <div class="card-body p-4">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">{{ $group->name }}</h3>
+                                            <p class="text-sm text-gray-500 mt-1">{{ Str::limit($group->description ?? 'No description', 60) }}</p>
+                                        </div>
+                                        @if($group->is_active)
+                                            <x-mary-badge value="Active" class="badge-success badge-xs" />
+                                        @else
+                                            <x-mary-badge value="Inactive" class="badge-error badge-xs" />
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                                        <div class="flex items-center gap-3 text-sm text-gray-500">
+                                            <span class="flex items-center gap-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                                </svg>
+                                                {{ $group->group_members_count }}
+                                            </span>
+                                            <span>{{ $group->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <x-mary-button icon="o-eye" class="btn-xs btn-ghost" link="{{ route('admin.groups.show', $group) }}" />
+                                            <x-mary-button icon="o-pencil" class="btn-xs btn-primary" link="{{ route('admin.groups.edit', $group) }}" />
+                                            @if($group->group_members_count == 0)
+                                                <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" class="inline" 
+                                                      onsubmit="return confirm('Delete this group?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <x-mary-button icon="o-trash" class="btn-xs btn-error" type="submit" />
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
 
                     <div class="mt-4">

@@ -1,22 +1,24 @@
 <x-admin.layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Group Details') }}: {{ $group->name }}
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
+                {{ __('Group') }}: {{ Str::limit($group->name, 30) }}
             </h2>
-            <div class="flex space-x-2">
-                <x-mary-button icon="o-pencil" class="btn-primary" link="{{ route('admin.groups.edit', $group) }}">
-                    Edit Group
+            <div class="flex flex-wrap gap-2">
+                <x-mary-button icon="o-pencil" class="btn-primary btn-sm sm:btn-md" link="{{ route('admin.groups.edit', $group) }}">
+                    <span class="hidden sm:inline">Edit Group</span>
+                    <span class="sm:hidden">Edit</span>
                 </x-mary-button>
-                <x-mary-button icon="o-arrow-left" class="btn-secondary" link="{{ route('admin.groups.index') }}">
-                    Back to Groups
+                <x-mary-button icon="o-arrow-left" class="btn-secondary btn-sm sm:btn-md" link="{{ route('admin.groups.index') }}">
+                    <span class="hidden sm:inline">Back to Groups</span>
+                    <span class="sm:hidden">Back</span>
                 </x-mary-button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
             <!-- Group Information Card -->
             <x-mary-card title="Group Information">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -29,9 +31,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                         @if($group->is_active)
-                            <x-mary-badge value="Active" class="badge-success" />
+                            <x-mary-badge value="Active" class="badge-success badge-xs sm:badge-sm" />
                         @else
-                            <x-mary-badge value="Inactive" class="badge-error" />
+                            <x-mary-badge value="Inactive" class="badge-error badge-xs sm:badge-sm" />
                         @endif
                     </div>
                     
@@ -87,10 +89,10 @@
                                             @if($member->role)
                                                 <x-mary-badge 
                                                     value="{{ $member->role->name }}" 
-                                                    class="badge-primary" 
+                                                    class="badge-primary badge-xs sm:badge-sm" 
                                                 />
                                             @else
-                                                <x-mary-badge value="No Role" class="badge-error" />
+                                                <x-mary-badge value="No Role" class="badge-error badge-xs sm:badge-sm" />
                                             @endif
                                         </td>
                                         <td>

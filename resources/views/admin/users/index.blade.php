@@ -1,33 +1,34 @@
 <x-admin.layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
                 {{ __('Users Management') }}
             </h2>
-            <x-mary-button icon="o-plus" class="btn-primary" link="{{ route('admin.users.create') }}">
-                Create User
+            <x-mary-button icon="o-plus" class="btn-primary btn-sm sm:btn-md" link="{{ route('admin.users.create') }}">
+                <span class="hidden sm:inline">Create User</span>
+                <span class="sm:hidden">New</span>
             </x-mary-button>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
             
             <x-mary-card>
                 <!-- Search and Sort Form -->
-                <div class="mb-6 space-y-4">
-                    <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col lg:flex-row gap-4">
+                <div class="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
+                    <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col gap-3 sm:gap-4">
                         <div class="flex-1">
                             <x-mary-input 
                                 name="search" 
                                 value="{{ $search ?? '' }}" 
-                                placeholder="Search users by name or email..."
+                                placeholder="Search users..."
                                 icon="o-magnifying-glass"
                             />
                         </div>
                         
                         <!-- Sort Controls -->
-                        <div class="flex gap-2">
+                        <div class="grid grid-cols-2 sm:flex gap-2">
                             <x-mary-select 
                                 name="sort_by" 
                                 :options="[
@@ -44,8 +45,8 @@
                             <x-mary-select 
                                 name="sort_order" 
                                 :options="[
-                                    ['value' => 'asc', 'label' => 'A-Z / Oldest'],
-                                    ['value' => 'desc', 'label' => 'Z-A / Newest']
+                                    ['value' => 'asc', 'label' => 'Ascending'],
+                                    ['value' => 'desc', 'label' => 'Descending']
                                 ]"
                                 option-value="value"
                                 option-label="label"
@@ -53,7 +54,7 @@
                                 placeholder="Order..."
                             />
                             
-                            <x-mary-button type="submit" icon="o-funnel" class="btn-primary">
+                            <x-mary-button type="submit" icon="o-funnel" class="btn-primary col-span-2 sm:col-span-1">
                                 Filter
                             </x-mary-button>
                         </div>
@@ -82,7 +83,8 @@
                 @endif
 
                 @if($users->count() > 0)
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View (hidden on mobile) -->
+                    <div class="hidden lg:block overflow-x-auto">
                         <table class="table table-zebra w-full">
                             <thead>
                                 <tr>
@@ -112,7 +114,7 @@
                                                     @foreach($user->groupMembers->take(2) as $membership)
                                                         <x-mary-badge 
                                                             value="{{ $membership->group->name }}" 
-                                                            class="badge-primary badge-sm" 
+                                                            class="badge-primary badge-xs sm:badge-sm" 
                                                         />
                                                     @endforeach
                                                     @if($user->groupMembers->count() > 2)
@@ -133,15 +135,15 @@
                                         <td class="text-center">
                                             <div class="space-y-1">
                                                 @if($user->email_verified_at)
-                                                    <x-mary-badge value="Verified" class="badge-success badge-sm" />
+                                                    <x-mary-badge value="Verified" class="badge-success badge-xs sm:badge-sm" />
                                                 @else
-                                                    <x-mary-badge value="Unverified" class="badge-error badge-sm" />
+                                                    <x-mary-badge value="Unverified" class="badge-error badge-xs sm:badge-sm" />
                                                 @endif
                                                 
                                                 @if($user->isSuperAdmin())
-                                                    <x-mary-badge value="Super Admin" class="badge-error badge-sm" />
+                                                    <x-mary-badge value="Super Admin" class="badge-error badge-xs sm:badge-sm" />
                                                 @elseif($user->canManageSystem())
-                                                    <x-mary-badge value="Admin" class="badge-warning badge-sm" />
+                                                    <x-mary-badge value="Admin" class="badge-warning badge-xs sm:badge-sm" />
                                                 @endif
                                             </div>
                                         </td>
@@ -182,24 +184,105 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Mobile Card View (shown on mobile and tablet) -->
+                    <div class="lg:hidden space-y-4">
+                        @foreach($users as $user)
+                            <div class="card bg-base-100 shadow-sm border">
+                                <div class="card-body p-4">
+                                    <div class="flex justify-between items-start gap-2">
+                                        <div class="min-w-0 flex-1">
+                                            <h3 class="font-semibold text-gray-900 truncate">{{ $user->name }}</h3>
+                                            <p class="text-sm text-gray-500 truncate">{{ $user->email }}</p>
+                                        </div>
+                                        <div class="flex flex-col items-end gap-1 shrink-0">
+                                            @if($user->email_verified_at)
+                                                <x-mary-badge value="Verified" class="badge-success badge-xs" />
+                                            @else
+                                                <x-mary-badge value="Unverified" class="badge-error badge-xs" />
+                                            @endif
+                                            @if($user->isSuperAdmin())
+                                                <x-mary-badge value="Super Admin" class="badge-error badge-xs" />
+                                            @elseif($user->canManageSystem())
+                                                <x-mary-badge value="Admin" class="badge-warning badge-xs" />
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Groups -->
+                                    <div class="mt-2">
+                                        @if($user->groupMembers->count() > 0)
+                                            <button 
+                                                onclick="showGroupsModal{{ $user->id }}.showModal()" 
+                                                class="flex flex-wrap gap-1 items-center hover:opacity-75 transition-opacity"
+                                            >
+                                                @foreach($user->groupMembers->take(2) as $membership)
+                                                    <x-mary-badge 
+                                                        value="{{ $membership->group->name }}" 
+                                                        class="badge-primary badge-xs" 
+                                                    />
+                                                @endforeach
+                                                @if($user->groupMembers->count() > 2)
+                                                    <x-mary-badge 
+                                                        value="+{{ $user->groupMembers->count() - 2 }}" 
+                                                        class="badge-neutral badge-xs cursor-pointer" 
+                                                    />
+                                                @endif
+                                            </button>
+                                        @else
+                                            <span class="text-gray-400 text-xs">No groups</span>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                                        <span class="text-xs text-gray-500">{{ $user->created_at->diffForHumans() }}</span>
+                                        <div class="flex gap-1">
+                                            <x-mary-button icon="o-eye" class="btn-xs btn-ghost" link="{{ route('admin.users.show', $user) }}" />
+                                            <x-mary-button icon="o-pencil" class="btn-xs btn-primary" link="{{ route('admin.users.edit', $user) }}" />
+                                            @if($user->id !== auth()->id() && !$user->isSuperAdmin())
+                                                @php $isAdmin = $user->canManageSystem(); @endphp
+                                                <form method="POST" action="{{ route('admin.users.toggle-admin', $user) }}" class="inline"
+                                                      onsubmit="return confirm('{{ $isAdmin ? 'Remove admin?' : 'Make admin?' }}')">
+                                                    @csrf
+                                                    <x-mary-button 
+                                                        icon="{{ $isAdmin ? 'o-shield-exclamation' : 'o-shield-check' }}" 
+                                                        class="btn-xs {{ $isAdmin ? 'btn-warning' : 'btn-success' }}" 
+                                                        type="submit"
+                                                    />
+                                                </form>
+                                            @endif
+                                            @if($user->id !== auth()->id())
+                                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline" 
+                                                      onsubmit="return confirm('Delete this user?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <x-mary-button icon="o-trash" class="btn-xs btn-error" type="submit" />
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                     
                     <!-- Modals for all users - outside the table -->
                     @foreach($users as $user)
                         <dialog id="showGroupsModal{{ $user->id }}" class="modal">
-                            <div class="modal-box max-w-2xl">
+                            <div class="modal-box w-11/12 max-w-2xl">
                                 <form method="dialog">
                                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                                 </form>
-                                <h3 class="font-bold text-lg mb-4">{{ $user->name }}'s Groups & Roles</h3>
+                                <h3 class="font-bold text-base sm:text-lg mb-4">{{ $user->name }}'s Groups & Roles</h3>
                                 
                                 @if($user->groupMembers->count() > 0)
                                     <div class="overflow-x-auto">
-                                        <table class="table table-zebra w-full">
+                                        <table class="table table-zebra w-full text-sm">
                                             <thead>
                                                 <tr>
                                                     <th>Group</th>
                                                     <th>Role</th>
-                                                    <th>Joined</th>
+                                                    <th class="hidden sm:table-cell">Joined</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -208,13 +291,13 @@
                                                         <td>
                                                             <div class="font-medium">{{ $membership->group->name }}</div>
                                                             @if($membership->group->description)
-                                                                <div class="text-xs text-gray-500">{{ Str::limit($membership->group->description, 50) }}</div>
+                                                                <div class="text-xs text-gray-500 hidden sm:block">{{ Str::limit($membership->group->description, 50) }}</div>
                                                             @endif
                                                         </td>
                                                         <td>
                                                             <x-mary-badge 
                                                                 value="{{ $membership->role->display_name ?? $membership->role->name }}" 
-                                                                class="badge-sm"
+                                                                class="badge-xs sm:badge-sm"
                                                                 style="background-color: {{ $membership->role->badge_color ?? '#6b7280' }}; color: white;"
                                                             />
                                                         </td>

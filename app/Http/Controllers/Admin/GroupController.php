@@ -84,21 +84,22 @@ class GroupController extends Controller
         ]);
 
         // Create default roles for this group (Manager and Staff only)
+        // These are the ONLY two roles available for any group
         $groupName = $validated['name']; // e.g., "HR", "Gateway"
         
         $defaultRoles = [
             'manager' => [
-                'name' => "{$groupName} Manager",
+                'name' => strtolower(str_replace(' ', '_', $groupName)) . '_manager',
                 'display_name' => "{$groupName} Manager",
-                'description' => "Manager role for {$groupName} group",
-                'badge_color' => '#8b5cf6',
+                'description' => "Manager role for {$groupName} group - can manage members and content",
+                'badge_color' => '#2563eb', // Blue
                 'hierarchy_level' => 70, // Manager level
             ],
             'staff' => [
-                'name' => "{$groupName} Staff",
+                'name' => strtolower(str_replace(' ', '_', $groupName)) . '_staff',
                 'display_name' => "{$groupName} Staff",
-                'description' => "Staff role for {$groupName} group",
-                'badge_color' => '#3b82f6',
+                'description' => "Staff member role for {$groupName} group - basic access",
+                'badge_color' => '#059669', // Green
                 'hierarchy_level' => 30, // Staff level
             ],
         ];

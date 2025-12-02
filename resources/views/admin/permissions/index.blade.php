@@ -1,24 +1,26 @@
 <x-admin.layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
                 {{ __('Permissions Management') }}
             </h2>
-            <div class="flex space-x-2">
+            <div class="flex flex-wrap gap-2">
                 @can('manage-permissions')
-                <x-mary-button icon="o-plus" class="btn-primary" link="{{ route('admin.permissions.create') }}">
-                    Add Permission
+                <x-mary-button icon="o-plus" class="btn-primary btn-sm sm:btn-md" link="{{ route('admin.permissions.create') }}">
+                    <span class="hidden sm:inline">Add Permission</span>
+                    <span class="sm:hidden">Add</span>
                 </x-mary-button>
                 @endcan
-                <x-mary-button icon="o-arrow-left" class="btn-secondary" link="{{ route('admin.dashboard') }}">
-                    Back to Dashboard
+                <x-mary-button icon="o-arrow-left" class="btn-secondary btn-sm sm:btn-md" link="{{ route('admin.dashboard') }}">
+                    <span class="hidden sm:inline">Back to Dashboard</span>
+                    <span class="sm:hidden">Back</span>
                 </x-mary-button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
             
             <!-- Quick Testing Panel -->
             <x-mary-card title="Quick Permission Testing" class="bg-blue-50 border-blue-200">
