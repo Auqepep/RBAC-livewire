@@ -740,11 +740,336 @@ curl -X GET http://localhost:8000/api/user \
 
 -   Check Laravel logs: `storage/logs/laravel.log`
 
+## 🚪 Gateway Redirect Integration
+
+### Overview
+
+Your RBAC system now supports **automatic gateway redirect** to third-party applications! When users access the gateway, they can be automatically redirected with authentication details.
+
+### How It Works
+
+```
+User clicks "Gateway" → OTP Authentication → Automatic Redirect
+                                                    ↓
+                                    Third-Party App Receives:
+                                    - User ID, Email, Name
+                                    - Group ID & Name
+                                    - User's Role
+                                    - OAuth Client ID
+                                    - Timestamp
+```
+
+### Configuration (Admin Panel)
+
+Navigate to **Admin → Groups → Edit Group** and scroll to **"Gateway & Third-Party App Integration"** section:
+
+#### Settings:
+
+1. **Enable Gateway Redirect** - Toggle to enable/disable automatic redirect
+2. **Third-Party App URL** - Where users will be redirected (e.g., `https://your-app.com/oauth/callback`)
+3. **OAuth Client ID** - OAuth 2.0 Client ID for the application (optional)
+
+### Setup New Client Integration
+
+#### Step 1: Get Information From Client
+
+Ask the client for:
+
+-   ✅ **Redirect URL** - Where should users land after authentication
+-   ✅ **App Name** - What's the application called (for your records)
+
+#### Step 2: Generate OAuth Client
+
+```bash
+php artisan passport:client
+
+# Follow prompts:
+Name: Client App Name
+Redirect: https://client-app.com/oauth/callback
+```
+
+**You'll receive:**
+
+```
+Client ID: 019addf9-0c08-7292-a1e8-96378b3ea2ba
+Client Secret: lEPjA2aGNI4ed3gkDn2nHrQkC8MzXFXF3XXfZ1ga
+```
+
+⚠️ **Save these credentials securely!** The secret won't be shown again.
+
+#### Step 3: Provide Credentials to Client
+
+Send them (via secure channel):
+
+-   Client ID
+-   Client Secret
+-   OAuth Token Endpoint: `http://your-rbac.com/oauth/token`
+-   API Endpoint: `http://your-rbac.com/api/user`
+
+#### Step 4: Configure in Admin Panel
+
+1. Go to **Admin → Groups → Edit**
+2. Enable **Gateway Redirect**
+3. Set **Third-Party App URL**: `https://client-app.com/oauth/callback`
+4. Set **OAuth Client ID**: `019addf9-0c08-7292-a1e8-96378b3ea2ba`
+5. **Save**
+
+### What Gets Sent to Third-Party App
+
+When a user is redirected, the following parameters are sent via URL query string:
+
+```
+https://client-app.com/oauth/callback
+  ?user_id=4
+  &user_email=manager@example.com
+  &user_name=Manager User
+  &group_id=1
+  &group_name=Administrators
+  &role=administrator
+  &role_display=Administrator
+  &client_id=019addf9-0c08-7292-a1e8-96378b3ea2ba
+  &timestamp=1764661210
+```
+
+### Example: Receiving Redirect in Third-Party App
+
+#### PHP Example
+
+```php
+<?php
+// callback.php
+session_start();
+
+// Get user info from URL parameters
+$userId = $_GET['user_id'] ?? null;
+$userEmail = $_GET['user_email'] ?? null;
+$userName = $_GET['user_name'] ?? null;
+$groupName = $_GET['group_name'] ?? null;
+$role = $_GET['role_display'] ?? null;
+$clientId = $_GET['client_id'] ?? null;
+$timestamp = $_GET['timestamp'] ?? null;
+
+// Verify timestamp (should be within last 5 minutes for security)
+$isValid = (time() - $timestamp) < 300;
+
+if (!$isValid) {
+    die('Link expired. Please try again.');
+}
+
+// Create session for the user
+$_SESSION['user_id'] = $userId;
+$_SESSION['user_email'] = $userEmail;
+$_SESSION['user_name'] = $userName;
+$_SESSION['group'] = $groupName;
+$_SESSION['role'] = $role;
+
+echo "Welcome {$userName}! You're logged in as {$role} from {$groupName}";
+
+// Optional: Request OAuth token for API access
+// See "Requesting OAuth Token" section below
+?>
+```
+
+#### Node.js/Express Example
+
+```javascript
+// server.js
+const express = require("express");
+const app = express();
+
+app.get("/oauth/callback", (req, res) => {
+    const {
+        user_id,
+        user_email,
+        user_name,
+        group_name,
+        role_display,
+        client_id,
+        timestamp,
+    } = req.query;
+
+    // Verify timestamp
+    const isValid = Date.now() / 1000 - timestamp < 300;
+
+    if (!isValid) {
+        return res.status(400).send("Link expired");
+    }
+
+    // Create session
+    req.session.user = {
+        id: user_id,
+        email: user_email,
+        name: user_name,
+        group: group_name,
+        role: role_display,
+    };
+
+    res.send(`Welcome ${user_name}! Role: ${role_display}`);
+});
+
+app.listen(3000);
+```
+
+### Requesting OAuth Token from Third-Party App
+
+If you need to make API calls to the RBAC system:
+
+```php
+<?php
+$clientId = '019addf9-0c08-7292-a1e8-96378b3ea2ba';
+$clientSecret = 'lEPjA2aGNI4ed3gkDn2nHrQkC8MzXFXF3XXfZ1ga';
+
+// Request access token using Client Credentials Grant
+$ch = curl_init('http://your-rbac.com/oauth/token');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+    'grant_type' => 'client_credentials',
+    'client_id' => $clientId,
+    'client_secret' => $clientSecret,
+    'scope' => '*'
+]));
+
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+$accessToken = $data['access_token'];
+
+// Make API calls
+$ch = curl_init('http://your-rbac.com/api/user');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer ' . $accessToken
+]);
+
+$userInfo = curl_exec($ch);
+// Returns: {"id":4,"name":"Manager User","groups":[...],"permissions":[...]}
+?>
+```
+
+### Important: Client ID Management
+
+#### Client ID is NOT Tied to URL
+
+The OAuth Client ID is **permanent and separate** from the redirect URL:
+
+```
+✅ Client ID: 019addf9-0c08-7292-a1e8-96378b3ea2ba  ← NEVER changes
+✅ Client Secret: lEPjA2aGNI4ed3gkDn2nHrQkC8MzXFXF3XXfZ1ga  ← NEVER changes
+✅ Redirect URL: https://client-app.com/callback  ← CAN change anytime
+```
+
+#### When You DON'T Need New Client ID:
+
+✅ Client changes their redirect URL  
+✅ Client's website goes down temporarily  
+✅ Client moves to new domain/hosting  
+✅ Switching between dev/staging/production URLs
+
+**Action:** Just update the "Third-Party App URL" in admin panel.
+
+#### When You NEED New Client ID:
+
+❌ Client loses their Client Secret  
+❌ Security breach (regenerate for safety)  
+❌ Setting up completely separate app/environment  
+❌ Client explicitly requests new credentials
+
+### Multiple Environments
+
+For clients with multiple environments (dev/staging/prod):
+
+**Option 1: Single Client ID** (simpler)
+
+-   Use one Client ID for all environments
+-   Update redirect URL in admin panel when switching
+
+**Option 2: Multiple Client IDs** (more secure)
+
+```bash
+# Development
+php artisan passport:client
+# Name: Client App (Dev)
+# Redirect: http://localhost:3000/callback
+# Client ID: abc-123-dev
+
+# Production
+php artisan passport:client
+# Name: Client App (Prod)
+# Redirect: https://client-app.com/callback
+# Client ID: xyz-789-prod
+```
+
+### Testing the Integration
+
+#### Quick Test with httpbin.org
+
+1. Set redirect URL to: `https://httpbin.org/get`
+2. Enable gateway redirect
+3. Click "Gateway" button as authorized user
+4. You'll see all parameters displayed in JSON format
+
+#### Example Response:
+
+```json
+{
+    "args": {
+        "client_id": "019addf9-0c08-7292-a1e8-96378b3ea2ba",
+        "group_id": "1",
+        "group_name": "Administrators",
+        "role": "administrator",
+        "role_display": "Administrator",
+        "timestamp": "1764661210",
+        "user_email": "manager@example.com",
+        "user_id": "4",
+        "user_name": "Manager User"
+    }
+}
+```
+
+### Security Best Practices
+
+1. **Verify Timestamp** - Reject links older than 5 minutes
+2. **Use HTTPS in Production** - Never send credentials over HTTP
+3. **Validate User Data** - Don't trust URL parameters blindly
+4. **Store Client Secret Securely** - Use environment variables
+5. **Implement HMAC Signature** (optional but recommended):
+
+```php
+// Generate signature on RBAC side
+$signature = hash_hmac('sha256', $queryString, $clientSecret);
+
+// Verify signature on client side
+$expectedSignature = hash_hmac('sha256', $receivedQueryString, $clientSecret);
+if (!hash_equals($signature, $expectedSignature)) {
+    die('Invalid signature');
+}
+```
+
+### Troubleshooting
+
+**Redirect Not Working:**
+
+-   Check "Enable Gateway Redirect" is checked
+-   Verify "Third-Party App URL" is set correctly
+-   Ensure user has proper role/permissions for gateway access
+
+**Parameters Not Received:**
+
+-   Check client app is reading query parameters correctly
+-   Verify URL encoding is handled properly
+
+**Invalid Client:**
+
+-   Ensure Client ID matches what's configured in group settings
+-   Verify Client Secret is correct (if making token requests)
+
 ## 🎉 You're All Set!
 
-Your RBAC system is now a full OAuth 2.0 provider! Third-party apps can:
-✅ Authenticate users through your system
-✅ Access user data with proper permissions
+Your RBAC system is now a full OAuth 2.0 provider with gateway redirect! Third-party apps can:
+✅ Authenticate users through your OTP system
+✅ Receive user data automatically via gateway redirect
+✅ Request OAuth tokens for API access
+✅ Access user permissions with proper authorization
 ✅ Use refresh tokens for long sessions
 ✅ Benefit from Redis caching (fast API responses)
 
