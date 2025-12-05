@@ -18,7 +18,7 @@
     @livewireStyles
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen" style="background-color: var(--bg-secondary);">
         <!-- Navigation -->
         <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,20 +35,20 @@
                         <!-- Desktop Navigation Links -->
                         <div class="hidden space-x-4 lg:space-x-8 sm:-my-px sm:ml-6 lg:ml-10 sm:flex">
                             <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.dashboard') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Dashboard
+                                {{ __('Dashboard') }}
                             </a>
                             
                             <a href="{{ route('admin.users.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.users.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Users
+                                {{ __('Users') }}
                             </a>
                             
                             <a href="{{ route('admin.groups.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Groups
+                                {{ __('Groups') }}
                             </a>
                             
                             @can('manage-permissions')
                             <a href="{{ route('admin.permissions.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Permissions
+                                {{ __('Permissions') }}
                             </a>
                             @endcan
                             
@@ -61,7 +61,7 @@
                     <!-- Desktop Settings -->
                     <div class="hidden sm:flex sm:items-center sm:ml-6">
                         <a href="{{ route('dashboard') }}" class="text-gray-500 hover:text-gray-700 text-sm mr-4">
-                            User Panel
+                            {{ __('Dashboard') }}
                         </a>
                         <div class="ml-3 relative">
                             <div class="relative">
@@ -77,7 +77,7 @@
                         <form method="POST" action="{{ route('logout') }}" class="ml-4" onsubmit="handleLogout(event)" id="logout-form" data-home-url="{{ route('home') }}">
                             @csrf
                             <button type="submit" class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 transition duration-150 ease-in-out text-sm">
-                                Logout
+                                {{ __('Logout') }}
                             </button>
                         </form>
                     </div>
@@ -98,21 +98,21 @@
             <div :class="{'block': open, 'hidden': !open}" class="hidden sm:hidden">
                 <div class="pt-2 pb-3 space-y-1">
                     <a href="{{ route('admin.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.dashboard') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        Dashboard
+                        {{ __('Dashboard') }}
                     </a>
                     <a href="{{ route('admin.users.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        Users
+                        {{ __('Users') }}
                     </a>
                     <a href="{{ route('admin.groups.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        Groups
+                        {{ __('Groups') }}
                     </a>
                     @can('manage-permissions')
                     <a href="{{ route('admin.permissions.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        Permissions
+                        {{ __('Permissions') }}
                     </a>
                     @endcan
                     <a href="{{ route('test.permissions') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-orange-500 hover:text-orange-700 hover:bg-orange-50 hover:border-orange-300 text-base font-medium transition duration-150 ease-in-out">
-                        🧪 Test Permissions
+                        🧪 Test {{ __('Permissions') }}
                     </a>
                 </div>
 
@@ -183,5 +183,8 @@
     <!-- Livewire Scripts (includes Alpine.js) -->
     @livewireScripts
     @vite(['resources/js/layout/logout-handler.js'])
+    
+    <!-- Page-specific scripts -->
+    @stack('scripts')
 </body>
 </html>

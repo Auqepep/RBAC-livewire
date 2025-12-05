@@ -2,11 +2,11 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
-                {{ __('Groups Management') }}
+                {{ __('Manage Groups') }}
             </h2>
             <x-mary-button icon="o-plus" class="btn-primary btn-sm sm:btn-md" link="{{ route('admin.groups.create') }}">
-                <span class="hidden sm:inline">Create Group</span>
-                <span class="sm:hidden">New</span>
+                <span class="hidden sm:inline">{{ __('Create Group') }}</span>
+                <span class="sm:hidden">{{ __('Create') }}</span>
             </x-mary-button>
         </div>
     </x-slot>
@@ -33,7 +33,7 @@
                             <x-mary-input 
                                 name="search" 
                                 value="{{ $search ?? '' }}" 
-                                placeholder="Search groups..."
+                                placeholder="{{ __('Search') }} {{ strtolower(__('Groups')) }}..."
                                 icon="o-magnifying-glass"
                             />
                         </div>
@@ -43,36 +43,36 @@
                             <x-mary-select 
                                 name="sort_by" 
                                 :options="[
-                                    ['value' => 'name', 'label' => 'Name'],
-                                    ['value' => 'created_at', 'label' => 'Date Created'],
-                                    ['value' => 'group_members_count', 'label' => 'Member Count']
+                                    ['value' => 'name', 'label' => __('Name')],
+                                    ['value' => 'created_at', 'label' => __('Date')],
+                                    ['value' => 'group_members_count', 'label' => __('Members')]
                                 ]"
                                 option-value="value"
                                 option-label="label"
                                 value="{{ $sortBy ?? 'name' }}"
-                                placeholder="Sort by..."
+                                placeholder="{{ __('Sort by') }}..."
                             />
                             
                             <x-mary-select 
                                 name="sort_order" 
                                 :options="[
-                                    ['value' => 'asc', 'label' => 'Ascending'],
-                                    ['value' => 'desc', 'label' => 'Descending']
+                                    ['value' => 'asc', 'label' => __('Ascending')],
+                                    ['value' => 'desc', 'label' => __('Descending')]
                                 ]"
                                 option-value="value"
                                 option-label="label"
                                 value="{{ $sortOrder ?? 'asc' }}"
-                                placeholder="Order..."
+                                placeholder="{{ __('Sort') }}..."
                             />
                         </div>
                         
                         <div class="flex gap-2">
                             <x-mary-button type="submit" class="btn-primary flex-1 sm:flex-none" icon="o-magnifying-glass">
-                                Search
+                                {{ __('Search') }}
                             </x-mary-button>
                             @if(($search ?? '') || ($sortBy ?? 'name') !== 'name' || ($sortOrder ?? 'asc') !== 'asc')
                                 <x-mary-button link="{{ route('admin.groups.index') }}" class="btn-secondary flex-1 sm:flex-none" icon="o-x-mark">
-                                    Reset
+                                    {{ __('Reset') }}
                                 </x-mary-button>
                             @endif
                         </div>
@@ -85,12 +85,12 @@
                         <table class="table table-zebra w-full">
                             <thead>
                                 <tr>
-                                    <th class="w-1/5">Group Name</th>
-                                    <th class="w-1/3">Description</th>
-                                    <th class="w-1/8 text-center">Members</th>
-                                    <th class="w-1/8 text-center">Status</th>
-                                    <th class="w-1/6">Created</th>
-                                    <th class="w-1/6 text-center">Actions</th>
+                                    <th class="w-1/5">{{ __('Group Name') }}</th>
+                                    <th class="w-1/3">{{ __('Description') }}</th>
+                                    <th class="w-1/8 text-center">{{ __('Members') }}</th>
+                                    <th class="w-1/8 text-center">{{ __('Status') }}</th>
+                                    <th class="w-1/6">{{ __('Created') }}</th>
+                                    <th class="w-1/6 text-center">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -100,16 +100,16 @@
                                             <div class="font-medium text-gray-900">{{ $group->name }}</div>
                                         </td>
                                         <td>
-                                            <div class="text-sm">{{ Str::limit($group->description ?? 'No description', 80) }}</div>
+                                            <div class="text-sm">{{ Str::limit($group->description ?? __('No') . ' ' . strtolower(__('Description')), 80) }}</div>
                                         </td>
                                         <td class="text-center">
                                             <x-mary-badge value="{{ $group->group_members_count }}" class="badge-primary badge-xs sm:badge-sm" />
                                         </td>
                                         <td class="text-center">
                                             @if($group->is_active)
-                                                <x-mary-badge value="Active" class="badge-success badge-xs sm:badge-sm" />
+                                                <x-mary-badge value="{{ __('Active') }}" class="badge-success badge-xs sm:badge-sm" />
                                             @else
-                                                <x-mary-badge value="Inactive" class="badge-error badge-xs sm:badge-sm" />
+                                                <x-mary-badge value="{{ __('Inactive') }}" class="badge-error badge-xs sm:badge-sm" />
                                             @endif
                                         </td>
                                         <td>
@@ -123,7 +123,7 @@
                                                 
                                                 @if($group->group_members_count == 0)
                                                     <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" class="inline" 
-                                                          onsubmit="return confirm('Are you sure you want to delete this group?')">
+                                                          onsubmit="return confirm('{{ __('Are you sure?') }}')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <x-mary-button icon="o-trash" class="btn-sm btn-error" type="submit" />
@@ -145,12 +145,12 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h3 class="font-semibold text-gray-900">{{ $group->name }}</h3>
-                                            <p class="text-sm text-gray-500 mt-1">{{ Str::limit($group->description ?? 'No description', 60) }}</p>
+                                            <p class="text-sm text-gray-500 mt-1">{{ Str::limit($group->description ?? __('No') . ' ' . strtolower(__('Description')), 60) }}</p>
                                         </div>
                                         @if($group->is_active)
-                                            <x-mary-badge value="Active" class="badge-success badge-xs" />
+                                            <x-mary-badge value="{{ __('Active') }}" class="badge-success badge-xs" />
                                         @else
-                                            <x-mary-badge value="Inactive" class="badge-error badge-xs" />
+                                            <x-mary-badge value="{{ __('Inactive') }}" class="badge-error badge-xs" />
                                         @endif
                                     </div>
                                     <div class="flex items-center justify-between mt-3 pt-3 border-t">
@@ -168,7 +168,7 @@
                                             <x-mary-button icon="o-pencil" class="btn-xs btn-primary" link="{{ route('admin.groups.edit', $group) }}" />
                                             @if($group->group_members_count == 0)
                                                 <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" class="inline" 
-                                                      onsubmit="return confirm('Delete this group?')">
+                                                      onsubmit="return confirm('{{ __('Are you sure?') }}')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <x-mary-button icon="o-trash" class="btn-xs btn-error" type="submit" />
@@ -186,7 +186,7 @@
                     </div>
                 @else
                     <x-mary-alert icon="o-information-circle" class="alert-info">
-                        No groups found. <a href="{{ route('admin.groups.create') }}" class="link link-primary">Create the first group</a>.
+                        {{ __('No results found') }}. <a href="{{ route('admin.groups.create') }}" class="link link-primary">{{ __('Create') }} grup pertama</a>.
                     </x-mary-alert>
                 @endif
             </x-mary-card>

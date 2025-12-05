@@ -25,11 +25,92 @@
 @source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
 
 /* ==========================================================================
+   Color Palette Variables
+   ========================================================================== */
+
+:root {
+    /* Gray Scale */
+    --color-gray-50: #e7ecef;
+    --color-gray-100: #b4c0d0;
+    --color-gray-200: #8BF9FA8;
+    --color-gray-300: #6c7a81;
+    --color-gray-400: #4c585c;
+    --color-gray-500: #2e353b;
+    --color-gray-600: #131718;
+
+    /* Green Scale */
+    --color-green-50: #b6f8d6;
+    --color-green-100: #60de85;
+    --color-green-200: #5ea887;
+    --color-green-300: #419241;
+    --color-green-400: #2c6c2c;
+    --color-green-500: #183918;
+    --color-green-600: #071707;
+
+    /* Blue Scale */
+    --color-blue-50: #dcdff7;
+    --color-blue-100: #afeeed;
+    --color-blue-200: #6bbde1;
+    --color-blue-300: #4e65d3;
+    --color-blue-400: #31449b;
+    --color-blue-500: #1e275f;
+    --color-blue-600: #080ea2;
+
+    /* Emerald Scale */
+    --color-emerald-50: #8dfdc8;
+    --color-emerald-100: #44e16f;
+    --color-emerald-200: #43b557;
+    --color-emerald-300: #22682e;
+    --color-emerald-400: #10642d;
+    --color-emerald-500: #0c3f1a;
+    --color-emerald-600: #031d0b;
+
+    /* Monochrome Scale */
+    --color-mono-50: #e4e8ec;
+    --color-mono-100: #b5c4c6;
+    --color-mono-200: #89909f;
+    --color-mono-300: #757879;
+    --color-mono-400: #533556;
+    --color-mono-500: #333435;
+    --color-mono-600: #151617;
+
+    /* Semantic Colors */
+    --color-primary: var(--color-green-300);
+    --color-secondary: var(--color-blue-400);
+    --color-success: var(--color-green-300);
+    --color-info: var(--color-blue-300);
+    --color-warning: #ffbf00;
+    --color-error: #dc2626;
+    --color-danger: #dc2626;
+
+    /* Remove/Delete Actions - Black */
+    --color-remove: #000000;
+    --color-remove-hover: #1a1a1a;
+
+    /* Text Colors */
+    --text-primary: var(--color-gray-600);
+    --text-secondary: var(--color-gray-500);
+    --text-muted: var(--color-gray-400);
+    --text-light: var(--color-gray-300);
+
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    /* Very light gray for better contrast - almost white */
+    --bg-secondary: #f5f5f5;
+    --bg-muted: var(--color-gray-100);
+
+    /* Border Colors */
+    --border-default: var(--color-gray-200);
+    --border-light: var(--color-gray-100);
+}
+
+/* ==========================================================================
    Base Styling
    ========================================================================== */
 
 body {
-    background: var(--background, #f3fafa);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -38,25 +119,84 @@ body {
 
 /* Custom mary button colors */
 .mary-btn {
-    @apply bg-blue-500 text-white hover:bg-blue-600;
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.mary-btn:hover {
+    background-color: var(--color-green-400);
 }
 
 /* Button variants */
 .btn-primary {
-    @apply text-white hover:opacity-90 shadow-none border-0;
-    background-color: #009634;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    shadow: none;
 }
 
 .btn-primary:hover {
-    background-color: #007a2a;
+    background-color: var(--color-green-400);
+    opacity: 0.9;
 }
 
 .btn-secondary {
-    @apply bg-blue-500 text-white hover:bg-blue-600 shadow-none border-0;
+    background-color: var(--color-secondary);
+    color: white;
+    border: none;
+    shadow: none;
 }
 
-.btn-error {
-    @apply bg-red-500 text-white hover:bg-red-600 shadow-none border-0;
+.btn-secondary:hover {
+    background-color: var(--color-blue-500);
+}
+
+.btn-error,
+.btn-danger {
+    background-color: var(--color-error);
+    color: white;
+    border: none;
+    shadow: none;
+}
+
+.btn-error:hover,
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-warning {
+    background-color: var(--color-warning);
+    color: var(--text-primary);
+    border: none;
+    shadow: none;
+}
+
+.btn-warning:hover {
+    background-color: #f59e0b;
+}
+
+.btn-info {
+    background-color: var(--color-info);
+    color: white;
+    border: none;
+    shadow: none;
+}
+
+.btn-info:hover {
+    background-color: var(--color-blue-400);
+}
+
+/* Remove button - BLACK */
+.btn-remove,
+.remove-member-btn {
+    background-color: var(--color-remove) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btn-remove:hover,
+.remove-member-btn:hover {
+    background-color: var(--color-remove-hover) !important;
 }
 
 /* ==========================================================================
@@ -68,7 +208,7 @@ body {
  * Because Laravel defaults does not match well the design of daisyUI.
  */
 .mary-table-pagination span[aria-current="page"] > span {
-    background-color: #009634 !important;
+    background-color: #1e3a8a !important;
     @apply text-white;
 }
 
@@ -77,100 +217,278 @@ body {
 }
 
 /* ==========================================================================
-   Custom Color Theme - Primary: #009634 (Green), Secondary: Blue
+   Custom Color Theme - Using Global CSS Variables from Figma Palette
    ========================================================================== */
 
 /* Badge Colors */
 .badge-primary {
-    background-color: #009634 !important;
-    @apply text-white border-0;
+    background-color: var(--color-primary) !important;
+    color: white;
+    border: none;
 }
 
 .badge-success {
-    background-color: #009634 !important;
-    @apply text-white border-0;
+    background-color: var(--color-success) !important;
+    color: white;
+    border: none;
 }
 
 .badge-secondary {
-    @apply bg-blue-500 text-white border-0;
+    background-color: var(--color-secondary) !important;
+    color: white;
+    border: none;
+}
+
+.badge-info {
+    background-color: var(--color-info) !important;
+    color: white;
+    border: none;
+}
+
+.badge-warning {
+    background-color: var(--color-warning) !important;
+    color: var(--text-primary);
+    border: none;
+}
+
+.badge-error {
+    background-color: var(--color-error) !important;
+    color: white;
+    border: none;
 }
 
 /* Checkbox Colors */
 .checkbox-primary:checked,
 .checkbox-success:checked {
-    background-color: #009634 !important;
-    border-color: #009634 !important;
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
 }
 
 .checkbox-secondary:checked {
-    @apply bg-blue-500 border-blue-500;
+    background-color: var(--color-secondary) !important;
+    border-color: var(--color-secondary) !important;
+}
+
+.checkbox-info:checked {
+    background-color: var(--color-info) !important;
+    border-color: var(--color-info) !important;
 }
 
 /* Alert Colors */
 .alert-success {
-    background-color: #e6f7ed !important;
-    border-left: 4px solid #009634 !important;
-    color: #005a1f !important;
+    background-color: var(--color-green-50) !important;
+    border-left: 4px solid var(--color-success) !important;
+    color: var(--color-success) !important;
 }
 
 .alert-info {
-    @apply bg-blue-50 text-blue-900;
-    border-left: 4px solid #3b82f6 !important;
+    background-color: var(--color-blue-50) !important;
+    border-left: 4px solid var(--color-info) !important;
+    color: var(--color-info) !important;
+}
+
+.alert-warning {
+    background-color: #fef3c7 !important;
+    border-left: 4px solid var(--color-warning) !important;
+    color: var(--color-warning) !important;
+}
+
+.alert-error {
+    background-color: #fee2e2 !important;
+    border-left: 4px solid var(--color-error) !important;
+    color: var(--color-error) !important;
 }
 
 /* Border Colors */
 .border-primary {
-    border-color: #009634 !important;
+    border-color: var(--color-primary) !important;
 }
 
 .border-success {
-    border-color: #009634 !important;
+    border-color: var(--color-success) !important;
 }
 
 .border-secondary {
-    @apply border-blue-500;
+    border-color: var(--color-secondary) !important;
+}
+
+.border-info {
+    border-color: var(--color-info) !important;
+}
+
+.border-error {
+    border-color: var(--color-error) !important;
+}
+
+.border-gray {
+    border-color: var(--border-default) !important;
 }
 
 /* Background Colors */
 .bg-primary {
-    background-color: #009634 !important;
+    background-color: var(--color-primary) !important;
+}
+
+.bg-secondary {
+    background-color: var(--color-secondary) !important;
+}
+
+.bg-success {
+    background-color: var(--color-success) !important;
+}
+
+.bg-info {
+    background-color: var(--color-info) !important;
+}
+
+.bg-error {
+    background-color: var(--color-error) !important;
 }
 
 .bg-primary\/5 {
-    background-color: rgba(0, 150, 52, 0.05) !important;
+    background-color: var(--color-green-50) !important;
 }
 
 .bg-success\/5 {
-    background-color: rgba(0, 150, 52, 0.05) !important;
+    background-color: var(--color-green-50) !important;
+}
+
+.bg-info\/5 {
+    background-color: var(--color-blue-50) !important;
+}
+
+.bg-error\/5 {
+    background-color: #fee2e2 !important;
 }
 
 /* Text Colors */
 .text-primary {
-    color: #009634 !important;
-}
-
-.text-success {
-    color: #009634 !important;
+    color: var(--text-primary) !important;
 }
 
 .text-secondary {
-    @apply text-blue-500;
+    color: var(--text-secondary) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-success {
+    color: var(--color-success) !important;
+}
+
+.text-info {
+    color: var(--color-info) !important;
+}
+
+.text-error {
+    color: var(--color-error) !important;
+}
+
+.text-warning {
+    color: var(--color-warning) !important;
 }
 
 /* Hover States */
 .hover\:bg-primary:hover {
-    background-color: #007a2a !important;
+    background-color: var(--color-green-400) !important;
+}
+
+.hover\:bg-secondary:hover {
+    background-color: var(--color-blue-400) !important;
 }
 
 .hover\:text-primary:hover {
-    color: #009634 !important;
+    color: var(--color-primary) !important;
+}
+
+.hover\:text-secondary:hover {
+    color: var(--color-secondary) !important;
 }
 
 /* Focus States */
 .focus\:border-primary:focus {
-    border-color: #009634 !important;
+    border-color: var(--color-primary) !important;
+}
+
+.focus\:border-secondary:focus {
+    border-color: var(--color-secondary) !important;
 }
 
 .focus\:ring-primary:focus {
-    --tw-ring-color: #009634 !important;
+    --tw-ring-color: var(--color-primary) !important;
+}
+
+.focus\:ring-secondary:focus {
+    --tw-ring-color: var(--color-secondary) !important;
+}
+
+/* ==========================================================================
+   Remove Highlight Classes (Red highlight when member marked for removal)
+   ========================================================================== */
+.border-error {
+    border-color: var(--color-error) !important;
+}
+
+.bg-error\/10 {
+    background-color: #fee2e2 !important;
+}
+
+/* ==========================================================================
+   Utility Classes for Global Color System
+   ========================================================================== */
+
+/* Text utility classes */
+.text-gray-50 {
+    color: var(--color-gray-50) !important;
+}
+.text-gray-100 {
+    color: var(--color-gray-100) !important;
+}
+.text-gray-200 {
+    color: var(--color-gray-200) !important;
+}
+.text-gray-300 {
+    color: var(--color-gray-300) !important;
+}
+.text-gray-400 {
+    color: var(--color-gray-400) !important;
+}
+.text-gray-500 {
+    color: var(--color-gray-500) !important;
+}
+.text-gray-600 {
+    color: var(--color-gray-600) !important;
+}
+
+/* Background utility classes */
+.bg-gray-50 {
+    background-color: var(--color-gray-50) !important;
+}
+.bg-gray-100 {
+    background-color: var(--color-gray-100) !important;
+}
+.bg-gray-200 {
+    background-color: var(--color-gray-200) !important;
+}
+.bg-green-50 {
+    background-color: var(--color-green-50) !important;
+}
+.bg-blue-50 {
+    background-color: var(--color-blue-50) !important;
+}
+
+/* Border utility classes */
+.border-gray-200 {
+    border-color: var(--color-gray-200) !important;
+}
+.border-gray-300 {
+    border-color: var(--color-gray-300) !important;
+}
+.border-green-300 {
+    border-color: var(--color-green-300) !important;
+}
+.border-blue-300 {
+    border-color: var(--color-blue-300) !important;
 }

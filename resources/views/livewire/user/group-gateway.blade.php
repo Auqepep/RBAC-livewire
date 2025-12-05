@@ -9,14 +9,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-4xl font-bold text-gray-800 mb-4">Redirecting...</h1>
-                    <p class="text-xl text-gray-600">Taking you to {{ $group->name }} app</p>
+                    <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ __('Redirecting...') }}</h1>
+                    <p class="text-xl text-gray-600">{{ __('Taking you to') }} {{ $group->name }} {{ __('app') }}</p>
                 </div>
                 
                 <div class="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
-                    <p class="text-sm text-gray-600 mb-4">If you are not redirected automatically,</p>
+                    <p class="text-sm text-gray-600 mb-4">{{ __('If you are not redirected automatically,') }}</p>
                     <a href="{{ $redirectUrl }}" class="btn btn-primary">
-                        Click Here to Continue
+                        {{ __('Click Here to Continue') }}
                     </a>
                 </div>
             </div>
@@ -38,35 +38,35 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-6xl font-bold text-gray-800 mb-4">GATEWAY</h1>
+                    <h1 class="text-6xl font-bold text-gray-800 mb-4">{{ __('Gateway') }}</h1>
                     <div class="space-y-2">
-                        <p class="text-xl text-gray-600">Access Granted to {{ $group->name }}</p>
-                        <x-mary-badge value="Role: {{ $userRole?->display_name ?? 'N/A' }}" class="badge-success badge-lg" />
+                        <p class="text-xl text-gray-600">{{ __('Access Granted') }} {{ $group->name }}</p>
+                        <x-mary-badge value="{{ __('Role') }}: {{ $userRole?->display_name ?? 'N/A' }}" class="badge-success badge-lg" />
                     </div>
                 </div>
                 
                 <!-- Gateway Info -->
                 <div class="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Gateway Information</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Gateway Information') }}</h3>
                     <div class="space-y-3 text-left">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Group:</span>
+                            <span class="text-gray-600">{{ __('Groups') }}:</span>
                             <span class="font-medium">{{ $group->name }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Your Role:</span>
+                            <span class="text-gray-600">{{ __('Your Role') }}:</span>
                             <span class="font-medium">{{ $userRole?->display_name ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Role Group:</span>
+                            <span class="text-gray-600">{{ __('Role Group') }}:</span>
                             <span class="font-medium">{{ $group->name }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Access Level:</span>
-                            <span class="font-medium text-green-600">Authorized</span>
+                            <span class="text-gray-600">{{ __('Access Level') }}:</span>
+                            <span class="font-medium text-green-600">{{ __('Authorized') }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Time:</span>
+                            <span class="text-gray-600">{{ __('Time') }}:</span>
                             <span class="font-medium">{{ now()->format('H:i:s') }}</span>
                         </div>
                     </div>
@@ -75,13 +75,13 @@
                 <!-- Navigation -->
                 <div class="mt-8 space-x-4">
                     <x-mary-button 
-                        label="Back to Group" 
+                        label="{{ __('Back to Group') }}" 
                         link="{{ route('groups.show', $group->id) }}"
                         class="btn-primary"
                         icon="o-arrow-left"
                     />
                     <x-mary-button 
-                        label="My Groups" 
+                        label="{{ __('My Groups') }}" 
                         link="{{ route('groups.index') }}"
                         class="btn-secondary"
                         icon="o-home"
@@ -99,36 +99,36 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-6xl font-bold text-gray-800 mb-4">ACCESS DENIED</h1>
+                    <h1 class="text-6xl font-bold text-gray-800 mb-4">{{ __('Access Denied') }}</h1>
                     <div class="space-y-2">
-                        <p class="text-xl text-gray-600">Gateway to {{ $group->name }}</p>
-                        <x-mary-badge value="Unauthorized" class="badge-error badge-lg" />
+                        <p class="text-xl text-gray-600">{{ __('Gateway') }} {{ $group->name }}</p>
+                        <x-mary-badge value="{{ __('Unauthorized') }}" class="badge-error badge-lg" />
                     </div>
                 </div>
                 
                 <!-- Denial Reason -->
                 <div class="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
-                    <h3 class="text-lg font-semibold text-red-600 mb-4">Access Restriction</h3>
+                    <h3 class="text-lg font-semibold text-red-600 mb-4">{{ __('Access Restriction') }}</h3>
                     <p class="text-gray-700 mb-4">{{ $accessDeniedReason }}</p>
                     
                     <div class="space-y-3 text-left">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Group:</span>
+                            <span class="text-gray-600">{{ __('Groups') }}:</span>
                             <span class="font-medium">{{ $group->name }}</span>
                         </div>
                         @if($userRole)
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Your Role:</span>
+                            <span class="text-gray-600">{{ __('Your Role') }}:</span>
                             <span class="font-medium">{{ $userRole->display_name }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Role Group:</span>
+                            <span class="text-gray-600">{{ __('Role Group') }}:</span>
                             <span class="font-medium">{{ $group->name }}</span>
                         </div>
                         @endif
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Required Roles:</span>
-                            <span class="font-medium text-gray-500">Admin, Staff, Manager</span>
+                            <span class="text-gray-600">{{ __('Required Roles') }}:</span>
+                            <span class="font-medium text-gray-500">{{ __('Admin') }}, {{ __('Staff') }}, {{ __('Manager') }}</span>
                         </div>
                     </div>
                 </div>
@@ -136,13 +136,13 @@
                 <!-- Navigation -->
                 <div class="mt-8 space-x-4">
                     <x-mary-button 
-                        label="Back to Group" 
+                        label="{{ __('Back to Group') }}" 
                         link="{{ route('groups.show', $group->id) }}"
                         class="btn-secondary"
                         icon="o-arrow-left"
                     />
                     <x-mary-button 
-                        label="My Groups" 
+                        label="{{ __('My Groups') }}" 
                         link="{{ route('groups.index') }}"
                         class="btn-primary"
                         icon="o-home"

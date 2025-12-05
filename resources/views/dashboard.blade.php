@@ -32,51 +32,77 @@
                                     // Load all roles at once
                                     $roles = \App\Models\Role::whereIn('id', $roleIds)->get()->keyBy('id');
                                     
-                                    // Group by role_id and collect the groups for each role
-                                    $roleGroups = $userGroups->groupBy(function($group) {
-                                        return $group->pivot->role_id;
-                                    })->map(function($groups) use ($roles) {
-                                        $roleId = $groups->first()->pivot->role_id;
+                                    // Group by role hierarchy level (Manager=70, Staff=30)
+                                    $rolesByType = $userGroups->groupBy(function($group) use ($roles) {
+                                        $roleId = $group->pivot->role_id;
+                                        $role = $roles[$roleId] ?? null;
+                                        if (!$role) return null;
+                                        
+                                        // Group by role type based on hierarchy
+                                        if ($role->hierarchy_level >= 70) return 'manager';
+                                        if ($role->hierarchy_level >= 30) return 'staff';
+                                        return 'other';
+                                    })->filter(function($groups, $key) {
+                                        return $key !== null;
+                                    })->map(function($groups, $type) use ($roles) {
+                                        // Get first role of this type for badge color
+                                        $firstRoleId = $groups->first()->pivot->role_id;
+                                        $firstRole = $roles[$firstRoleId];
+                                        
                                         return [
-                                            'role' => $roles[$roleId] ?? null,
-                                            'groups' => $groups
+                                            'type' => $type,
+                                            'label' => $type === 'manager' ? 'Manager' : ($type === 'staff' ? 'Staff' : ucfirst($type)),
+                                            'color' => $firstRole->badge_color,
+                                            'groups' => $groups->map(function($group) use ($roles) {
+                                                return [
+                                                    'group' => $group,
+                                                    'role' => $roles[$group->pivot->role_id]
+                                                ];
+                                            })
                                         ];
-                                    })->filter(function($roleGroup) {
-                                        return $roleGroup['role'] !== null;
                                     });
                                 @endphp
                                 
-                                @foreach($roleGroups as $roleGroup)
+                                @foreach($rolesByType as $type => $roleData)
                                     <button 
-                                        onclick="role_modal_{{ $roleGroup['role']->id }}.showModal()" 
+                                        onclick="role_modal_{{ $type }}.showModal()" 
                                         class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white cursor-pointer hover:opacity-80 transition-opacity" 
-                                        style="background-color: {{ $roleGroup['role']->badge_color }}">
-                                        {{ $roleGroup['role']->display_name }}
+                                        style="background-color: {{ $roleData['color'] }}">
+                                        {{ __($roleData['label']) }}
                                     </button>
 
-                                    <!-- Modal for this role -->
-                                    <dialog id="role_modal_{{ $roleGroup['role']->id }}" class="modal">
+                                    <!-- Modal for this role type -->
+                                    <dialog id="role_modal_{{ $type }}" class="modal">
                                         <div class="modal-box w-11/12 max-w-lg">
                                             <form method="dialog">
                                                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                                             </form>
                                             <h3 class="font-bold text-lg mb-4">
-                                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full text-white mr-2" style="background-color: {{ $roleGroup['role']->badge_color }}">
-                                                    {{ $roleGroup['role']->display_name }}
+                                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full text-white mr-2" style="background-color: {{ $roleData['color'] }}">
+                                                    {{ __($roleData['label']) }}
                                                 </span>
                                             </h3>
-                                            <p class="text-sm text-gray-600 mb-4">You have this role in the following groups:</p>
+                                            <p class="text-sm text-gray-600 mb-4">{{ __('You have this role in the following groups:') }}</p>
                                             <div class="space-y-2">
-                                                @foreach($roleGroup['groups'] as $group)
+                                                @foreach($roleData['groups'] as $groupData)
                                                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                                        <div class="flex items-center space-x-3">
-                                                            <svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                            </svg>
-                                                            <span class="font-medium text-gray-900 text-sm sm:text-base">{{ $group->name }}</span>
+                                                        <div class="flex-1 min-w-0 mr-3">
+                                                            <div class="flex items-center space-x-2">
+                                                                <svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                                </svg>
+                                                                <div class="min-w-0">
+                                                                    <div class="font-medium text-gray-900 text-sm sm:text-base truncate">
+                                                                        {{ $groupData['group']->name }}
+                                                                    </div>
+                                                                    <div class="text-xs text-gray-500">
+                                                                        {{ $groupData['role']->display_name }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <a href="{{ route('groups.show', $group->id) }}" class="btn btn-xs btn-primary shrink-0">
-                                                            View
+                                                        <a href="{{ route('groups.show', $groupData['group']->id) }}" class="btn btn-xs btn-primary shrink-0">
+                                                            {{ __('View') }}
                                                         </a>
                                                     </div>
                                                 @endforeach

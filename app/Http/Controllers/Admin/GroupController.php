@@ -104,17 +104,30 @@ class GroupController extends Controller
             ],
         ];
 
+        // ALWAYS create both Manager and Staff roles for every group
         $createdRoles = [];
-        foreach ($defaultRoles as $roleKey => $roleData) {
-            $createdRoles[$roleKey] = \App\Models\Role::create([
-                'name' => $roleData['name'],
-                'display_name' => $roleData['display_name'],
-                'description' => $roleData['description'],
-                'badge_color' => $roleData['badge_color'],
-                'hierarchy_level' => $roleData['hierarchy_level'],
-                'is_active' => true,
-            ]);
-        }
+        
+        // Create Manager role
+        $createdRoles['manager'] = \App\Models\Role::create([
+            'name' => $defaultRoles['manager']['name'],
+            'display_name' => $defaultRoles['manager']['display_name'],
+            'description' => $defaultRoles['manager']['description'],
+            'group_id' => $group->id,
+            'badge_color' => $defaultRoles['manager']['badge_color'],
+            'hierarchy_level' => $defaultRoles['manager']['hierarchy_level'],
+            'is_active' => true,
+        ]);
+        
+        // Create Staff role
+        $createdRoles['staff'] = \App\Models\Role::create([
+            'name' => $defaultRoles['staff']['name'],
+            'display_name' => $defaultRoles['staff']['display_name'],
+            'description' => $defaultRoles['staff']['description'],
+            'group_id' => $group->id,
+            'badge_color' => $defaultRoles['staff']['badge_color'],
+            'hierarchy_level' => $defaultRoles['staff']['hierarchy_level'],
+            'is_active' => true,
+        ]);
 
         // Add users with their assigned roles
         if (isset($validated['users'])) {

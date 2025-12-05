@@ -60,13 +60,13 @@ document.addEventListener("DOMContentLoaded", function () {
         row.innerHTML = `
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Group</label>
-                <select name="group_assignments[${index}][group_id]" class="group-select w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                <select name="group_assignments[${index}][group_id]" class="group-select select select-bordered w-full">
                     ${groupsHTML}
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Role in Group</label>
-                <select name="group_assignments[${index}][role_id]" class="role-select w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" disabled>
+                <select name="group_assignments[${index}][role_id]" class="role-select select select-bordered w-full" disabled>
                     <option value="">Select a role</option>
                 </select>
             </div>
@@ -98,10 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
         // Group selection changes role options
         groupSelect.addEventListener("change", function () {
             const groupId = this.value;
+            console.log("Group selected:", groupId); // Debug log
+
             roleSelect.innerHTML = '<option value="">Select a role</option>';
 
             if (groupId && groupRoles[groupId]) {
                 roleSelect.disabled = false;
+                console.log("Roles for group:", groupRoles[groupId]); // Debug log
+
                 groupRoles[groupId].forEach((role) => {
                     const option = document.createElement("option");
                     option.value = role.id;
@@ -110,6 +114,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             } else {
                 roleSelect.disabled = true;
+                if (!groupId) {
+                    console.log("No group selected");
+                } else {
+                    console.log("No roles found for group:", groupId);
+                }
             }
         });
 
@@ -122,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (allRows.length > 1) {
                     row.remove();
                 } else {
-                    alert("You must have at least one group assignment.");
+                    alert("At least one group assignment is required.");
                 }
             });
         }

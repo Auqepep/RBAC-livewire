@@ -46,7 +46,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Group</label>
                                 <select name="group_assignments[0][group_id]" 
-                                        class="group-select w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 select select-bordered">
+                                        class="group-select select select-bordered w-full">
                                     <option value="">Select a group</option>
                                     @foreach($groups as $group)
                                         <option value="{{ $group->id }}">{{ $group->name }}</option>
@@ -57,7 +57,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Role in Group</label>
                                 <select name="group_assignments[0][role_id]" 
-                                        class="role-select w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 select select-bordered"
+                                        class="role-select select select-bordered w-full"
                                         disabled>
                                     <option value="">Select a role</option>
                                 </select>

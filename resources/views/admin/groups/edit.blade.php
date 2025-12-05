@@ -8,8 +8,8 @@
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span class="hidden sm:inline">Back to Groups</span>
-                <span class="sm:hidden">Back</span>
+                <span class="hidden sm:inline">{{ __('Back to Groups') }}</span>
+                <span class="sm:hidden">{{ __('Back') }}</span>
             </a>
         </div>
     </x-slot>
@@ -25,7 +25,7 @@
             <x-mary-card>
                 @if($errors->any())
                     <x-mary-alert icon="o-x-circle" class="alert-error mb-6">
-                        <strong>Please fix the following errors:</strong>
+                        <strong>{{ __('Please fix the following errors:') }}</strong>
                         <ul class="mt-2 list-disc list-inside">
                             @foreach($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -42,27 +42,27 @@
                         <!-- Group Basic Info -->
                         <div class="grid grid-cols-1 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Group Name <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Group Name') }} <span class="text-red-500">*</span></label>
                                 <input 
                                     type="text"
                                     name="name" 
                                     value="{{ old('name', $group->name) }}"
-                                    placeholder="Enter group name"
+                                    placeholder="{{ __('Enter group name') }}"
                                     required
                                     class="input input-bordered w-full @error('name') input-error @enderror"
                                 />
                                 @error('name')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
-                                <p class="text-sm text-gray-500 mt-1">This name must be unique</p>
+                                <p class="text-sm text-gray-500 mt-1">{{ __('This name must be unique') }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Description') }}</label>
                                 <textarea 
                                     name="description" 
                                     rows="3"
-                                    placeholder="Describe the purpose of this group"
+                                    placeholder="{{ __('Describe the purpose of this group') }}"
                                     class="textarea textarea-bordered w-full @error('description') textarea-error @enderror"
                                 >{{ old('description', $group->description) }}</textarea>
                                 @error('description')
@@ -80,8 +80,8 @@
                                     id="is_active"
                                 />
                                 <label for="is_active" class="text-sm font-medium text-gray-700 cursor-pointer">
-                                    Active
-                                    <span class="block text-xs text-gray-500 font-normal">Inactive groups cannot be assigned to users</span>
+                                    {{ __('Active') }}
+                                    <span class="block text-xs text-gray-500 font-normal">{{ __('Inactive groups cannot be assigned to users') }}</span>
                                 </label>
                             </div>
                         </div>
@@ -92,7 +92,7 @@
                                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
-                                Gateway & Third-Party App Integration
+                                {{ __('Gateway & Third-Party App Integration') }}
                             </h3>
                             
                             <div class="bg-blue-50 rounded-lg p-4 mb-4">
@@ -101,8 +101,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <div>
-                                        <p class="font-semibold">Configure OAuth 2.0 Integration</p>
-                                        <p class="text-xs mt-1">When enabled, users accessing the gateway will be redirected to your third-party application with authentication details.</p>
+                                        <p class="font-semibold">{{ __('Configure OAuth 2.0 Integration') }}</p>
+                                        <p class="text-xs mt-1">{{ __('When enabled, users accessing the gateway will be redirected to your third-party application with authentication details.') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -118,15 +118,15 @@
                                         id="enable_gateway_redirect"
                                     />
                                     <label for="enable_gateway_redirect" class="text-sm font-medium text-gray-700 cursor-pointer">
-                                        Enable Gateway Redirect
-                                        <span class="block text-xs text-gray-500 font-normal">Automatically redirect authenticated users to third-party app</span>
+                                        {{ __('Enable Gateway Redirect') }}
+                                        <span class="block text-xs text-gray-500 font-normal">{{ __('Automatically redirect authenticated users to third-party app') }}</span>
                                     </label>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Third-Party App URL
-                                        <span class="text-xs text-gray-500 ml-1">(Optional)</span>
+                                        {{ __('Third-Party App URL') }}
+                                        <span class="text-xs text-gray-500 ml-1">({{ __('Optional') }})</span>
                                     </label>
                                     <input 
                                         type="url"
@@ -138,13 +138,13 @@
                                     @error('third_party_app_url')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
-                                    <p class="text-sm text-gray-500 mt-1">URL where users will be redirected after gateway authentication</p>
+                                    <p class="text-sm text-gray-500 mt-1">{{ __('URL where users will be redirected after gateway authentication') }}</p>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        OAuth Client ID
-                                        <span class="text-xs text-gray-500 ml-1">(Optional)</span>
+                                        {{ __('OAuth Client ID') }}
+                                        <span class="text-xs text-gray-500 ml-1">({{ __('Optional') }})</span>
                                     </label>
                                     <input 
                                         type="text"
@@ -156,17 +156,17 @@
                                     @error('oauth_client_id')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
-                                    <p class="text-sm text-gray-500 mt-1">OAuth 2.0 Client ID for the third-party application</p>
+                                    <p class="text-sm text-gray-500 mt-1">{{ __('OAuth 2.0 Client ID for the third-party application') }}</p>
                                 </div>
 
                                 <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
-                                    <p class="font-semibold mb-1">📋 What gets sent to the third-party app:</p>
+                                    <p class="font-semibold mb-1">📋 {{ __('What gets sent to the third-party app:') }}</p>
                                     <ul class="list-disc list-inside space-y-0.5 ml-2">
-                                        <li>User ID, Email, Name</li>
-                                        <li>Group ID & Name</li>
-                                        <li>User's Role in this group</li>
-                                        <li>OAuth Client ID (if configured)</li>
-                                        <li>Timestamp</li>
+                                        <li>{{ __('User ID, Email, Name') }}</li>
+                                        <li>{{ __('Group ID & Name') }}</li>
+                                        <li>{{ __('User\'s Role in this group') }}</li>
+                                        <li>{{ __('OAuth Client ID') }} ({{ __('Optional') }})</li>
+                                        <li>{{ __('Timestamp') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -174,14 +174,14 @@
 
                         <!-- Group Members Section -->
                         <div class="border-t pt-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Group Members</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ __('Group Members') }}</h3>
                             
                             <div class="bg-base-200 rounded-lg p-3 sm:p-4 mb-4">
                                 <div class="flex items-start sm:items-center gap-2 text-xs sm:text-sm text-gray-600">
                                     <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    <span>Select users and assign them roles. Unchecking a user will remove them from the group.</span>
+                                    <span>Pilih pengguna dan tetapkan role mereka. Klik tombol hapus untuk mengeluarkan dari grup.</span>
                                 </div>
                             </div>
 
@@ -191,7 +191,7 @@
                                     <input 
                                         type="text" 
                                         id="user-search"
-                                        placeholder="Search users..."
+                                        placeholder="Cari pengguna..."
                                         class="input input-bordered input-sm sm:input-md w-full pl-8 sm:pl-10 text-sm"
                                     />
                                     <svg class="w-4 h-4 sm:w-5 sm:h-5 absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,29 +201,119 @@
                             </div>
 
                             @php
-                                $checkedUsers = $users->filter(fn($u) => in_array($u->id, old('users', $groupUsers)));
-                                $uncheckedUsers = $users->reject(fn($u) => in_array($u->id, old('users', $groupUsers)));
+                                // Current members - users already in the group
+                                $currentMembers = $users->filter(fn($u) => in_array($u->id, $groupUsers));
+                                
+                                // Incoming users - users checked but not yet in group (for validation errors)
+                                $incomingUsers = collect();
+                                if (old('users')) {
+                                    $incomingUsers = $users->filter(fn($u) => 
+                                        in_array($u->id, old('users', [])) && !in_array($u->id, $groupUsers)
+                                    );
+                                }
+                                
+                                // Users marked for removal
+                                $removedUsers = collect();
+                                if (old('users')) {
+                                    $removedUsers = $currentMembers->reject(fn($u) => 
+                                        in_array($u->id, old('users', []))
+                                    );
+                                }
+                                
+                                // Available users - not in group and not checked
+                                $availableUsers = $users->reject(fn($u) => 
+                                    in_array($u->id, $groupUsers) || in_array($u->id, old('users', []))
+                                );
                             @endphp
 
-                            {{-- Current Members Section --}}
-                            @if($checkedUsers->isNotEmpty())
+                            {{-- Section 1: Current Members (With Remove Button) --}}
+                            @if($currentMembers->isNotEmpty())
+                                <div class="mb-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                                        <h4 class="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            {{ __('Current Members') }}
+                                        </h4>
+                                        <span class="badge badge-info badge-xs sm:badge-sm md:badge-md">{{ $currentMembers->count() }} {{ __('member(s)') }}</span>
+                                    </div>
+                                    
+                                    <div class="space-y-3 max-h-[300px] overflow-y-auto border-2 border-info rounded-lg p-4 bg-info/5">
+                                        @foreach($currentMembers as $user)
+                                            @php
+                                                $userMembership = $group->groupMembers()->where('user_id', $user->id)->first();
+                                                $currentRole = $userMembership ? $userMembership->role : null;
+                                                $isCurrentUser = $user->id === Auth::id();
+                                            @endphp
+                                            <div class="member-card border-2 border-info bg-base-100 rounded-lg p-3 sm:p-4 transition-all" data-user-id="{{ $user->id }}">
+                                                <div class="flex flex-col gap-3">
+                                                    <div class="flex items-center justify-between gap-3">
+                                                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                                                            {{-- Member Icon --}}
+                                                            <div class="w-10 h-10 bg-info/20 rounded-full flex items-center justify-center text-info font-semibold shrink-0">
+                                                                {{ substr($user->name, 0, 1) }}
+                                                            </div>
+                                                            
+                                                            {{-- User Info --}}
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="font-semibold text-sm sm:text-base text-gray-900 truncate">
+                                                                    {{ $user->name }}
+                                                                    @if($isCurrentUser)
+                                                                        <span class="text-blue-600 text-xs sm:text-sm font-normal">(You)</span>
+                                                                    @endif
+                                                                </div>
+                                                                <div class="text-xs sm:text-sm text-gray-500 truncate">{{ $user->email }}</div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {{-- Role Badge & Remove Button --}}
+                                                        <div class="flex items-center gap-2 shrink-0">
+                                                            @if($currentRole)
+                                                                <x-mary-badge value="{{ $currentRole->display_name }}" class="badge-info" />
+                                                            @endif
+                                                            @if(!$isCurrentUser)
+                                                                <button 
+                                                                    type="button"
+                                                                    class="btn btn-error btn-xs remove-member-btn"
+                                                                    data-user-id="{{ $user->id }}"
+                                                                    onclick="removeMember({{ $user->id }})"
+                                                                >
+                                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                                    </svg>
+                                                                    Hapus
+                                                                </button>
+                                                            @else
+                                                                <x-mary-badge value="Tidak dapat menghapus diri sendiri" class="badge-warning badge-xs" />
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {{-- Hidden checkbox to keep them in form (will be unchecked by JS when removed) --}}
+                                                <input type="checkbox" name="users[]" value="{{ $user->id }}" checked style="display:none" class="member-checkbox" data-user-id="{{ $user->id }}">
+                                                <input type="hidden" name="user_roles[{{ $user->id }}]" value="{{ $currentRole?->id }}">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Section 2: Incoming Users (To be added) --}}
+                            @if($incomingUsers->isNotEmpty())
                                 <div class="mb-4">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                                         <h4 class="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
                                             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                                             </svg>
-                                            Current Members
+                                            Incoming Users
                                         </h4>
-                                        <span class="badge badge-success badge-xs sm:badge-sm md:badge-md">{{ $checkedUsers->count() }} member(s)</span>
+                                        <span class="badge badge-success badge-xs sm:badge-sm md:badge-md">{{ $incomingUsers->count() }} to add</span>
                                     </div>
                                     
-                                    <div id="current-members-list" class="space-y-3 max-h-[400px] overflow-y-auto border-2 border-success rounded-lg p-4 bg-success/5">
-                                        @foreach($checkedUsers as $user)
-                                            @php
-                                                $userMembership = $group->groupMembers()->where('user_id', $user->id)->first();
-                                                $currentRole = $userMembership ? $userMembership->role : null;
-                                            @endphp
+                                    <div id="current-members-list" class="space-y-3 max-h-[300px] overflow-y-auto border-2 border-success rounded-lg p-4 bg-success/5">
+                                        @foreach($incomingUsers as $user)
                                             <div class="member-row border-2 border-success bg-base-100 rounded-lg p-3 sm:p-4 hover:shadow-lg transition-all">
                                                 <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                                                     <div class="flex items-start gap-3 sm:gap-4 flex-1">
@@ -260,20 +350,17 @@
                                                             class="select select-bordered select-xs sm:select-sm w-full"
                                                         >
                                                             @foreach($roles as $role)
-                                                                <option value="{{ $role->id }}" 
-                                                                    {{ (old("user_roles.{$user->id}", $currentRole?->id) == $role->id) ? 'selected' : '' }}>
+                                                                <option value="{{ $role->id }}" {{ $loop->first ? 'selected' : '' }}>
                                                                     {{ $role->display_name }}
                                                                 </option>
                                                             @endforeach
                                                         </select>
-                                                        @if($currentRole)
-                                                            <div class="mt-1 text-xs text-success flex items-center gap-1">
-                                                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                                </svg>
-                                                                <span class="truncate">Current: {{ $currentRole->display_name }}</span>
-                                                            </div>
-                                                        @endif
+                                                        <div class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span>Will be added with this role</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -282,21 +369,21 @@
                                 </div>
                             @endif
 
-                            {{-- Available Users Section --}}
-                            @if($uncheckedUsers->isNotEmpty())
+                            {{-- Section 3: Pengguna Tersedia (Tidak dalam grup) --}}
+                            @if($availableUsers->isNotEmpty())
                                 <div>
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                                         <h4 class="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
                                             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                                             </svg>
-                                            Available Users
+                                            Pengguna Tersedia
                                         </h4>
-                                        <span class="badge badge-ghost badge-xs sm:badge-sm md:badge-md">{{ $uncheckedUsers->count() }} available</span>
+                                        <span class="badge badge-ghost badge-xs sm:badge-sm md:badge-md">{{ $availableUsers->count() }} tersedia</span>
                                     </div>
                                     
-                                    <div id="available-members-list" class="space-y-3 max-h-[400px] overflow-y-auto border-2 border-base-300 rounded-lg p-4 bg-base-100">
-                                        @foreach($uncheckedUsers as $user)
+                                    <div id="available-members-list" class="space-y-3 max-h-[300px] overflow-y-auto border-2 border-base-300 rounded-lg p-4 bg-base-100">
+                                        @foreach($availableUsers as $user)
                                             <div class="member-row border-2 border-base-300 rounded-lg p-3 sm:p-4 hover:border-primary transition-colors bg-base-100">
                                                 <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                                                     <div class="flex items-start gap-3 sm:gap-4 flex-1">
@@ -314,7 +401,12 @@
                                                         
                                                         {{-- User Info --}}
                                                         <label for="user_{{ $user->id }}" class="flex-1 cursor-pointer min-w-0">
-                                                            <div class="font-semibold text-sm sm:text-base text-gray-900 truncate">{{ $user->name }}</div>
+                                                            <div class="font-semibold text-sm sm:text-base text-gray-900 truncate">
+                                                                {{ $user->name }}
+                                                                @if($user->id === Auth::id())
+                                                                    <span class="text-blue-600 text-xs sm:text-sm font-normal">({{ __('You') }})</span>
+                                                                @endif
+                                                            </div>
                                                             <div class="text-xs sm:text-sm text-gray-500 flex items-center gap-2 mt-1">
                                                                 <svg class="w-3 h-3 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -383,5 +475,60 @@
         </div>
     </div>
 
-    @vite(['resources/js/admin/group-member-selector.js'])
+    @push('scripts')
+        @vite(['resources/js/admin/group-member-selector.js'])
+        <script>
+            function removeMember(userId) {
+                const card = document.querySelector(`.member-card[data-user-id="${userId}"]`);
+                const checkbox = card.querySelector(`.member-checkbox[data-user-id="${userId}"]`);
+                
+                if (card && checkbox) {
+                    // Highlight card in red
+                    card.classList.remove('border-info', 'bg-base-100');
+                    card.classList.add('border-error', 'bg-error/10');
+                    
+                    // Uncheck the hidden checkbox
+                    checkbox.checked = false;
+                    
+                    // Change button text
+                    const btn = card.querySelector('.remove-member-btn');
+                    btn.innerHTML = `
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Undo
+                    `;
+                    btn.classList.remove('btn-error');
+                    btn.classList.add('btn-warning');
+                    btn.onclick = () => undoRemove(userId);
+                }
+            }
+            
+            function undoRemove(userId) {
+                const card = document.querySelector(`.member-card[data-user-id="${userId}"]`);
+                const checkbox = card.querySelector(`.member-checkbox[data-user-id="${userId}"]`);
+                
+                if (card && checkbox) {
+                    // Restore original styling
+                    card.classList.remove('border-error', 'bg-error/10');
+                    card.classList.add('border-info', 'bg-base-100');
+                    
+                    // Check the hidden checkbox
+                    checkbox.checked = true;
+                    
+                    // Restore button
+                    const btn = card.querySelector('.remove-member-btn');
+                    btn.innerHTML = `
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Remove
+                    `;
+                    btn.classList.remove('btn-warning');
+                    btn.classList.add('btn-error');
+                    btn.onclick = () => removeMember(userId);
+                }
+            }
+        </script>
+    @endpush
 </x-admin.layout>

@@ -36,7 +36,7 @@ class GroupManagementController extends Controller
     }
 
     /**
-     * Update the group details (for managers)
+     * Update the group details and members (for managers)
      */
     public function update(Request $request, Group $group)
     {
@@ -46,15 +46,101 @@ class GroupManagementController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('groups')->ignore($group->id)],
             'description' => 'nullable|string',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id',
+            'user_roles' => 'nullable|array',
+            'user_roles.*' => 'exists:roles,id'
         ]);
 
+        // Update basic group info
         $group->update([
             'name' => $validated['name'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? '',
         ]);
 
-        return redirect()->route('groups.edit', $group->id)
-            ->with('success', 'Group updated successfully!');
+        // Handle member updates if provided
+        if (isset($validated['users'])) {
+            // Get current members
+            $currentMembers = $group->groupMembers()->pluck('user_id')->toArray();
+            $newMembers = $validated['users'];
+            
+            // Prevent manager from removing themselves
+            if (!in_array(auth()->id(), $newMembers)) {
+                return back()->withErrors(['users' => __('You cannot remove yourself from the group.')])->withInput();
+            }
+            
+            // Get the manager's role to check hierarchy
+            $managerMembership = GroupMember::where('user_id', auth()->id())
+                ->where('group_id', $group->id)
+                ->with('role')
+                ->first();
+            
+            // Remove members that are not in the new list
+            $membersToRemove = array_diff($currentMembers, $newMembers);
+            foreach ($membersToRemove as $userId) {
+                $memberToRemove = GroupMember::where('group_id', $group->id)
+                    ->where('user_id', $userId)
+                    ->with('role')
+                    ->first();
+                
+                // Skip if manager tries to remove someone with equal/higher hierarchy
+                if ($memberToRemove && $managerMembership) {
+                    if ($memberToRemove->role->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+                        continue; // Skip this member
+                    }
+                }
+                
+                if ($memberToRemove) {
+                    $memberToRemove->delete();
+                }
+            }
+
+            // Add new members or update roles for existing ones
+            foreach ($newMembers as $userId) {
+                $roleId = $validated['user_roles'][$userId] ?? null;
+                
+                if ($roleId) {
+                    $newRole = Role::find($roleId);
+                    
+                    // Managers can't assign roles equal to or higher than their own
+                    if ($managerMembership && $newRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+                        if ($userId != auth()->id()) { // Allow keeping own role
+                            continue; // Skip this assignment
+                        }
+                    }
+                    
+                    $existingMember = GroupMember::where('group_id', $group->id)
+                        ->where('user_id', $userId)
+                        ->first();
+                    
+                    if ($existingMember) {
+                        // Only update role if user isn't modifying someone with higher/equal hierarchy
+                        if ($managerMembership && $existingMember->role->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+                            if ($userId != auth()->id()) { // Allow keeping own role
+                                continue; // Skip this update
+                            }
+                        }
+                        
+                        // Update role for existing member
+                        $existingMember->update([
+                            'role_id' => $roleId,
+                        ]);
+                    } else {
+                        // Add new member with role
+                        GroupMember::create([
+                            'group_id' => $group->id,
+                            'user_id' => $userId,
+                            'role_id' => $roleId,
+                            'assigned_by' => auth()->id(),
+                            'joined_at' => now(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('groups.show', $group->id)
+            ->with('success', __('Group updated successfully!'));
     }
 
     /**

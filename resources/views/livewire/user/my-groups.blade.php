@@ -3,7 +3,7 @@
         <!-- User Info Card -->
         <x-mary-card title="Your Profile">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div class="h-14 w-14 sm:h-16 sm:w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shrink-0 mx-auto sm:mx-0">
+                <div class="h-14 w-14 sm:h-16 sm:w-16 bg-gradient-to-r from-blue-300 to-emerald-200 rounded-full flex items-center justify-center shrink-0 mx-auto sm:mx-0">
                     <span class="text-lg sm:text-xl font-bold text-white">
                         {{ substr($user->name, 0, 1) }}
                     </span>
@@ -12,13 +12,53 @@
                     <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ $user->name }}</h3>
                     <p class="text-sm text-gray-500 break-all sm:break-normal">{{ $user->email }}</p>
                     
-                    @if($user->roles->count() > 0)
+                    @php
+                        // Get user's groups with pivot data
+                        $userGroups = $user->groups;
+                        
+                        if ($userGroups->count() > 0) {
+                            // Get all unique role IDs from the groups
+                            $roleIds = $userGroups->pluck('pivot.role_id')->unique();
+                            
+                            // Load all roles at once
+                            $roles = \App\Models\Role::whereIn('id', $roleIds)->get()->keyBy('id');
+                            
+                            // Group by role hierarchy level (Manager=70, Staff=30)
+                            $rolesByType = $userGroups->groupBy(function($group) use ($roles) {
+                                $roleId = $group->pivot->role_id;
+                                $role = $roles[$roleId] ?? null;
+                                if (!$role) return null;
+                                
+                                // Group by role type based on hierarchy
+                                if ($role->hierarchy_level >= 70) return 'manager';
+                                if ($role->hierarchy_level >= 30) return 'staff';
+                                return 'other';
+                            })->filter(function($groups, $key) {
+                                return $key !== null;
+                            })->map(function($groups, $type) use ($roles) {
+                                // Get first role of this type for badge color
+                                $firstRoleId = $groups->first()->pivot->role_id;
+                                $firstRole = $roles[$firstRoleId];
+                                
+                                return [
+                                    'type' => $type,
+                                    'label' => $type === 'manager' ? 'Manager' : ($type === 'staff' ? 'Staff' : ucfirst($type)),
+                                    'color' => $firstRole->badge_color,
+                                    'groups' => $groups
+                                ];
+                            });
+                        } else {
+                            $rolesByType = collect();
+                        }
+                    @endphp
+                    
+                    @if($rolesByType->count() > 0)
                         <div class="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
-                            @foreach($user->roles as $role)
-                                <x-mary-badge 
-                                    value="{{ $role->display_name }}" 
-                                    class="badge-{{ $role->getBadgeColor() }}"
-                                />
+                            @foreach($rolesByType as $type => $roleData)
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" 
+                                      style="background-color: {{ $roleData['color'] }}">
+                                    {{ __($roleData['label']) }}
+                                </span>
                             @endforeach
                         </div>
                     @endif
@@ -39,7 +79,7 @@
             @if($groups->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     @foreach($groups as $group)
-                        <div class="border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow bg-gray-50">
+                        <div class="rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow bg-gray-50">
                             <div class="flex items-start justify-between mb-3 sm:mb-4 gap-2">
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-base sm:text-lg font-semibold text-gray-900 truncate">

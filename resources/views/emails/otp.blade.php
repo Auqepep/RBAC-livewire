@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Your OTP Code</title>
+    <title>Kode OTP Anda</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -55,16 +55,9 @@
     </div>
 
     <div class="message">
-        @if($type === 'register')
-            <h2>Welcome! Please verify your email</h2>
-            <p>Thank you for registering. Use the OTP code below to verify your email address:</p>
         @elseif($type === 'login')
-            <h2>Your Login Code</h2>
-            <p>Use the OTP code below to complete your login:</p>
-        @elseif($type === 'password_reset')
-            <h2>Password Reset</h2>
-            <p>Use the OTP code below to reset your password:</p>
-        @endif
+            <h2>Kode Login Anda</h2>
+            <p>Gunakan kode OTP di bawah ini untuk menyelesaikan login Anda:</p>
     </div>
 
     <div class="otp-code">
@@ -72,12 +65,12 @@
     </div>
 
     <div class="warning">
-        <strong>Important:</strong> This code will expire in 10 minutes. Do not share this code with anyone.
+        <strong>Penting:</strong> Kode ini akan kedaluwarsa dalam 10 menit. Jangan bagikan kode ini kepada siapa pun.
     </div>
 
     <div class="footer">
-        <p>If you didn't request this code, please ignore this email.</p>
-        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+        <p>Jika Anda tidak meminta kode ini, abaikan email ini.</p>
+        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Hak cipta dilindungi undang-undang.</p>
     </div>
 </body>
 </html>

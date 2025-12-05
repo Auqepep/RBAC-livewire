@@ -71,7 +71,6 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groups</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                                 </tr>
@@ -81,13 +80,18 @@
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
-                                                <div class="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                <div class="h-10 w-10 bg-gradient-to-r from-blue-300 to-emerald-200 rounded-full flex items-center justify-center">
                                                     <span class="text-sm font-bold text-white">
                                                         {{ substr($user->name, 0, 1) }}
                                                     </span>
                                                 </div>
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ $user->name }}
+                                                        @if($user->id === Auth::id())
+                                                            <span class="text-blue-600 text-sm font-normal">({{ __('You') }})</span>
+                                                        @endif
+                                                    </div>
                                                     <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                                 </div>
                                             </div>
@@ -97,23 +101,6 @@
                                                 <x-mary-badge value="Verified" class="badge-success" />
                                             @else
                                                 <x-mary-badge value="Unverified" class="badge-warning" />
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($user->roles->count() > 0)
-                                                <div class="flex flex-wrap gap-1">
-                                                    @foreach($user->roles->take(2) as $role)
-                                                        <x-mary-badge 
-                                                            value="{{ $role->display_name }}" 
-                                                            class="badge-{{ $role->getBadgeColor() }} text-xs"
-                                                        />
-                                                    @endforeach
-                                                    @if($user->roles->count() > 2)
-                                                        <x-mary-badge value="+{{ $user->roles->count() - 2 }}" class="badge-ghost text-xs" />
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-sm text-gray-400">No roles</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -149,24 +136,24 @@
                     @foreach($users as $user)
                         @if($user->groupMembers->count() > 0)
                             <dialog id="showGroupsModal{{ $user->id }}" class="modal">
-                                <div class="modal-box max-w-2xl">
-                                    <h3 class="font-bold text-lg mb-4">
-                                        {{ $user->name }}'s Groups & Roles
+                                <div class="modal-box max-w-2xl max-h-[85vh] flex flex-col p-4">
+                                    <h3 class="font-bold text-base mb-3">
+                                        {{ $user->name }}@if($user->id === Auth::id()) <span class="text-blue-600 text-sm font-normal">({{ __('You') }})</span>@endif's Groups & Roles
                                     </h3>
                                     
-                                    <div class="space-y-3">
+                                    <div class="space-y-2 overflow-y-auto flex-1 pr-2">
                                         @foreach($user->groupMembers as $membership)
-                                            <div class="border rounded-lg p-4 hover:bg-base-200 transition-colors">
+                                            <div class="border rounded-lg p-3 hover:bg-base-200 transition-colors">
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
-                                                        <h4 class="font-semibold text-base">{{ $membership->group->name }}</h4>
+                                                        <h4 class="font-semibold text-sm">{{ $membership->group->name }}</h4>
                                                         @if($membership->group->description)
-                                                            <p class="text-sm text-gray-500 mt-1">{{ $membership->group->description }}</p>
+                                                            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ $membership->group->description }}</p>
                                                         @endif
                                                         
-                                                        <div class="flex items-center gap-3 mt-3">
+                                                        <div class="flex items-center gap-2 mt-2">
                                                             @if($membership->role)
-                                                                <span class="badge text-xs text-white" style="background-color: {{ $membership->role->badge_color ?? '#6366f1' }};">
+                                                                <span class="badge badge-xs text-white" style="background-color: {{ $membership->role->badge_color ?? '#6366f1' }};">
                                                                     {{ $membership->role->display_name ?? $membership->role->name }}
                                                                 </span>
                                                             @endif
@@ -181,9 +168,9 @@
                                         @endforeach
                                     </div>
                                     
-                                    <div class="modal-action">
+                                    <div class="modal-action mt-3 pt-3 border-t">
                                         <form method="dialog">
-                                            <button class="btn">Close</button>
+                                            <button class="btn btn-sm">Close</button>
                                         </form>
                                     </div>
                                 </div>

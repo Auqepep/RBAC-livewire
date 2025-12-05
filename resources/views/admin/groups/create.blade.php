@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Create New Group') }}
+                {{ __('Create Group') }}
             </h2>
             <x-mary-button icon="o-arrow-left" class="btn-secondary" link="{{ route('admin.groups.index') }}">
-                Back to Groups
+                {{ __('Back to Groups') }}
             </x-mary-button>
         </div>
     </x-slot>
@@ -15,7 +15,7 @@
             <x-mary-card>
                 @if($errors->any())
                     <x-mary-alert icon="o-x-circle" class="alert-error mb-6">
-                        <strong>Please fix the following errors:</strong>
+                        <strong>{{ __('Please fix the following errors:') }}</strong>
                         <ul class="mt-2 list-disc list-inside">
                             @foreach($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -24,43 +24,44 @@
                     </x-mary-alert>
                 @endif
 
-                <x-mary-form method="POST" action="{{ route('admin.groups.store') }}">
+                <form method="POST" action="{{ route('admin.groups.store') }}">
+                    @csrf
                     <div class="grid grid-cols-1 gap-6">
                         <x-mary-input 
-                            label="Group Name" 
+                            label="{{ __('Group Name') }}" 
                             name="name" 
                             value="{{ old('name') }}" 
                             required 
-                            placeholder="Enter group name"
-                            hint="This name must be unique"
+                            placeholder="{{ __('Enter group name') }}"
+                            hint="{{ __('This name must be unique') }}"
                         />
 
                         <x-mary-textarea 
-                            label="Description" 
+                            label="{{ __('Description') }}" 
                             name="description" 
                             value="{{ old('description') }}" 
-                            placeholder="Describe the purpose of this group"
+                            placeholder="{{ __('Describe the purpose of this group') }}"
                             rows="3"
                         />
 
                         <x-mary-checkbox 
-                            label="Active" 
+                            label="{{ __('Active') }}" 
                             name="is_active" 
                             value="1" 
                             checked="{{ old('is_active', true) }}"
-                            hint="Inactive groups cannot be assigned to users"
+                            hint="{{ __('Inactive groups cannot be assigned to users') }}"
                         />
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-3">
-                                <span class="text-lg">Initial Members (Optional)</span>
+                                <span class="text-lg">{{ __('Members') }} ({{ __('Optional') }})</span>
                             </label>
                             <div class="bg-base-200 rounded-lg p-4 mb-3">
                                 <div class="flex items-center gap-2 text-sm text-gray-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    <span>Select users and assign them roles. Default role is "Staff".</span>
+                                    <span>{{ __('Select users and assign them roles. Unchecking a user will remove them from the group.') }}</span>
                                 </div>
                             </div>
 
@@ -70,7 +71,7 @@
                                     <input 
                                         type="text" 
                                         id="user-search"
-                                        placeholder="Search users by name or email..."
+                                        placeholder="{{ __('Search users...') }}"
                                         class="input input-bordered w-full pl-10"
                                     />
                                     <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +101,12 @@
                                             
                                             {{-- User Info --}}
                                             <label for="user_{{ $user->id }}" class="flex-1 cursor-pointer">
-                                                <div class="font-semibold text-base text-gray-900">{{ $user->name }}</div>
+                                                <div class="font-semibold text-base text-gray-900">
+                                                    {{ $user->name }}
+                                                    @if($user->id === Auth::id())
+                                                        <span class="text-blue-600 text-sm font-normal">({{ __('You') }})</span>
+                                                    @endif
+                                                </div>
                                                 <div class="text-sm text-gray-500 flex items-center gap-2 mt-1">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -111,21 +117,20 @@
                                             
                                             {{-- Role Selector --}}
                                             <div class="role-selector min-w-[200px]" style="{{ !$isChecked ? 'display: none;' : '' }}">
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Assign Role</label>
-                                                <input type="hidden" name="user_roles[{{ $user->id }}]" value="{{ $selectedRole }}" class="role-value">
-                                                <select class="select select-bordered select-sm w-full role-select" {{ !$isChecked ? 'disabled' : '' }}>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('Assign Role') }}</label>
+                                                <select name="user_roles[{{ $user->id }}]" class="select select-bordered select-sm w-full role-select" {{ !$isChecked ? 'disabled' : '' }}>
                                                     <option value="staff" {{ $selectedRole === 'staff' ? 'selected' : '' }}>
-                                                        👤 Staff
+                                                        👤 {{ __('Staff') }}
                                                     </option>
                                                     <option value="manager" {{ $selectedRole === 'manager' ? 'selected' : '' }}>
-                                                        👔 Manager
+                                                        👔 {{ __('Manager') }}
                                                     </option>
                                                 </select>
                                                 <div class="mt-1 text-xs text-gray-500 flex items-center gap-1">
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                     </svg>
-                                                    <span>Role will be created for this group</span>
+                                                    <span>{{ __('Role will be created for this group') }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -145,19 +150,19 @@
 
                         <div class="flex justify-end space-x-4 pt-4 border-t">
                             <x-mary-button 
-                                label="Cancel" 
+                                label="{{ __('Cancel') }}" 
                                 class="btn-secondary" 
                                 link="{{ route('admin.groups.index') }}"
                             />
-                            <x-mary-button 
-                                label="Create Group" 
-                                class="btn-primary" 
-                                type="submit"
-                                icon="o-plus"
-                            />
+                            <button type="submit" class="btn btn-primary">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                {{ __('Create Group') }}
+                            </button>
                         </div>
                     </div>
-                </x-mary-form>
+                </form>
             </x-mary-card>
         </div>
     </div>

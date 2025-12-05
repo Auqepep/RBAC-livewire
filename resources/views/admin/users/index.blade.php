@@ -100,7 +100,12 @@
                                 @foreach($users as $user)
                                     <tr>
                                         <td>
-                                            <div class="font-medium text-gray-900">{{ $user->name }}</div>
+                                            <div class="font-medium text-gray-900">
+                                                {{ $user->name }}
+                                                @if($user->id === Auth::id())
+                                                    <span class="text-blue-600 text-sm font-normal">({{ __('You') }})</span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="text-sm">{{ $user->email }}</div>
@@ -192,7 +197,12 @@
                                 <div class="card-body p-4">
                                     <div class="flex justify-between items-start gap-2">
                                         <div class="min-w-0 flex-1">
-                                            <h3 class="font-semibold text-gray-900 truncate">{{ $user->name }}</h3>
+                                            <h3 class="font-semibold text-gray-900 truncate">
+                                                {{ $user->name }}
+                                                @if($user->id === Auth::id())
+                                                    <span class="text-blue-600 text-sm font-normal">({{ __('You') }})</span>
+                                                @endif
+                                            </h3>
                                             <p class="text-sm text-gray-500 truncate">{{ $user->email }}</p>
                                         </div>
                                         <div class="flex flex-col items-end gap-1 shrink-0">
@@ -269,40 +279,42 @@
                     <!-- Modals for all users - outside the table -->
                     @foreach($users as $user)
                         <dialog id="showGroupsModal{{ $user->id }}" class="modal">
-                            <div class="modal-box w-11/12 max-w-2xl">
+                            <div class="modal-box w-11/12 max-w-2xl max-h-[85vh] flex flex-col p-4">
                                 <form method="dialog">
                                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                                 </form>
-                                <h3 class="font-bold text-base sm:text-lg mb-4">{{ $user->name }}'s Groups & Roles</h3>
+                                <h3 class="font-bold text-sm sm:text-base mb-3">
+                                    {{ $user->name }}@if($user->id === Auth::id()) <span class="text-blue-600 text-sm font-normal">({{ __('You') }})</span>@endif's Groups & Roles
+                                </h3>
                                 
                                 @if($user->groupMembers->count() > 0)
-                                    <div class="overflow-x-auto">
-                                        <table class="table table-zebra w-full text-sm">
+                                    <div class="overflow-x-auto overflow-y-auto flex-1">
+                                        <table class="table table-zebra w-full text-xs sm:text-sm">
                                             <thead>
-                                                <tr>
-                                                    <th>Group</th>
-                                                    <th>Role</th>
-                                                    <th class="hidden sm:table-cell">Joined</th>
+                                                <tr class="text-xs">
+                                                    <th class="py-2">Group</th>
+                                                    <th class="py-2">Role</th>
+                                                    <th class="py-2 hidden sm:table-cell">Joined</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($user->groupMembers as $membership)
                                                     <tr>
-                                                        <td>
-                                                            <div class="font-medium">{{ $membership->group->name }}</div>
+                                                        <td class="py-2">
+                                                            <div class="font-medium text-xs sm:text-sm">{{ $membership->group->name }}</div>
                                                             @if($membership->group->description)
-                                                                <div class="text-xs text-gray-500 hidden sm:block">{{ Str::limit($membership->group->description, 50) }}</div>
+                                                                <div class="text-xs text-gray-500 hidden sm:block line-clamp-1">{{ Str::limit($membership->group->description, 40) }}</div>
                                                             @endif
                                                         </td>
-                                                        <td>
+                                                        <td class="py-2">
                                                             <x-mary-badge 
                                                                 value="{{ $membership->role->display_name ?? $membership->role->name }}" 
-                                                                class="badge-xs sm:badge-sm"
+                                                                class="badge-xs"
                                                                 style="background-color: {{ $membership->role->badge_color ?? '#6b7280' }}; color: white;"
                                                             />
                                                         </td>
-                                                        <td>
-                                                            <div class="text-sm">{{ $membership->joined_at ? $membership->joined_at->format('M j, Y') : 'N/A' }}</div>
+                                                        <td class="py-2 hidden sm:table-cell">
+                                                            <div class="text-xs">{{ $membership->joined_at ? $membership->joined_at->format('M j, Y') : 'N/A' }}</div>
                                                             <div class="text-xs text-gray-400">{{ $membership->joined_at ? $membership->joined_at->diffForHumans() : '' }}</div>
                                                         </td>
                                                     </tr>
@@ -311,15 +323,15 @@
                                         </table>
                                     </div>
                                 @else
-                                    <div class="text-center py-8">
-                                        <x-mary-icon name="o-user-group" class="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                                        <p class="text-gray-500">This user is not a member of any groups.</p>
+                                    <div class="text-center py-6">
+                                        <x-mary-icon name="o-user-group" class="w-10 h-10 mx-auto mb-2 text-gray-400" />
+                                        <p class="text-sm text-gray-500">This user is not a member of any groups.</p>
                                     </div>
                                 @endif
                                 
-                                <div class="modal-action">
+                                <div class="modal-action mt-3 pt-3 border-t">
                                     <form method="dialog">
-                                        <button class="btn">Close</button>
+                                        <button class="btn btn-sm">Close</button>
                                     </form>
                                 </div>
                             </div>

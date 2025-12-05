@@ -26,11 +26,14 @@ class Login extends Component
     public $autoVerifying = false;
     public $otpLength = 0; // Track OTP length to prevent multiple updates
 
-    protected $messages = [
-        'email.exists' => 'No account found with this email address.',
-        'otp.required' => 'Please enter the OTP code.',
-        'otp.size' => 'OTP must be 6 digits.',
-    ];
+    protected function messages()
+    {
+        return [
+            'email.exists' => __('No account found with this email address.'),
+            'otp.required' => __('Please enter the OTP code.'),
+            'otp.size' => __('OTP must be 6 digits.'),
+        ];
+    }
 
     public function mount()
     {
@@ -53,7 +56,7 @@ class Login extends Component
             $user = User::where('email', $this->email)->first();
             
             if (!$user->hasVerifiedEmail()) {
-                session()->flash('error', 'Please verify your email address first. Check your email for verification instructions.');
+                session()->flash('error', __('Please verify your email address first. Check your email for verification instructions.'));
                 $this->loading = false;
                 return;
             }
@@ -67,11 +70,11 @@ class Login extends Component
             $this->step = 2;
             $this->startCountdown();
             
-            session()->flash('message', 'OTP sent to your email. Please check your inbox.');
+            session()->flash('message', __('OTP sent to your email. Please check your inbox.'));
             $this->dispatch('focus-otp');
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to send OTP. Please try again.');
+            session()->flash('error', __('Failed to send OTP. Please try again.'));
             \Log::error('OTP send error: ' . $e->getMessage());
         } finally {
             $this->loading = false;
@@ -96,15 +99,15 @@ class Login extends Component
                 // Clean up any remaining OTP records for this email
                 EmailOtp::cleanupExpiredOtps();
 
-                session()->flash('message', 'Login successful!');
+                session()->flash('message', __('Login successful!'));
                 return redirect()->intended('/dashboard');
             } else {
-                session()->flash('error', 'Invalid or expired OTP. Please try again.');
+                session()->flash('error', __('Invalid or expired OTP. Please try again.'));
                 $this->reset('otp');
                 $this->dispatch('focus-otp');
             }
         } catch (\Exception $e) {
-            session()->flash('error', 'An error occurred. Please try again.');
+            session()->flash('error', __('An error occurred. Please try again.'));
             \Log::error('OTP verification error: ' . $e->getMessage());
         } finally {
             $this->loading = false;
@@ -127,10 +130,10 @@ class Login extends Component
                 Mail::to($this->email)->send(new SendOtpMail($otpRecord->otp, 'login'));
                 
                 $this->startCountdown();
-                session()->flash('message', 'New OTP sent to your email.');
+                session()->flash('message', __('New OTP sent to your email.'));
             }
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to send OTP. Please try again.');
+            session()->flash('error', __('Failed to send OTP. Please try again.'));
         } finally {
             $this->resending = false;
         }
