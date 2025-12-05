@@ -71,14 +71,24 @@ class PermissionManager {
         this.categories = {
             system: ["manage_system", "manage_permissions", "manage_roles"],
             users: ["manage_users", "view_users", "edit_user_roles"],
-            groups: ["manage_groups", "view_groups", "assign_group_members", "manage_group_roles"],
-            content: ["create_content", "edit_content", "delete_content", "publish_content"],
+            groups: [
+                "manage_groups",
+                "view_groups",
+                "assign_group_members",
+                "manage_group_roles",
+            ],
+            content: [
+                "create_content",
+                "edit_content",
+                "delete_content",
+                "publish_content",
+            ],
             reports: ["view_reports", "export_data"],
             dashboard: ["view_dashboard"],
             profile: ["view_profile", "edit_profile"],
             department: ["manage_department"],
             team: ["view_team_data"],
-            approvals: ["approve_requests"]
+            approvals: ["approve_requests"],
         };
 
         this.isProcessing = false; // Prevent infinite loops
@@ -88,7 +98,7 @@ class PermissionManager {
      * Initialize permission management for a form
      */
     init() {
-        console.log('PermissionManager: Initializing...');
+        console.log("PermissionManager: Initializing...");
         this.bindEvents();
         this.addCategoryCheckboxes();
     }
@@ -98,44 +108,54 @@ class PermissionManager {
      */
     addCategoryCheckboxes() {
         // Find all category containers
-        document.querySelectorAll('#permissions-container > div').forEach(categoryDiv => {
-            const categoryTitle = categoryDiv.querySelector('h4');
-            if (!categoryTitle) return;
-            
-            const categoryName = categoryTitle.textContent.trim().toLowerCase();
-            
-            // Skip if check all button already exists
-            if (categoryDiv.querySelector('.category-check-all')) return;
-            
-            // Create check all container
-            const checkAllContainer = document.createElement('div');
-            checkAllContainer.className = 'flex items-center justify-between mb-2 category-check-all';
-            
-            // Create check all checkbox
-            const checkAllCheckbox = document.createElement('input');
-            checkAllCheckbox.type = 'checkbox';
-            checkAllCheckbox.className = 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded';
-            checkAllCheckbox.id = `check-all-${categoryName}`;
-            
-            const checkAllLabel = document.createElement('label');
-            checkAllLabel.setAttribute('for', `check-all-${categoryName}`);
-            checkAllLabel.className = 'ml-2 block text-sm font-medium text-gray-600';
-            checkAllLabel.textContent = 'Check All';
-            
-            checkAllContainer.appendChild(checkAllCheckbox);
-            checkAllContainer.appendChild(checkAllLabel);
-            
-            // Insert after the category title
-            categoryTitle.parentNode.insertBefore(checkAllContainer, categoryTitle.nextSibling);
-            
-            // Bind check all event
-            checkAllCheckbox.addEventListener('change', (e) => {
-                this.handleCategoryCheckAll(categoryName, e.target.checked);
+        document
+            .querySelectorAll("#permissions-container > div")
+            .forEach((categoryDiv) => {
+                const categoryTitle = categoryDiv.querySelector("h4");
+                if (!categoryTitle) return;
+
+                const categoryName = categoryTitle.textContent
+                    .trim()
+                    .toLowerCase();
+
+                // Skip if check all button already exists
+                if (categoryDiv.querySelector(".category-check-all")) return;
+
+                // Create check all container
+                const checkAllContainer = document.createElement("div");
+                checkAllContainer.className =
+                    "flex items-center justify-between mb-2 category-check-all";
+
+                // Create check all checkbox
+                const checkAllCheckbox = document.createElement("input");
+                checkAllCheckbox.type = "checkbox";
+                checkAllCheckbox.className =
+                    "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded";
+                checkAllCheckbox.id = `check-all-${categoryName}`;
+
+                const checkAllLabel = document.createElement("label");
+                checkAllLabel.setAttribute("for", `check-all-${categoryName}`);
+                checkAllLabel.className =
+                    "ml-2 block text-sm font-medium text-gray-600";
+                checkAllLabel.textContent = "Check All";
+
+                checkAllContainer.appendChild(checkAllCheckbox);
+                checkAllContainer.appendChild(checkAllLabel);
+
+                // Insert after the category title
+                categoryTitle.parentNode.insertBefore(
+                    checkAllContainer,
+                    categoryTitle.nextSibling
+                );
+
+                // Bind check all event
+                checkAllCheckbox.addEventListener("change", (e) => {
+                    this.handleCategoryCheckAll(categoryName, e.target.checked);
+                });
+
+                // Update check all state based on current selections
+                this.updateCategoryCheckAllState(categoryName);
             });
-            
-            // Update check all state based on current selections
-            this.updateCategoryCheckAllState(categoryName);
-        });
     }
 
     /**
@@ -144,17 +164,22 @@ class PermissionManager {
     handleCategoryCheckAll(categoryName, isChecked) {
         if (this.isProcessing) return;
         this.isProcessing = true;
-        
+
         const permissions = this.categories[categoryName] || [];
-        console.log(`Category ${categoryName} check all: ${isChecked}`, permissions);
-        
-        permissions.forEach(permissionName => {
+        console.log(
+            `Category ${categoryName} check all: ${isChecked}`,
+            permissions
+        );
+
+        permissions.forEach((permissionName) => {
             const permissionId = this.getPermissionIdByName(permissionName);
             if (permissionId) {
-                const checkbox = document.querySelector(`input[value="${permissionId}"]`);
+                const checkbox = document.querySelector(
+                    `input[value="${permissionId}"]`
+                );
                 if (checkbox && checkbox.checked !== isChecked) {
                     checkbox.checked = isChecked;
-                    
+
                     // Handle dependencies
                     if (isChecked) {
                         this.handlePermissionChecked(permissionName, false);
@@ -164,10 +189,10 @@ class PermissionManager {
                 }
             }
         });
-        
+
         // Update other category check all states
         setTimeout(() => {
-            Object.keys(this.categories).forEach(cat => {
+            Object.keys(this.categories).forEach((cat) => {
                 if (cat !== categoryName) {
                     this.updateCategoryCheckAllState(cat);
                 }
@@ -181,23 +206,27 @@ class PermissionManager {
      */
     updateCategoryCheckAllState(categoryName) {
         const permissions = this.categories[categoryName] || [];
-        const checkAllCheckbox = document.querySelector(`#check-all-${categoryName}`);
-        
+        const checkAllCheckbox = document.querySelector(
+            `#check-all-${categoryName}`
+        );
+
         if (!checkAllCheckbox) return;
-        
+
         let checkedCount = 0;
         let totalCount = permissions.length;
-        
-        permissions.forEach(permissionName => {
+
+        permissions.forEach((permissionName) => {
             const permissionId = this.getPermissionIdByName(permissionName);
             if (permissionId) {
-                const checkbox = document.querySelector(`input[value="${permissionId}"]`);
+                const checkbox = document.querySelector(
+                    `input[value="${permissionId}"]`
+                );
                 if (checkbox && checkbox.checked) {
                     checkedCount++;
                 }
             }
         });
-        
+
         // Update check all checkbox state
         if (checkedCount === 0) {
             checkAllCheckbox.checked = false;
@@ -215,25 +244,31 @@ class PermissionManager {
      * Bind checkbox change events
      */
     bindEvents() {
-        const checkboxes = document.querySelectorAll('input[wire\\:model="selectedPermissions"]');
-        console.log(`PermissionManager: Found ${checkboxes.length} permission checkboxes`);
-        
-        checkboxes.forEach(checkbox => {
+        const checkboxes = document.querySelectorAll(
+            "input.permission-checkbox"
+        );
+        console.log(
+            `PermissionManager: Found ${checkboxes.length} permission checkboxes`
+        );
+
+        checkboxes.forEach((checkbox) => {
             // Remove existing listeners to avoid duplicates
             const newCheckbox = checkbox.cloneNode(true);
             checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-            
+
             // Add new listener
-            newCheckbox.addEventListener('change', (e) => {
+            newCheckbox.addEventListener("change", (e) => {
                 if (this.isProcessing) return;
-                
+
                 const permissionId = e.target.value;
                 const permissionName = this.getPermissionNameById(permissionId);
-                
-                console.log(`Permission change: ${permissionName} (${permissionId}) - ${e.target.checked}`);
-                
+
+                console.log(
+                    `Permission change: ${permissionName} (${permissionId}) - ${e.target.checked}`
+                );
+
                 if (!permissionName) return;
-                
+
                 if (e.target.checked) {
                     this.handlePermissionChecked(permissionName, true);
                 } else {
@@ -248,26 +283,31 @@ class PermissionManager {
      */
     handlePermissionChecked(permissionName, updateCategories = true) {
         const dependencies = this.dependencies[permissionName] || [];
-        console.log(`Checking dependencies for ${permissionName}:`, dependencies);
-        
+        console.log(
+            `Checking dependencies for ${permissionName}:`,
+            dependencies
+        );
+
         // Auto-check all dependencies
-        dependencies.forEach(depName => {
+        dependencies.forEach((depName) => {
             const depId = this.getPermissionIdByName(depName);
             if (depId) {
-                const depCheckbox = document.querySelector(`input[value="${depId}"]`);
+                const depCheckbox = document.querySelector(
+                    `input[value="${depId}"]`
+                );
                 if (depCheckbox && !depCheckbox.checked) {
                     console.log(`Auto-checking dependency: ${depName}`);
                     depCheckbox.checked = true;
-                    // Recursively check dependencies of    
+                    // Recursively check dependencies of
                     this.handlePermissionChecked(depName, false);
                 }
             }
         });
-        
+
         if (updateCategories) {
             // Update category check all states
             setTimeout(() => {
-                Object.keys(this.categories).forEach(categoryName => {
+                Object.keys(this.categories).forEach((categoryName) => {
                     this.updateCategoryCheckAllState(categoryName);
                 });
             }, 50);
@@ -279,13 +319,15 @@ class PermissionManager {
      */
     handlePermissionUnchecked(permissionName, updateCategories = true) {
         console.log(`Unchecking dependents of ${permissionName}`);
-        
+
         // Find all permissions that depend on this one
         Object.entries(this.dependencies).forEach(([name, deps]) => {
             if (deps.includes(permissionName)) {
                 const id = this.getPermissionIdByName(name);
                 if (id) {
-                    const checkbox = document.querySelector(`input[value="${id}"]`);
+                    const checkbox = document.querySelector(
+                        `input[value="${id}"]`
+                    );
                     if (checkbox && checkbox.checked) {
                         console.log(`Auto-unchecking dependent: ${name}`);
                         checkbox.checked = false;
@@ -295,11 +337,11 @@ class PermissionManager {
                 }
             }
         });
-        
+
         if (updateCategories) {
             // Update category check all states
             setTimeout(() => {
-                Object.keys(this.categories).forEach(categoryName => {
+                Object.keys(this.categories).forEach((categoryName) => {
                     this.updateCategoryCheckAllState(categoryName);
                 });
             }, 50);
@@ -315,7 +357,7 @@ class PermissionManager {
             console.warn(`Label not found for permission ID: ${id}`);
             return null;
         }
-        
+
         const displayName = label.textContent.trim();
         return this.displayNameToPermissionName(displayName);
     }
@@ -329,16 +371,16 @@ class PermissionManager {
             console.warn(`Display name not found for permission: ${name}`);
             return null;
         }
-        
+
         const labels = document.querySelectorAll('label[for^="permission_"]');
-        
+
         for (let label of labels) {
             if (label.textContent.trim() === displayName) {
-                const forAttr = label.getAttribute('for');
-                return forAttr.replace('permission_', '');
+                const forAttr = label.getAttribute("for");
+                return forAttr.replace("permission_", "");
             }
         }
-        
+
         console.warn(`Permission ID not found for: ${name} (${displayName})`);
         return null;
     }
@@ -351,7 +393,10 @@ class PermissionManager {
         const reverseMapping = Object.fromEntries(
             Object.entries(this.nameMapping).map(([key, value]) => [value, key])
         );
-        return reverseMapping[displayName] || displayName.toLowerCase().replace(/\s+/g, '_');
+        return (
+            reverseMapping[displayName] ||
+            displayName.toLowerCase().replace(/\s+/g, "_")
+        );
     }
 }
 
@@ -359,9 +404,9 @@ class PermissionManager {
 let permissionManager;
 
 function initializePermissionManager() {
-    console.log('Initializing Permission Manager...');
+    console.log("Initializing Permission Manager...");
     permissionManager = new PermissionManager();
-    
+
     // Wait for DOM to be fully ready
     setTimeout(() => {
         permissionManager.init();
@@ -369,26 +414,26 @@ function initializePermissionManager() {
 }
 
 // Initialize on various events
-document.addEventListener('DOMContentLoaded', initializePermissionManager);
+document.addEventListener("DOMContentLoaded", initializePermissionManager);
 
 // Re-initialize when Livewire updates
-if (typeof Livewire !== 'undefined') {
-    document.addEventListener('livewire:navigated', () => {
-        console.log('Livewire navigated - reinitializing permission manager');
+if (typeof Livewire !== "undefined") {
+    document.addEventListener("livewire:navigated", () => {
+        console.log("Livewire navigated - reinitializing permission manager");
         setTimeout(initializePermissionManager, 300);
     });
-    
-    document.addEventListener('livewire:load', () => {
-        console.log('Livewire loaded - reinitializing permission manager');
+
+    document.addEventListener("livewire:load", () => {
+        console.log("Livewire loaded - reinitializing permission manager");
         setTimeout(initializePermissionManager, 300);
     });
 }
 
 // Also initialize when window loads (fallback)
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
     setTimeout(() => {
         if (!permissionManager) {
-            console.log('Fallback initialization...');
+            console.log("Fallback initialization...");
             initializePermissionManager();
         }
     }, 500);

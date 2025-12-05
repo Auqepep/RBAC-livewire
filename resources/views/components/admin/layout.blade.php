@@ -13,39 +13,56 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Livewire Styles -->
+    @livewireStyles
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen" style="background-color: var(--bg-secondary);">
         <!-- Navigation -->
-        <nav class="bg-white border-b border-gray-100">
+        <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <!-- Logo -->
                         <div class="shrink-0 flex items-center">
-                            <a href="{{ route('admin.dashboard') }}" class="text-xl font-semibold text-gray-800">
-                                {{ config('app.name') }} - Admin
+                            <a href="{{ route('admin.dashboard') }}" class="text-lg sm:text-xl font-semibold text-gray-800">
+                                <span class="hidden sm:inline">{{ config('app.name') }} - Admin</span>
+                                <span class="sm:hidden">Admin</span>
                             </a>
                         </div>
 
-                        <!-- Navigation Links -->
-                        <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                        <!-- Desktop Navigation Links -->
+                        <div class="hidden space-x-4 lg:space-x-8 sm:-my-px sm:ml-6 lg:ml-10 sm:flex">
                             <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.dashboard') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Dashboard
+                                {{ __('Dashboard') }}
                             </a>
                             
                             <a href="{{ route('admin.users.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.users.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Users
+                                {{ __('Users') }}
                             </a>
                             
                             <a href="{{ route('admin.groups.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                Groups
+                                {{ __('Groups') }}
+                            </a>
+                            
+                            @can('manage-permissions')
+                            <a href="{{ route('admin.permissions.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
+                                {{ __('Permissions') }}
+                            </a>
+                            @endcan
+                            
+                            <a href="{{ route('test.permissions') }}" target="_blank" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-orange-500 text-sm font-medium leading-5 hover:text-orange-600 focus:outline-none focus:text-orange-600 focus:border-orange-300 transition duration-150 ease-in-out">
+                                🧪 Test
                             </a>
                         </div>
                     </div>
 
-                    <!-- Settings Dropdown -->
+                    <!-- Desktop Settings -->
                     <div class="hidden sm:flex sm:items-center sm:ml-6">
+                        <a href="{{ route('dashboard') }}" class="text-gray-500 hover:text-gray-700 text-sm mr-4">
+                            {{ __('Dashboard') }}
+                        </a>
                         <div class="ml-3 relative">
                             <div class="relative">
                                 <button type="button" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
@@ -57,14 +74,69 @@
                             </div>
                         </div>
                         
-                        <a href="{{ route('dashboard') }}" class="ml-4 text-gray-500 hover:text-gray-700">
-                            Main Site
-                        </a>
-                        
-                        <form method="POST" action="{{ route('logout') }}" class="ml-4">
+                        <form method="POST" action="{{ route('logout') }}" class="ml-4" onsubmit="handleLogout(event)" id="logout-form" data-home-url="{{ route('home') }}">
                             @csrf
-                            <button type="submit" class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 transition duration-150 ease-in-out">
-                                Logout
+                            <button type="submit" class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 transition duration-150 ease-in-out text-sm">
+                                {{ __('Logout') }}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Mobile Hamburger -->
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <button @click="open = !open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                <path :class="{'hidden': open, 'inline-flex': !open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                <path :class="{'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div :class="{'block': open, 'hidden': !open}" class="hidden sm:hidden">
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="{{ route('admin.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.dashboard') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                        {{ __('Dashboard') }}
+                    </a>
+                    <a href="{{ route('admin.users.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                        {{ __('Users') }}
+                    </a>
+                    <a href="{{ route('admin.groups.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                        {{ __('Groups') }}
+                    </a>
+                    @can('manage-permissions')
+                    <a href="{{ route('admin.permissions.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                        {{ __('Permissions') }}
+                    </a>
+                    @endcan
+                    <a href="{{ route('test.permissions') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-orange-500 hover:text-orange-700 hover:bg-orange-50 hover:border-orange-300 text-base font-medium transition duration-150 ease-in-out">
+                        🧪 Test {{ __('Permissions') }}
+                    </a>
+                </div>
+
+                <!-- Mobile User Info -->
+                <div class="pt-4 pb-3 border-t border-gray-200">
+                    <div class="flex items-center px-4">
+                        <div class="flex-shrink-0">
+                            <div class="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-medium text-gray-700">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <div class="text-base font-medium text-gray-800">{{ Auth::user()->name }}</div>
+                            <div class="text-sm font-medium text-gray-500">{{ Auth::user()->email }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <a href="{{ route('dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition duration-150 ease-in-out">
+                            User Panel
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" onsubmit="handleLogout(event)" id="logout-form-mobile" data-home-url="{{ route('home') }}">
+                            @csrf
+                            <button type="submit" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 transition duration-150 ease-in-out">
+                                Log Out
                             </button>
                         </form>
                     </div>
@@ -107,5 +179,12 @@
             </div>
         </main>
     </div>
+    
+    <!-- Livewire Scripts (includes Alpine.js) -->
+    @livewireScripts
+    @vite(['resources/js/layout/logout-handler.js'])
+    
+    <!-- Page-specific scripts -->
+    @stack('scripts')
 </body>
 </html>

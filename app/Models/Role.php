@@ -15,13 +15,22 @@ class Role extends Model
         'description',
         'badge_color',
         'hierarchy_level',
-        'is_active'
+        'is_active',
+        'group_id'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'hierarchy_level' => 'integer',
     ];
+
+    /**
+     * Get the group this role belongs to
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
 
     /**
      * Get permissions assigned to this role
@@ -108,6 +117,29 @@ class Role extends Model
     public function isLowerThan(Role $role): bool
     {
         return $this->hierarchy_level < $role->hierarchy_level;
+    }
+
+    /**
+     * Get the badge color class for this role
+     */
+    public function getBadgeColor(): string
+    {
+        return $this->badge_color ?? $this->getDefaultBadgeColor();
+    }
+
+    /**
+     * Get default badge color based on hierarchy level
+     */
+    public function getDefaultBadgeColor(): string
+    {
+        return match(true) {
+            $this->hierarchy_level >= 6 => 'error', // Super Admin
+            $this->hierarchy_level >= 5 => 'warning', // Admin
+            $this->hierarchy_level >= 4 => 'info', // Manager
+            $this->hierarchy_level >= 3 => 'success', // Supervisor
+            $this->hierarchy_level >= 2 => 'secondary', // Staff
+            default => 'ghost' // Member/Guest
+        };
     }
 
     /**

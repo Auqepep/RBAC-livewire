@@ -1,0 +1,357 @@
+<?php
+
+namespace App\Http\Controllers\User;
+
+use App\Http\Controllers\Controller;
+use App\Models\Group;
+use App\Models\User;
+use App\Models\Role;
+use App\Models\GroupMember;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+class GroupManagementController extends Controller
+{
+    use AuthorizesRequests;
+
+    /**
+     * Show the form for editing the group (for managers)
+     */
+    public function edit(Group $group)
+    {
+        // Check if user can update this group
+        $this->authorize('update', $group);
+
+        $users = User::whereNotNull('email_verified_at')->get();
+        
+        // Get only roles that are currently used in this specific group
+        $groupRoleIds = $group->groupMembers()->distinct()->pluck('role_id')->toArray();
+        $roles = Role::whereIn('id', $groupRoleIds)->get();
+        
+        $groupUsers = $group->groupMembers()->pluck('user_id')->toArray();
+
+        return view('users.group-edit', compact('group', 'users', 'roles', 'groupUsers'));
+    }
+
+    /**
+     * Update the group details and members (for managers)
+     */
+    public function update(Request $request, Group $group)
+    {
+        // Check if user can update this group
+        $this->authorize('update', $group);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('groups')->ignore($group->id)],
+            'description' => 'nullable|string',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id',
+            'user_roles' => 'nullable|array',
+            'user_roles.*' => 'exists:roles,id'
+        ]);
+
+        // Update basic group info
+        $group->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? '',
+        ]);
+
+        // Handle member updates if provided
+        if (isset($validated['users'])) {
+            // Get current members
+            $currentMembers = $group->groupMembers()->pluck('user_id')->toArray();
+            $newMembers = $validated['users'];
+            
+            // Prevent manager from removing themselves
+            if (!in_array(auth()->id(), $newMembers)) {
+                return back()->withErrors(['users' => __('You cannot remove yourself from the group.')])->withInput();
+            }
+            
+            // Get the manager's role to check hierarchy
+            $managerMembership = GroupMember::where('user_id', auth()->id())
+                ->where('group_id', $group->id)
+                ->with('role')
+                ->first();
+            
+            // Remove members that are not in the new list
+            $membersToRemove = array_diff($currentMembers, $newMembers);
+            foreach ($membersToRemove as $userId) {
+                $memberToRemove = GroupMember::where('group_id', $group->id)
+                    ->where('user_id', $userId)
+                    ->with('role')
+                    ->first();
+                
+                // Skip if manager tries to remove someone with equal/higher hierarchy
+                if ($memberToRemove && $managerMembership) {
+                    if ($memberToRemove->role->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+                        continue; // Skip this member
+                    }
+                }
+                
+                if ($memberToRemove) {
+                    $memberToRemove->delete();
+                }
+            }
+
+            // Add new members or update roles for existing ones
+            foreach ($newMembers as $userId) {
+                $roleId = $validated['user_roles'][$userId] ?? null;
+                
+                if ($roleId) {
+                    $newRole = Role::find($roleId);
+                    
+                    // Managers can't assign roles equal to or higher than their own
+                    if ($managerMembership && $newRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+                        if ($userId != auth()->id()) { // Allow keeping own role
+                            continue; // Skip this assignment
+                        }
+                    }
+                    
+                    $existingMember = GroupMember::where('group_id', $group->id)
+                        ->where('user_id', $userId)
+                        ->first();
+                    
+                    if ($existingMember) {
+                        // Only update role if user isn't modifying someone with higher/equal hierarchy
+                        if ($managerMembership && $existingMember->role->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+                            if ($userId != auth()->id()) { // Allow keeping own role
+                                continue; // Skip this update
+                            }
+                        }
+                        
+                        // Update role for existing member
+                        $existingMember->update([
+                            'role_id' => $roleId,
+                        ]);
+                    } else {
+                        // Add new member with role
+                        GroupMember::create([
+                            'group_id' => $group->id,
+                            'user_id' => $userId,
+                            'role_id' => $roleId,
+                            'assigned_by' => auth()->id(),
+                            'joined_at' => now(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('groups.show', $group->id)
+            ->with('success', __('Group updated successfully!'));
+    }
+
+    /**
+     * Add a member to the group
+     */
+    public function addMember(Request $request, Group $group)
+    {
+        // Check if user can manage members in this group
+        $this->authorize('manageMembers', $group);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        // Check if user is already a member
+        $existing = GroupMember::where('group_id', $group->id)
+            ->where('user_id', $validated['user_id'])
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'User is already a member of this group.');
+        }
+
+        // Get the manager's role to check hierarchy
+        $managerMembership = GroupMember::where('user_id', auth()->id())
+            ->where('group_id', $group->id)
+            ->with('role')
+            ->first();
+
+        $newRole = Role::find($validated['role_id']);
+
+        // Managers can't assign roles higher than their own
+        if ($managerMembership && $newRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot assign a role equal to or higher than your own.');
+        }
+
+        GroupMember::create([
+            'group_id' => $group->id,
+            'user_id' => $validated['user_id'],
+            'role_id' => $validated['role_id'],
+            'assigned_by' => auth()->id(),
+            'joined_at' => now(),
+        ]);
+
+        return back()->with('success', 'Member added successfully!');
+    }
+
+    /**
+     * Update a member's role
+     */
+    public function updateMember(Request $request, Group $group, GroupMember $member)
+    {
+        // Check if user can manage members in this group
+        $this->authorize('manageMembers', $group);
+
+        // Ensure the member belongs to this group
+        if ($member->group_id !== $group->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        // Get the manager's role to check hierarchy
+        $managerMembership = GroupMember::where('user_id', auth()->id())
+            ->where('group_id', $group->id)
+            ->with('role')
+            ->first();
+
+        $newRole = Role::find($validated['role_id']);
+        $currentRole = $member->role;
+
+        // Managers can't modify members with equal or higher hierarchy
+        if ($managerMembership && $currentRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot modify members with equal or higher roles.');
+        }
+
+        // Managers can't assign roles higher than their own
+        if ($managerMembership && $newRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot assign a role equal to or higher than your own.');
+        }
+
+        $member->update([
+            'role_id' => $validated['role_id'],
+        ]);
+
+        return back()->with('success', 'Member role updated successfully!');
+    }
+
+    /**
+     * Remove a member from the group
+     */
+    public function removeMember(Group $group, GroupMember $member)
+    {
+        // Check if user can manage members in this group
+        $this->authorize('manageMembers', $group);
+
+        // Ensure the member belongs to this group
+        if ($member->group_id !== $group->id) {
+            abort(404);
+        }
+
+        // Prevent removing yourself
+        if ($member->user_id === auth()->id()) {
+            return back()->with('error', 'You cannot remove yourself from the group.');
+        }
+
+        // Get the manager's role to check hierarchy
+        $managerMembership = GroupMember::where('user_id', auth()->id())
+            ->where('group_id', $group->id)
+            ->with('role')
+            ->first();
+
+        $memberRole = $member->role;
+
+        // Managers can't remove members with equal or higher hierarchy
+        if ($managerMembership && $memberRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot remove members with equal or higher roles.');
+        }
+
+        $member->delete();
+
+        return back()->with('success', 'Member removed successfully!');
+    }
+
+    /**
+     * Update a member's role by user ID
+     */
+    public function updateMemberRole(Request $request, Group $group, User $user)
+    {
+        // Check if user can manage members in this group
+        $this->authorize('manageMembers', $group);
+
+        // Find the member record
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$member) {
+            return back()->with('error', 'Member not found in this group.');
+        }
+
+        $validated = $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        // Get the manager's role to check hierarchy
+        $managerMembership = GroupMember::where('user_id', auth()->id())
+            ->where('group_id', $group->id)
+            ->with('role')
+            ->first();
+
+        $newRole = Role::find($validated['role_id']);
+        $currentRole = $member->role;
+
+        // Managers can't modify members with equal or higher hierarchy
+        if ($managerMembership && $currentRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot modify members with equal or higher roles.');
+        }
+
+        // Managers can't assign roles higher than their own
+        if ($managerMembership && $newRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot assign a role equal to or higher than your own.');
+        }
+
+        $member->update([
+            'role_id' => $validated['role_id'],
+        ]);
+
+        return back()->with('success', 'Member role updated successfully!');
+    }
+
+    /**
+     * Remove a member from the group by user ID
+     */
+    public function removeMemberByUser(Group $group, User $user)
+    {
+        // Check if user can manage members in this group
+        $this->authorize('manageMembers', $group);
+
+        // Find the member record
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$member) {
+            return back()->with('error', 'Member not found in this group.');
+        }
+
+        // Prevent removing yourself
+        if ($member->user_id === auth()->id()) {
+            return back()->with('error', 'You cannot remove yourself from the group.');
+        }
+
+        // Get the manager's role to check hierarchy
+        $managerMembership = GroupMember::where('user_id', auth()->id())
+            ->where('group_id', $group->id)
+            ->with('role')
+            ->first();
+
+        $memberRole = $member->role;
+
+        // Managers can't remove members with equal or higher hierarchy
+        if ($managerMembership && $memberRole->hierarchy_level >= $managerMembership->role->hierarchy_level) {
+            return back()->with('error', 'You cannot remove members with equal or higher roles.');
+        }
+
+        $member->delete();
+
+        return back()->with('success', 'Member removed successfully!');
+    }
+}

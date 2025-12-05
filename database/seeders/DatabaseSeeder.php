@@ -15,7 +15,9 @@ class DatabaseSeeder extends Seeder
     {
         // Seed the new group-centric RBAC structure
         $this->call([
-            GroupCentricSeeder::class,
+            PermissionSeeder::class,
+            AdminSeeder::class,
+            // GroupCentricSeeder::class, // Commented out to avoid conflicts
         ]);
     }
 }

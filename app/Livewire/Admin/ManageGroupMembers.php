@@ -15,15 +15,23 @@ class ManageGroupMembers extends Component
 
     public Group $group;
     public $showAddMemberModal = false;
-    public $showChangeRoleModal = false;
+    public $showEditUserModal = false;
     public $selectedUserId = null;
     public $selectedRoleId = null;
-    public $selectedMemberId = null;
+    public $selectedUserIds = [];
     public $search = '';
+    
+    // Edit user fields
+    public $editUserId = null;
+    public $editUserName = '';
+    public $editUserEmail = '';
 
     protected $rules = [
-        'selectedUserId' => 'required|exists:users,id',
         'selectedRoleId' => 'required|exists:roles,id',
+        'selectedUserIds' => 'required|array|min:1',
+        'selectedUserIds.*' => 'exists:users,id',
+        'editUserName' => 'required|string|max:255',
+        'editUserEmail' => 'required|email|max:255',
     ];
 
     public function mount(Group $group)
@@ -35,22 +43,22 @@ class ManageGroupMembers extends Component
     {
         $this->selectedUserId = null;
         $this->selectedRoleId = null;
+        $this->selectedUserIds = [];
         $this->showAddMemberModal = true;
-    }
-
-    public function openChangeRoleModal($memberId)
-    {
-        $member = GroupMember::find($memberId);
-        if ($member && $member->group_id === $this->group->id) {
-            $this->selectedMemberId = $memberId;
-            $this->selectedRoleId = $member->role_id;
-            $this->showChangeRoleModal = true;
-        }
     }
 
     public function addMember()
     {
-        $this->validate();
+        // If multiple users selected, use bulk add
+        if (count($selectedUserIds) > 0) {
+            return $this->bulkAddMembers();
+        }
+
+        // Single user add (legacy, not used anymore)
+        $this->validate([
+            'selectedUserId' => 'required|exists:users,id',
+            'selectedRoleId' => 'required|exists:roles,id',
+        ]);
 
         // Check if user is already a member
         if ($this->group->hasMember($this->selectedUserId)) {
@@ -84,37 +92,52 @@ class ManageGroupMembers extends Component
         }
     }
 
-    public function changeRole()
+    public function bulkAddMembers()
     {
-        $this->validate(['selectedRoleId' => 'required|exists:roles,id']);
-
-        $member = GroupMember::find($this->selectedMemberId);
-        if (!$member || $member->group_id !== $this->group->id) {
-            session()->flash('error', 'Invalid member selected.');
-            return;
-        }
+        $this->validate([
+            'selectedRoleId' => 'required|exists:roles,id',
+            'selectedUserIds' => 'required|array|min:1',
+            'selectedUserIds.*' => 'exists:users,id',
+        ]);
 
         // Check permissions
         if (!auth()->user()->canAssignRolesInGroup($this->group->id)) {
-            session()->flash('error', 'You do not have permission to change roles in this group.');
+            session()->flash('error', 'You do not have permission to add members to this group.');
             return;
         }
 
         try {
-            $this->group->changeUserRole(
-                $member->user_id,
-                $this->selectedRoleId,
-                auth()->id()
-            );
+            $addedCount = 0;
+            $skippedCount = 0;
+            
+            foreach ($this->selectedUserIds as $userId) {
+                // Skip if already a member
+                if ($this->group->hasMember($userId)) {
+                    $skippedCount++;
+                    continue;
+                }
+                
+                $this->group->addMember(
+                    $userId,
+                    $this->selectedRoleId,
+                    auth()->id()
+                );
+                $addedCount++;
+            }
 
             $role = Role::find($this->selectedRoleId);
-            session()->flash('message', "Successfully changed {$member->user->name}'s role to {$role->display_name}.");
+            $message = "Successfully added {$addedCount} member(s) as {$role->display_name}.";
+            if ($skippedCount > 0) {
+                $message .= " ({$skippedCount} user(s) were already members)";
+            }
             
-            $this->showChangeRoleModal = false;
+            session()->flash('message', $message);
+            
+            $this->showAddMemberModal = false;
             $this->resetForm();
             
         } catch (\Exception $e) {
-            session()->flash('error', 'An error occurred while changing the role: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred while adding members: ' . $e->getMessage());
         }
     }
 
@@ -154,13 +177,64 @@ class ManageGroupMembers extends Component
         $this->selectedUserId = null;
         $this->selectedRoleId = null;
         $this->selectedMemberId = null;
+        $this->selectedUserIds = [];
+    }
+
+    public function openEditUserModal($userId)
+    {
+        // Debug logging
+        logger()->info('openEditUserModal called with userId: ' . $userId);
+        
+        $user = User::find($userId);
+        if ($user) {
+            logger()->info('User found: ' . $user->name);
+            $this->editUserId = $user->id;
+            $this->editUserName = $user->name;
+            $this->editUserEmail = $user->email;
+            $this->showEditUserModal = true;
+            logger()->info('showEditUserModal set to: ' . ($this->showEditUserModal ? 'true' : 'false'));
+        } else {
+            logger()->error('User not found with ID: ' . $userId);
+        }
+    }
+
+    public function updateUser()
+    {
+        $this->validate([
+            'editUserName' => 'required|string|max:255',
+            'editUserEmail' => 'required|email|max:255|unique:users,email,' . $this->editUserId,
+        ]);
+
+        try {
+            $user = User::find($this->editUserId);
+            if ($user) {
+                $user->name = $this->editUserName;
+                $user->email = $this->editUserEmail;
+                $user->save();
+
+                session()->flash('message', "Successfully updated {$user->name}'s information.");
+                $this->showEditUserModal = false;
+                $this->resetEditForm();
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while updating the user: ' . $e->getMessage());
+        }
+    }
+
+    public function resetEditForm()
+    {
+        $this->editUserId = null;
+        $this->editUserName = '';
+        $this->editUserEmail = '';
+        $this->resetValidation(['editUserName', 'editUserEmail']);
     }
 
     public function closeModals()
     {
         $this->showAddMemberModal = false;
-        $this->showChangeRoleModal = false;
+        $this->showEditUserModal = false;
         $this->resetForm();
+        $this->resetEditForm();
     }
 
     public function updatingSearch()
@@ -170,8 +244,8 @@ class ManageGroupMembers extends Component
 
     public function render()
     {
-        $members = $this->group->members()
-            ->with(['user', 'role', 'assignedBy'])
+        $members = $this->group->groupMembers()
+            ->with(['user', 'role'])
             ->when($this->search, function($query) {
                 $query->whereHas('user', function($userQuery) {
                     $userQuery->where('name', 'like', '%' . $this->search . '%')
@@ -186,8 +260,10 @@ class ManageGroupMembers extends Component
             $query->where('group_id', $this->group->id);
         })->orderBy('name')->get();
 
-        // Get available roles for this specific group
-        $availableRoles = $this->group->roles()->where('is_active', true)->get();
+        // Get all active roles (roles are global, not group-specific)
+        $availableRoles = Role::where('is_active', true)
+                              ->orderBy('hierarchy_level', 'desc')
+                              ->get();
 
         return view('livewire.admin.manage-group-members', compact('members', 'availableUsers', 'availableRoles'));
     }

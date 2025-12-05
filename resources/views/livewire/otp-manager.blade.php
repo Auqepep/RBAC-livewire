@@ -133,33 +133,4 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        // Focus management
-        Livewire.on('focus-email', () => {
-            setTimeout(() => document.getElementById('email')?.focus(), 100);
-        });
-        
-        Livewire.on('focus-otp', () => {
-            setTimeout(() => document.getElementById('otp')?.focus(), 100);
-        });
-
-        // Countdown timer
-        let countdownInterval;
-        
-        Livewire.on('start-countdown', () => {
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            countdownInterval = setInterval(() => {
-                @this.call('decrementCountdown');
-            }, 1000);
-        });
-
-        // Auto-format OTP input
-        document.addEventListener('input', (e) => {
-            if (e.target.id === 'otp') {
-                e.target.value = e.target.value.replace(/\D/g, '');
-            }
-        });
-    });
-</script>
+@vite(['resources/js/auth/otp-common.js'])

@@ -15,25 +15,41 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $sortBy = $request->get('sort_by', 'name'); // Default sort by name
+        $sortOrder = $request->get('sort_order', 'asc'); // Default ascending
+        
         $user = Auth::user();
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'email', 'created_at'];
+        $allowedSortOrders = ['asc', 'desc'];
+        
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        
+        if (!in_array($sortOrder, $allowedSortOrders)) {
+            $sortOrder = 'asc';
+        }
         
         // For admin users, show all users
         if ($user->canManageSystem()) {
-            $users = User::with(['groups'])
+            $users = User::with(['groupMembers.group', 'groupMembers.role'])
                 ->when($search, function ($query, $search) {
                     return $query->where('name', 'like', "%{$search}%")
                                 ->orWhere('email', 'like', "%{$search}%");
                 })
+                ->orderBy($sortBy, $sortOrder)
                 ->paginate(15)
                 ->appends($request->query());
                 
-            return view('users.index', compact('users', 'search'));
+            return view('users.index', compact('users', 'search', 'sortBy', 'sortOrder'));
         }
         
         // For regular users, show only users in their groups
         $userGroupIds = $user->groups()->pluck('groups.id')->toArray();
         
-        $users = User::with(['groups'])
+        $users = User::with(['groupMembers.group', 'groupMembers.role'])
             ->whereHas('groups', function($query) use ($userGroupIds) {
                 $query->whereIn('groups.id', $userGroupIds);
             })
@@ -41,10 +57,11 @@ class UserController extends Controller
                 return $query->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
             })
+            ->orderBy($sortBy, $sortOrder)
             ->paginate(15)
             ->appends($request->query());
 
-        return view('users.index', compact('users', 'search'));
+        return view('users.index', compact('users', 'search', 'sortBy', 'sortOrder'));
     }
 
     /**

@@ -3,6 +3,14 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\Role;
+use App\Policies\GroupPolicy;
+use App\Observers\GroupMemberObserver;
+use App\Observers\RoleObserver;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +27,39 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Configure Passport
+        Passport::enablePasswordGrant();
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
+        Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+
+        // Register model observers for cache invalidation
+        GroupMember::observe(GroupMemberObserver::class);
+        Role::observe(RoleObserver::class);
+
+        // Register model policies
+        Gate::policy(Group::class, GroupPolicy::class);
+
+        // Register custom Blade directives for permission checking
+        \Blade::if('can', function ($permission) {
+            return \Gate::check($permission);
+        });
+
+        \Blade::if('cannot', function ($permission) {
+            return \Gate::denies($permission);
+        });
+
+        \Blade::if('canany', function (...$permissions) {
+            return \Gate::any($permissions);
+        });
+
+        \Blade::if('canall', function (...$permissions) {
+            foreach ($permissions as $permission) {
+                if (!\Gate::check($permission)) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 }

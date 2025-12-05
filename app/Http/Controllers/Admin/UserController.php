@@ -13,13 +13,33 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with(['groupMembers.group', 'groupMembers.role'])
-                    ->orderBy('name')
-                    ->paginate(15);
-                    
-        return view('admin.users.index', compact('users'));
+        $search = $request->get('search', '');
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'email', 'created_at'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'name';
+        $sortOrder = in_array($sortOrder, ['asc', 'desc']) ? $sortOrder : 'asc';
+
+        $query = User::with(['groupMembers.group', 'groupMembers.role']);
+
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply sorting
+        $query->orderBy($sortBy, $sortOrder);
+
+        $users = $query->paginate(15)->withQueryString();
+
+        return view('admin.users.index', compact('users', 'search', 'sortBy', 'sortOrder'));
     }
 
     /**
@@ -28,15 +48,23 @@ class UserController extends Controller
     public function create()
     {
         $groups = \App\Models\Group::where('is_active', true)->get();
-        $roles = \App\Models\Role::where('is_active', true)->get();
         
         // Get roles available per group (for JavaScript)
         $groupRoles = [];
         foreach ($groups as $group) {
-            $groupRoles[$group->id] = \App\Models\Role::where('is_active', true)->get();
+            $groupRoles[$group->id] = \App\Models\Role::where('group_id', $group->id)
+                ->where('is_active', true)
+                ->get()
+                ->map(function($role) {
+                    return [
+                        'id' => $role->id,
+                        'name' => $role->name,
+                        'display_name' => $role->display_name
+                    ];
+                });
         }
         
-        return view('admin.users.create', compact('groups', 'roles', 'groupRoles'));
+        return view('admin.users.create', compact('groups', 'groupRoles'));
     }
 
     /**
@@ -138,5 +166,78 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
                         ->with('success', 'User deleted successfully.');
+    }
+    
+    /**
+     * Quick toggle admin privileges for testing
+     */
+    public function toggleAdmin(User $user)
+    {
+        // Prevent removing super admin privileges
+        if ($user->isSuperAdmin()) {
+            return back()->with('error', "Cannot remove admin privileges from {$user->name}. This is a permanent administrator.");
+        }
+        
+        // Find or create the administrator group
+        $adminGroup = \App\Models\Group::firstOrCreate([
+            'name' => 'Administrators'
+        ], [
+            'description' => 'System administrators with full access',
+            'is_active' => true,
+            'created_by' => auth()->id()
+        ]);
+        
+        // Find or create the admin role
+        $adminRole = \App\Models\Role::firstOrCreate([
+            'name' => 'administrator',
+            'group_id' => $adminGroup->id
+        ], [
+            'display_name' => 'Administrator',
+            'description' => 'Full system administrator access',
+            'is_active' => true,
+            'group_id' => $adminGroup->id
+        ]);
+        
+        // Check if user is already an admin
+        $isAdmin = $user->groupMembers()
+            ->where('group_id', $adminGroup->id)
+            ->where('role_id', $adminRole->id)
+            ->exists();
+            
+        if ($isAdmin) {
+            // Remove admin privileges
+            $user->groupMembers()
+                ->where('group_id', $adminGroup->id)
+                ->where('role_id', $adminRole->id)
+                ->delete();
+            $message = "Admin privileges removed from {$user->name}";
+        } else {
+            // Add admin privileges
+            \App\Models\GroupMember::updateOrCreate([
+                'user_id' => $user->id,
+                'group_id' => $adminGroup->id,
+            ], [
+                'role_id' => $adminRole->id,
+                'joined_at' => now()
+            ]);
+            $message = "Admin privileges granted to {$user->name}";
+        }
+        
+        return back()->with('success', $message);
+    }
+    
+    /**
+     * Show user permission testing page
+     */
+    public function permissions(User $user)
+    {
+        $allPermissions = \App\Models\Permission::where('is_active', true)
+            ->orderBy('category')
+            ->orderBy('display_name')
+            ->get();
+            
+        $permissionsByCategory = $allPermissions->groupBy('category');
+        
+        return view('admin.users.permissions', compact('user', 'permissionsByCategory'));
     }
 }

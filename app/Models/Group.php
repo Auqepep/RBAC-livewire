@@ -13,11 +13,15 @@ class Group extends Model
         'name',
         'description',
         'is_active',
-        'created_by'
+        'created_by',
+        'third_party_app_url',
+        'oauth_client_id',
+        'enable_gateway_redirect',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'enable_gateway_redirect' => 'boolean',
     ];
 
     /**
@@ -65,7 +69,7 @@ class Group extends Model
     /**
      * Add a user to this group with a specific role
      */
-    public function addMember($userId, $roleId = null): GroupMember
+    public function addMember($userId, $roleId = null, $assignedBy = null): GroupMember
     {
         $user = User::findOrFail($userId);
         
@@ -73,7 +77,25 @@ class Group extends Model
             'group_id' => $this->id,
             'user_id' => $userId,
             'role_id' => $roleId,
+            'assigned_by' => $assignedBy ?? auth()->id(),
             'joined_at' => now(),
+        ]);
+    }
+
+    /**
+     * Change a user's role in this group
+     */
+    public function changeUserRole($userId, $roleId, $assignedBy = null): bool
+    {
+        $member = $this->groupMembers()->where('user_id', $userId)->first();
+        
+        if (!$member) {
+            return false;
+        }
+        
+        return $member->update([
+            'role_id' => $roleId,
+            'assigned_by' => $assignedBy ?? auth()->id(),
         ]);
     }
 
@@ -97,22 +119,6 @@ class Group extends Model
         }
         
         return $query->delete() > 0;
-    }
-
-    /**
-     * Get join requests for this group
-     */
-    public function joinRequests(): HasMany
-    {
-        return $this->hasMany(GroupJoinRequest::class);
-    }
-
-    /**
-     * Get pending join requests for this group
-     */
-    public function pendingJoinRequests(): HasMany
-    {
-        return $this->hasMany(GroupJoinRequest::class)->where('status', 'pending');
     }
 
     /**
@@ -195,5 +201,15 @@ class Group extends Model
         }
         
         return $maxLevel;
+    }
+
+    /**
+     * Get the roles that are currently used in this group (through group members)
+     * This returns roles that have been assigned to at least one member.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'group_members', 'group_id', 'role_id')
+                    ->distinct();
     }
 }

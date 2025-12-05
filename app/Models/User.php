@@ -2,16 +2,25 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Services\RbacCacheService;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
+
+    /**
+     * Get RBAC Cache Service instance
+     */
+    protected function cacheService(): RbacCacheService
+    {
+        return app(RbacCacheService::class);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +31,7 @@ class User extends Authenticatable
         'name',
         'email',
         'email_verified_at',
+        'is_super_admin',
     ];
 
     /**
@@ -42,6 +52,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_super_admin' => 'boolean',
         ];
     }
 
@@ -103,15 +114,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user has permission (through their roles)
+     * Check if user has permission (through their roles) - CACHED
      */
     public function hasPermission(string $permissionName): bool
     {
-        return $this->roles()
-                    ->whereHas('permissions', function($query) use ($permissionName) {
-                        $query->where('name', $permissionName);
-                    })
-                    ->exists();
+        // Use cache service for better performance
+        return $this->cacheService()->userHasPermission($this->id, $permissionName);
     }
 
     /**
@@ -119,9 +127,21 @@ class User extends Authenticatable
      */
     public function isSystemAdmin(): bool
     {
-        // Check if user has admin role or system_admin permission
-        return $this->hasAnyRole(['admin', 'super_admin']) || 
-               $this->hasPermission('system_admin');
+        // Check global permissions first
+        if ($this->hasPermission('manage_system') || $this->hasPermission('system_admin')) {
+            return true;
+        }
+
+        // Check if user is member of the global "Administrators" group
+        $adminGroup = \App\Models\Group::where('name', 'Administrators')->first();
+        
+        if (!$adminGroup) {
+            return false;
+        }
+        
+        return $this->groupMembers()
+            ->where('group_id', $adminGroup->id)
+            ->exists();
     }
 
     /**
@@ -129,6 +149,11 @@ class User extends Authenticatable
      */
     public function canManageSystem(): bool
     {
+        // Super admins (permanent admins) always have system access
+        if ($this->is_super_admin) {
+            return true;
+        }
+        
         return $this->isSystemAdmin();
     }
 
@@ -185,11 +210,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is Super Admin
+     * Check if user is Super Admin (permanent admin from database field)
      */
     public function isSuperAdmin(): bool
     {
-        return $this->hasRole('Super Admin');
+        return $this->is_super_admin === true;
     }
 
     /**
@@ -197,7 +222,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->hasAnyRole(['Super Admin', 'Admin']);
+        return $this->hasAnyRole(['Super Admin', 'Admin', 'administrator', 'admin', 'super_admin']);
     }
 
     /**
@@ -280,5 +305,41 @@ class User extends Authenticatable
     public function canApproveRequests(): bool
     {
         return $this->hasPermission('approve_requests');
+    }
+
+    /**
+     * Check if user can assign roles in a specific group
+     */
+    public function canAssignRolesInGroup(int $groupId): bool
+    {
+        // System admins can assign roles in any group
+        if ($this->isSystemAdmin()) {
+            return true;
+        }
+        
+        // Check if user has manage_group_members permission in this specific group
+        return $this->hasPermissionInGroup($groupId, 'manage_group_members');
+    }
+
+    /**
+     * Check if user has a specific permission in a specific group - CACHED
+     */
+    public function hasPermissionInGroup(int $groupId, string $permissionName): bool
+    {
+        // Use cache service for better performance
+        return $this->cacheService()->userHasPermissionInGroup($this->id, $groupId, $permissionName);
+    }
+
+    /**
+     * Check if user has all permissions (custom helper)
+     */
+    public function hasAllPermissions(array $abilities): bool
+    {
+        foreach ($abilities as $ability) {
+            if (!\Gate::forUser($this)->check($ability)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

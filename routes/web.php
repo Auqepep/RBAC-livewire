@@ -9,11 +9,19 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\UserController;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    // If user is authenticated, redirect to dashboard
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    
+    // If not authenticated, show welcome page
+    return view('welcome');
+})->name('home');
 
 // Custom OTP Auth Routes
 Route::view('login', 'auth.login')->name('login')->middleware('guest');
-Route::view('register', 'auth.register')->name('register')->middleware('guest');
+// Note: Registration is only available to admins through admin.users.create
 
 // Email verification route (for clickable links in emails)
 Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
@@ -25,16 +33,19 @@ Route::post('logout', function () {
     auth()->logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
-    return redirect('/');
-})->name('logout')->middleware('auth');
+    return redirect()->route('home');
+})->name('logout');
+
+// Also handle GET logout for expired sessions
+Route::get('logout', function () {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect()->route('home');
+})->name('logout.get');
 
 Route::get('dashboard', function () {
-    // Redirect system administrators to admin dashboard
-    if (Auth::user()->canManageSystem()) {
-        return redirect()->route('admin.dashboard');
-    }
-    
-    // Show regular user dashboard for non-admin users
+    // Return the dashboard view for all authenticated users
     return view('dashboard');
 })
     ->middleware(['auth'])
@@ -43,11 +54,34 @@ Route::get('dashboard', function () {
 // User routes for regular users
 Route::middleware(['auth'])->group(function () {
     Route::get('users', [UserController::class, 'index'])->name('users.index');
-    Route::get('my-groups', [UserController::class, 'myGroups'])->name('my-groups');
+    Route::get('groups', [UserController::class, 'myGroups'])->name('groups.index');
     Route::get('available-groups', function () {
         return view('users.available-groups');
     })->name('available-groups');
     Route::get('groups/{group}', [UserController::class, 'showGroup'])->name('groups.show');
+    
+    // Group Gateway routes
+    Route::get('groups/{group}/gateway', function ($groupId) {
+        return view('users.group-gateway', compact('groupId'));
+    })->name('groups.gateway');
+    
+    // Group Management routes (for managers)
+    Route::prefix('groups/{group}')->name('groups.')->group(function () {
+        Route::get('edit', [\App\Http\Controllers\User\GroupManagementController::class, 'edit'])->name('edit');
+        Route::put('update', [\App\Http\Controllers\User\GroupManagementController::class, 'update'])->name('update');
+        Route::post('members', [\App\Http\Controllers\User\GroupManagementController::class, 'addMember'])->name('members.add');
+        Route::put('members/{user}/role', [\App\Http\Controllers\User\GroupManagementController::class, 'updateMemberRole'])->name('members.update-role');
+        Route::delete('members/{user}', [\App\Http\Controllers\User\GroupManagementController::class, 'removeMemberByUser'])->name('members.remove');
+    });
+    
+    // Permission testing routes
+    Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
+    Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
+    
+    // Group management route (legacy) - redirect to unified edit page
+    Route::get('groups/{group}/manage', function ($groupId) {
+        return redirect()->route('groups.edit', $groupId);
+    })->name('groups.manage')->middleware('can:manage-group,group');
 });
 
 // Debug route for testing verification
@@ -72,6 +106,11 @@ Route::get('debug-verify/{id}/{hash}', function ($id, $hash) {
 // Admin Routes (Only for system administrators)
 Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', AdminUserController::class);
+    
+    // Quick user permission testing routes
+    Route::post('users/{user}/toggle-admin', [AdminUserController::class, 'toggleAdmin'])->name('users.toggle-admin');
+    Route::get('users/{user}/permissions', [AdminUserController::class, 'permissions'])->name('users.permissions');
+    
     Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
     
@@ -86,7 +125,11 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     
     // Group member management
     Route::get('groups/{group}/members', function (\App\Models\Group $group) {
-        return view('admin.group-members', compact('group'));
+        $allUsers = \App\Models\User::whereNotNull('email_verified_at')->get();
+        $currentMemberIds = $group->groupMembers()->pluck('user_id')->toArray();
+        $groupRoles = $group->roles()->get();
+        
+        return view('admin.group-members', compact('group', 'allUsers', 'currentMemberIds', 'groupRoles'));
     })->name('groups.members');
     
     // Remove member from group
@@ -108,12 +151,6 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     Route::get('manage-group-roles', function () {
         return view('admin.manage-group-roles');
     })->name('manage-group-roles');
-    
-    // Group join requests
-    Route::get('group-join-requests', function () {
-        return view('admin.group-join-requests');
-    })->name('group-join-requests');
-    
     // Admin Dashboard
     Route::get('/', function () {
         $stats = [
@@ -135,3 +172,4 @@ Route::get('/tailwind-test', function () {
 
 // Comment out the default auth routes since we're using custom OTP auth
 // require __DIR__.'/auth.php';
+//yahudi

@@ -1,22 +1,24 @@
 <x-admin.layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('User Details') }}: {{ $user->name }}
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
+                {{ __('User') }}: {{ Str::limit($user->name, 30) }}
             </h2>
-            <div class="flex space-x-2">
-                <x-mary-button icon="o-pencil" class="btn-primary" link="{{ route('admin.users.edit', $user) }}">
-                    Edit User
+            <div class="flex flex-wrap gap-2">
+                <x-mary-button icon="o-pencil" class="btn-primary btn-sm sm:btn-md" link="{{ route('admin.users.edit', $user) }}">
+                    <span class="hidden sm:inline">Edit User</span>
+                    <span class="sm:hidden">Edit</span>
                 </x-mary-button>
-                <x-mary-button icon="o-arrow-left" class="btn-secondary" link="{{ route('admin.users.index') }}">
-                    Back to Users
+                <x-mary-button icon="o-arrow-left" class="btn-secondary btn-sm sm:btn-md" link="{{ route('admin.users.index') }}">
+                    <span class="hidden sm:inline">Back to Users</span>
+                    <span class="sm:hidden">Back</span>
                 </x-mary-button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
             <!-- User Information Card -->
             <x-mary-card title="User Information">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -41,12 +43,12 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email Status</label>
                         @if($user->email_verified_at)
-                            <x-mary-badge value="Verified" class="badge-success" />
+                            <x-mary-badge value="Verified" class="badge-success badge-xs sm:badge-sm" />
                             <div class="text-sm text-gray-500 mt-1">
                                 Verified {{ $user->email_verified_at->format('M d, Y H:i:s') }}
                             </div>
                         @else
-                            <x-mary-badge value="Unverified" class="badge-error" />
+                            <x-mary-badge value="Unverified" class="badge-error badge-xs sm:badge-sm" />
                         @endif
                     </div>
                 </div>
@@ -78,12 +80,11 @@
                                         </td>
                                         <td>
                                             @if($membership->role)
-                                                <x-mary-badge 
-                                                    value="{{ $membership->role->name }}" 
-                                                    class="badge-primary" 
-                                                />
+                                                <span class="badge badge-xs sm:badge-sm text-white" style="background-color: {{ $membership->role->badge_color ?? '#6366f1' }};">
+                                                    {{ $membership->role->display_name ?? $membership->role->name }}
+                                                </span>
                                             @else
-                                                <x-mary-badge value="No Role" class="badge-error" />
+                                                <span class="badge badge-error badge-xs sm:badge-sm">No Role</span>
                                             @endif
                                         </td>
                                         <td>

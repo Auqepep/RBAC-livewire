@@ -5,33 +5,113 @@
         </h2>
     </x-slot>
 
-    <div class="space-y-6">
+    <div class="px-4 sm:px-0 space-y-6">
         <!-- Welcome Section -->
         <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span class="text-xl font-medium text-blue-600">
+            <div class="p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div class="h-12 w-12 sm:h-16 sm:w-16 bg-blue-100 rounded-full flex items-center justify-center shrink-0 mx-auto sm:mx-0">
+                            <span class="text-lg sm:text-xl font-medium text-blue-600">
                                 {{ substr(Auth::user()->name, 0, 1) }}
                             </span>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900">
+                        <div class="text-center sm:text-left">
+                            <h3 class="text-base sm:text-lg font-medium text-gray-900">
                                 Welcome back, {{ Auth::user()->name }}!
                             </h3>
-                            <p class="text-sm text-gray-500">{{ Auth::user()->email }}</p>
-                            <div class="mt-2 flex items-center space-x-2">
-                                <span class="text-xs text-gray-500">Access Level:</span>
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    {{ Auth::user()->getUserLevel() }}
-                                </span>
-                            </div>
-                            <div class="mt-1 flex flex-wrap gap-1">
-                                @foreach(Auth::user()->roles as $role)
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white" style="background-color: {{ $role->badge_color }}">
-                                        {{ $role->display_name }}
-                                    </span>
+                            <p class="text-sm text-gray-500 break-all sm:break-normal">{{ Auth::user()->email }}</p>
+                            <div class="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
+                                @php
+                                    // Get user's groups with pivot data
+                                    $userGroups = Auth::user()->groups;
+                                    
+                                    // Get all unique role IDs from the groups
+                                    $roleIds = $userGroups->pluck('pivot.role_id')->unique();
+                                    
+                                    // Load all roles at once
+                                    $roles = \App\Models\Role::whereIn('id', $roleIds)->get()->keyBy('id');
+                                    
+                                    // Group by role hierarchy level (Manager=70, Staff=30)
+                                    $rolesByType = $userGroups->groupBy(function($group) use ($roles) {
+                                        $roleId = $group->pivot->role_id;
+                                        $role = $roles[$roleId] ?? null;
+                                        if (!$role) return null;
+                                        
+                                        // Group by role type based on hierarchy
+                                        if ($role->hierarchy_level >= 70) return 'manager';
+                                        if ($role->hierarchy_level >= 30) return 'staff';
+                                        return 'other';
+                                    })->filter(function($groups, $key) {
+                                        return $key !== null;
+                                    })->map(function($groups, $type) use ($roles) {
+                                        // Get first role of this type for badge color
+                                        $firstRoleId = $groups->first()->pivot->role_id;
+                                        $firstRole = $roles[$firstRoleId];
+                                        
+                                        return [
+                                            'type' => $type,
+                                            'label' => $type === 'manager' ? 'Manager' : ($type === 'staff' ? 'Staff' : ucfirst($type)),
+                                            'color' => $firstRole->badge_color,
+                                            'groups' => $groups->map(function($group) use ($roles) {
+                                                return [
+                                                    'group' => $group,
+                                                    'role' => $roles[$group->pivot->role_id]
+                                                ];
+                                            })
+                                        ];
+                                    });
+                                @endphp
+                                
+                                @foreach($rolesByType as $type => $roleData)
+                                    <button 
+                                        onclick="role_modal_{{ $type }}.showModal()" 
+                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-white cursor-pointer hover:opacity-80 transition-opacity" 
+                                        style="background-color: {{ $roleData['color'] }}">
+                                        {{ __($roleData['label']) }}
+                                    </button>
+
+                                    <!-- Modal for this role type -->
+                                    <dialog id="role_modal_{{ $type }}" class="modal">
+                                        <div class="modal-box w-11/12 max-w-lg">
+                                            <form method="dialog">
+                                                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                                            </form>
+                                            <h3 class="font-bold text-lg mb-4">
+                                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full text-white mr-2" style="background-color: {{ $roleData['color'] }}">
+                                                    {{ __($roleData['label']) }}
+                                                </span>
+                                            </h3>
+                                            <p class="text-sm text-gray-600 mb-4">{{ __('You have this role in the following groups:') }}</p>
+                                            <div class="space-y-2">
+                                                @foreach($roleData['groups'] as $groupData)
+                                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <div class="flex-1 min-w-0 mr-3">
+                                                            <div class="flex items-center space-x-2">
+                                                                <svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                                </svg>
+                                                                <div class="min-w-0">
+                                                                    <div class="font-medium text-gray-900 text-sm sm:text-base truncate">
+                                                                        {{ $groupData['group']->name }}
+                                                                    </div>
+                                                                    <div class="text-xs text-gray-500">
+                                                                        {{ $groupData['role']->display_name }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <a href="{{ route('groups.show', $groupData['group']->id) }}" class="btn btn-xs btn-primary shrink-0">
+                                                            {{ __('View') }}
+                                                        </a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <form method="dialog" class="modal-backdrop">
+                                            <button>close</button>
+                                        </form>
+                                    </dialog>
                                 @endforeach
                             </div>
                         </div>
@@ -39,7 +119,7 @@
 
                     <!-- Admin Quick Actions -->
                     @if(Auth::user()->canManageSystem())
-                        <div class="flex items-center space-x-2">
+                        <div class="flex justify-center sm:justify-end">
                             <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -54,7 +134,7 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- My Groups Card -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6">
@@ -72,7 +152,7 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <a href="{{ route('my-groups') }}" class="text-sm text-blue-600 hover:underline">
+                        <a href="{{ route('groups.index') }}" class="text-sm text-blue-600 hover:underline">
                             View all groups →
                         </a>
                     </div>
@@ -129,42 +209,6 @@
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-            <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Your Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Account Details</h4>
-                        <dl class="space-y-2">
-                            <div>
-                                <dt class="text-sm text-gray-600">Member since</dt>
-                                <dd class="text-sm font-medium text-gray-900">{{ Auth::user()->created_at->format('F j, Y') }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm text-gray-600">Last updated</dt>
-                                <dd class="text-sm font-medium text-gray-900">{{ Auth::user()->updated_at->format('F j, Y') }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Quick Actions</h4>
-                        <div class="space-y-2">
-                            <a href="{{ route('users.index') }}" class="block text-sm text-blue-600 hover:underline">
-                                View all users
-                            </a>
-                            <a href="{{ route('my-groups') }}" class="block text-sm text-blue-600 hover:underline">
-                                Manage my groups
-                            </a>
-                            @if(Auth::user()->hasRole('administrator'))
-                                <a href="{{ route('admin.dashboard') }}" class="block text-sm text-blue-600 hover:underline">
-                                    Access admin panel
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </x-user.layout>
