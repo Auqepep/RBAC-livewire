@@ -74,10 +74,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('members/{user}', [\App\Http\Controllers\User\GroupManagementController::class, 'removeMemberByUser'])->name('members.remove');
     });
     
-    // Permission testing routes
-    Route::get('test/permissions', [App\Http\Controllers\PermissionTestController::class, 'index'])->name('test.permissions');
-    Route::post('test/permission', [App\Http\Controllers\PermissionTestController::class, 'testPermission'])->name('test.permission');
-    
     // Group management route (legacy) - redirect to unified edit page
     Route::get('groups/{group}/manage', function ($groupId) {
         return redirect()->route('groups.edit', $groupId);
@@ -113,6 +109,12 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     
     Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
+    
+    // OAuth Client Management
+    Route::get('oauth-clients', [\App\Http\Controllers\Admin\OAuthClientController::class, 'index'])->name('oauth-clients.index');
+    Route::post('oauth-clients', [\App\Http\Controllers\Admin\OAuthClientController::class, 'store'])->name('oauth-clients.store');
+    Route::delete('oauth-clients/{client}', [\App\Http\Controllers\Admin\OAuthClientController::class, 'destroy'])->name('oauth-clients.destroy');
+    Route::post('oauth-clients/{client}/regenerate-secret', [\App\Http\Controllers\Admin\OAuthClientController::class, 'regenerateSecret'])->name('oauth-clients.regenerate-secret');
     
     // Role routes - only accessible through group context
     Route::get('groups/{group}/roles', [RoleController::class, 'index'])->name('groups.roles.index');

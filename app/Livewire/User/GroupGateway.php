@@ -40,29 +40,31 @@ class GroupGateway extends Component
     
     public $redirectUrl = null;
     
+    /**
+     * Redirect to third-party app using standard OAuth 2.0 flow
+     */
     private function redirectToThirdPartyApp()
     {
-        $baseUrl = $this->group->third_party_app_url;
-        
-        // Add user information as query parameters for the third-party app
-        $params = [
-            'user_id' => Auth::id(),
-            'user_email' => Auth::user()->email,
-            'user_name' => Auth::user()->name,
-            'group_id' => $this->group->id,
-            'group_name' => $this->group->name,
-            'role' => $this->userRole?->name,
-            'role_display' => $this->userRole?->display_name,
-            'timestamp' => now()->timestamp,
-        ];
-        
-        // If OAuth client is configured, add it
-        if ($this->group->oauth_client_id) {
-            $params['client_id'] = $this->group->oauth_client_id;
+        if (!$this->group->oauth_client_id) {
+            // OAuth client ID is required for secure authentication
+            abort(500, 'OAuth client not configured for this group. Please contact administrator.');
         }
         
-        // Build the full redirect URL
-        $this->redirectUrl = $baseUrl . '?' . http_build_query($params);
+        // Build OAuth authorization URL
+        $params = [
+            'client_id' => $this->group->oauth_client_id,
+            'redirect_uri' => $this->group->third_party_app_url,
+            'response_type' => 'code',
+            'scope' => '*', // Grant all scopes (since we control both authorization server and client)
+            'state' => base64_encode(json_encode([
+                'group_id' => $this->group->id,
+                'timestamp' => now()->timestamp,
+                'nonce' => bin2hex(random_bytes(16))
+            ]))
+        ];
+        
+        // Redirect to our own OAuth authorization endpoint
+        $this->redirectUrl = route('passport.authorizations.authorize', $params);
     }
 
     private function checkGatewayAccess($membership)

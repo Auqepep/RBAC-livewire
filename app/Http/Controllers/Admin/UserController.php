@@ -223,6 +223,11 @@ class UserController extends Controller
             $message = "Admin privileges granted to {$user->name}";
         }
         
+        // Clear user cache to reflect changes immediately
+        $cacheService = app(\App\Services\RbacCacheService::class);
+        $cacheService->clearUserCache($user->id);
+        $cacheService->clearGroupCache($adminGroup->id);
+        
         return back()->with('success', $message);
     }
     

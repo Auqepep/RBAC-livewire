@@ -44,10 +44,6 @@
                             <a href="{{ route('groups.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('groups.index') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
                                 My Groups
                             </a>
-                            
-                            <a href="{{ route('test.permissions') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('test.*') ? 'border-orange-500 text-orange-600' : 'border-transparent text-orange-500' }} text-sm font-medium leading-5 hover:text-orange-600 focus:outline-none focus:text-orange-600 focus:border-orange-300 transition duration-150 ease-in-out">
-                                🧪 Test
-                            </a>
                         </div>
                     </div>
 
@@ -103,9 +99,6 @@
                     </a>
                     <a href="{{ route('groups.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('groups.index') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                         My Groups
-                    </a>
-                    <a href="{{ route('test.permissions') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('test.*') ? 'border-orange-500 text-orange-700 bg-orange-50' : 'border-transparent text-orange-500 hover:text-orange-700 hover:bg-orange-50 hover:border-orange-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        🧪 Test Permissions
                     </a>
                 </div>
 

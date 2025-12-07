@@ -19,7 +19,32 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind Passport's authorization view response
+        $this->app->bind(
+            \Laravel\Passport\Contracts\AuthorizationViewResponse::class,
+            function ($app) {
+                return new class implements \Laravel\Passport\Contracts\AuthorizationViewResponse {
+                    protected $parameters = [];
+                    
+                    public function withParameters(array $parameters = []): static
+                    {
+                        $this->parameters = $parameters;
+                        return $this;
+                    }
+                    
+                    public function toResponse($request)
+                    {
+                        return response()->view('vendor.passport.authorize', array_merge([
+                            'client' => $request->client,
+                            'user' => $request->user(),
+                            'scopes' => $request->scopes ?? [],
+                            'request' => $request,
+                            'authToken' => $request->authToken ?? '',
+                        ], $this->parameters));
+                    }
+                };
+            }
+        );
     }
 
     /**
@@ -32,6 +57,13 @@ class AppServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+        
+        // Define OAuth scopes
+        Passport::tokensCan([
+            'read-user' => 'Read user information including name and email',
+            'read-groups' => 'Read user group memberships and roles',
+            'read-permissions' => 'Read user permissions',
+        ]);
 
         // Register model observers for cache invalidation
         GroupMember::observe(GroupMemberObserver::class);

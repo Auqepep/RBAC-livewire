@@ -52,8 +52,8 @@
                             </a>
                             @endcan
                             
-                            <a href="{{ route('test.permissions') }}" target="_blank" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-orange-500 text-sm font-medium leading-5 hover:text-orange-600 focus:outline-none focus:text-orange-600 focus:border-orange-300 transition duration-150 ease-in-out">
-                                🧪 Test
+                            <a href="{{ route('admin.oauth-clients.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.oauth-clients.*') ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-purple-600 focus:outline-none focus:text-purple-600 focus:border-purple-300 transition duration-150 ease-in-out">
+                                🔐 Client Apps
                             </a>
                         </div>
                     </div>
@@ -111,8 +111,8 @@
                         {{ __('Permissions') }}
                     </a>
                     @endcan
-                    <a href="{{ route('test.permissions') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-orange-500 hover:text-orange-700 hover:bg-orange-50 hover:border-orange-300 text-base font-medium transition duration-150 ease-in-out">
-                        🧪 Test {{ __('Permissions') }}
+                    <a href="{{ route('admin.oauth-clients.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.oauth-clients.*') ? 'border-purple-500 text-purple-600 bg-purple-50' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                        🔐 Client Apps
                     </a>
                 </div>
 
