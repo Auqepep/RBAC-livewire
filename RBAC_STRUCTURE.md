@@ -16,15 +16,8 @@ GROUPS (Departments/Teams)
 ROLES (Positions within Groups)
 ├── Super Admin (Level 100)
 ├── Admin (Level 90)
-├── IT Manager (Level 80)
-├── Marketing Manager (Level 80)
-├── HR Manager (Level 80)
 ├── Manager (Level 70)
-├── IT Supervisor (Level 60)
 ├── Staff (Level 50)
-├── Marketing Specialist (Level 50)
-├── IT Staff (Level 40)
-└── Member (Level 10)
 
 USERS
 └── Assigned to ROLES within specific GROUPS
@@ -92,7 +85,7 @@ GroupMember::assignUserToGroupRole(
 ### Current Available Roles
 
 -   Super Admin, Admin (System-wide)
--   IT Manager, IT Supervisor, IT Staff (IT-focused)
+-   IT Manager, IT Staff (IT-focused)
 -   Marketing Manager, Marketing Specialist (Marketing-focused)
 -   HR Manager (HR-focused)
 -   Manager, Staff, Member (General roles)

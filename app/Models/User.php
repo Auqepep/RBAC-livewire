@@ -233,13 +233,6 @@ class User extends Authenticatable
         return $this->hasMinimumLevel(4);
     }
 
-    /**
-     * Check if user is Supervisor level (Supervisor or above)
-     */
-    public function isSupervisor(): bool
-    {
-        return $this->hasMinimumLevel(3);
-    }
 
     /**
      * Check if user is Staff level (Staff or above)
@@ -260,7 +253,6 @@ class User extends Authenticatable
             6 => 'Super Admin',
             5 => 'Admin',
             4 => 'Manager', 
-            3 => 'Supervisor',
             2 => 'Staff',
             1 => 'Member',
             default => 'Guest'

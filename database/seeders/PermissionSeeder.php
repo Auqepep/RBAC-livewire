@@ -185,7 +185,7 @@ class PermissionSeeder extends Seeder
                 'is_active' => true,
             ],
 
-            // Manager/Supervisor Permissions
+            // Manager Permissions
             [
                 'name' => 'view_team_members',
                 'display_name' => 'View Team Members',

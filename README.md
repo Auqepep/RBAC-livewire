@@ -191,7 +191,7 @@ Akses: http://localhost:8000
                ▼
 ┌─────────────────────────────────────────┐
 │         ROLES (Peran/Jabatan)           │
-│  Contoh: Manager, Staff, Supervisor     │
+│  Contoh: Manager, Staff    │
 └──────────────┬──────────────────────────┘
                │
                ▼
@@ -448,9 +448,7 @@ Keuntungan:
 | **Super Admin** | 100   | Full system access     |
 | **Admin**       | 90    | System-wide management |
 | **Manager**     | 70    | Group management       |
-| **Supervisor**  | 60    | Team supervision       |
 | **Staff**       | 50    | Standard access        |
-| **Member**      | 10    | Basic read-only        |
 
 ### Default Groups
 

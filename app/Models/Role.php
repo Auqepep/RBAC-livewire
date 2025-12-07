@@ -136,7 +136,6 @@ class Role extends Model
             $this->hierarchy_level >= 6 => 'error', // Super Admin
             $this->hierarchy_level >= 5 => 'warning', // Admin
             $this->hierarchy_level >= 4 => 'info', // Manager
-            $this->hierarchy_level >= 3 => 'success', // Supervisor
             $this->hierarchy_level >= 2 => 'secondary', // Staff
             default => 'ghost' // Member/Guest
         };

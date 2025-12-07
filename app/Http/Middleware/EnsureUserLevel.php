@@ -39,7 +39,6 @@ class EnsureUserLevel
         $levels = [
             'member' => 1,
             'staff' => 2, 
-            'supervisor' => 3,
             'manager' => 4,
             'admin' => 5,
             'super_admin' => 6

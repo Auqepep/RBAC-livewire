@@ -83,7 +83,7 @@ class GroupGateway extends Component
         }
 
         // Define role names that can access the gateway (group-specific roles)
-        $gatewayRoleNames = ['admin', 'administrator', 'staff', 'manager', 'supervisor'];
+        $gatewayRoleNames = ['admin', 'administrator', 'staff', 'manager'];
         
         // Check if user's role in this specific group has gateway access
         if (in_array(strtolower($membership->role->name), $gatewayRoleNames)) {

@@ -147,7 +147,7 @@ class AdminSeeder extends Seeder
         ])->get();
         $staffRole->permissions()->syncWithoutDetaching($staffPermissions->pluck('id')->toArray());
 
-        // Give manager role supervisor/manager permissions
+        // Give manager role manager permissions
         $managerPermissions = Permission::whereIn('name', [
             'view_users',
             'view_groups',
