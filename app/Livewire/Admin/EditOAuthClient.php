@@ -34,6 +34,7 @@ class EditOAuthClient extends Component
 
     public function addRedirectUri()
     {
+        $this->redirect_uris = array_values($this->redirect_uris);
         $this->redirect_uris[] = '';
     }
 
@@ -49,23 +50,41 @@ class EditOAuthClient extends Component
     {
         $this->validate();
 
-        // Remove empty URIs
-        $this->redirect_uris = array_filter($this->redirect_uris, fn($uri) => !empty($uri));
+        // Remove empty URIs and re-index
+        $cleanUris = array_values(array_filter($this->redirect_uris, fn($uri) => !empty($uri)));
 
         // Update the client
         $client = Client::findOrFail($this->clientId);
         $client->name = $this->name;
-        $client->redirect_uris = array_values($this->redirect_uris);
+        $client->redirect_uris = $cleanUris;
         $client->save();
 
         // Show success message
-        session()->flash('message', 'Client updated successfully!');
+        session()->flash('success', 'Client updated successfully!');
 
         // Dispatch event to refresh the main table
         $this->dispatch('client-updated');
+    }
 
-        // Close modal
-        $this->dispatch('close-edit-modal');
+    public function regenerateSecret()
+    {
+        $client = Client::findOrFail($this->clientId);
+        
+        // Generate new secret (plain text)
+        $newSecret = \Illuminate\Support\Str::random(40);
+        
+        // Bypass Passport's auto-hashing mutator by updating directly
+        \Illuminate\Support\Facades\DB::table('oauth_clients')
+            ->where('id', $client->id)
+            ->update(['secret' => $newSecret]);
+
+        // Flash the new secret to session
+        session()->flash('success', 'Client secret regenerated successfully!');
+        session()->flash('new_secret', $newSecret);
+        session()->flash('client_id', $client->id);
+
+        // Dispatch event to refresh and close modal
+        $this->dispatch('client-updated');
     }
 
     public function render()

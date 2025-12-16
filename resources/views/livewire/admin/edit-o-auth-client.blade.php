@@ -75,10 +75,28 @@
             </button>
         </div>
 
+        <!-- Regenerate Secret Section -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 class="font-semibold text-sm text-yellow-900 mb-2 flex items-center gap-2">
+                <x-mary-icon name="o-key" class="w-4 h-4" />
+                Client Secret
+            </h4>
+            <p class="text-sm text-yellow-800 mb-3">
+                Client secret tidak bisa ditampilkan untuk keamanan. Jika lupa atau perlu menggantinya, klik tombol di bawah untuk generate secret baru.
+            </p>
+            <button type="button" 
+                    wire:click="regenerateSecret"
+                    wire:confirm="Regenerate client secret? Secret lama tidak akan bisa digunakan lagi!"
+                    class="btn btn-warning btn-sm">
+                <x-mary-icon name="o-arrow-path" class="w-4 h-4" />
+                Regenerate Secret
+            </button>
+        </div>
+
         <!-- Submit Button -->
         <div class="flex justify-end gap-3 pt-4 border-t">
             <button type="button" 
-                    onclick="document.getElementById('edit_client_modal').close()"
+                    onclick="this.closest('dialog').close()"
                     class="btn btn-ghost">
                 {{ __('Cancel') }}
             </button>

@@ -120,10 +120,10 @@
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('Assign Role') }}</label>
                                                 <select name="user_roles[{{ $user->id }}]" class="select select-bordered select-sm w-full role-select" {{ !$isChecked ? 'disabled' : '' }}>
                                                     <option value="staff" {{ $selectedRole === 'staff' ? 'selected' : '' }}>
-                                                        👤 {{ __('Staff') }}
+                                                        {{ __('Staff') }}
                                                     </option>
                                                     <option value="manager" {{ $selectedRole === 'manager' ? 'selected' : '' }}>
-                                                        👔 {{ __('Manager') }}
+                                                        {{ __('Manager') }}
                                                     </option>
                                                 </select>
                                                 <div class="mt-1 text-xs text-gray-500 flex items-center gap-1">

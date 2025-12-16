@@ -179,7 +179,7 @@
                                         class="btn-accent btn-sm w-full"
                                         icon="o-key"
                                     >
-                                        🚪 Gateway
+                                        Gateway
                                     </x-mary-button>
                                 </div>
                             </div>

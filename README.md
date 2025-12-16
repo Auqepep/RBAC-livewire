@@ -1,4 +1,4 @@
-# 🔐 RBAC OAuth Server
+# RBAC OAuth Server
 
 **Role-Based Access Control (RBAC) System dengan OAuth 2.0 Authorization Server**
 
@@ -6,38 +6,38 @@ Sistem manajemen akses berbasis grup dengan OAuth 2.0 untuk integrasi third-part
 
 ---
 
-## 📋 Daftar Isi
+## Daftar Isi
 
-1. [Fitur Utama](#-fitur-utama)
-2. [Tech Stack](#-tech-stack)
-3. [Setup Awal](#-setup-awal)
-4. [Cara Kerja Web](#-cara-kerja-web)
-5. [Setup Redis](#-setup-redis)
-6. [OAuth Configuration](#-oauth-configuration)
-7. [User Roles](#-user-roles)
-8. [Development](#-development)
-9. [Deployment](#-deployment)
-10. [Dokumentasi Tambahan](#-dokumentasi-tambahan)
-
----
-
-## ✨ Fitur Utama
-
--   ✅ **Group-Based RBAC** - Hierarki grup, role, dan permission
--   ✅ **OAuth 2.0 Server** - Authorization Code Flow dengan PKCE
--   ✅ **Redis Caching** - Performance optimization untuk permission checks
--   ✅ **Multi-language** - Indonesia & English (default: Indonesia)
--   ✅ **Livewire 3** - Reactive UI tanpa JavaScript framework
--   ✅ **Mary UI + DaisyUI** - Beautiful Tailwind components
--   ✅ **Email OTP** - Secure email verification
--   ✅ **OAuth Client Management** - Web UI untuk manage third-party apps
+1. [Fitur Utama](#fitur-utama)
+2. [Tech Stack](#tech-stack)
+3. [Setup Awal](#setup-awal)
+4. [Cara Kerja Web](#cara-kerja-web)
+5. [Setup Redis](#setup-redis)
+6. [OAuth Configuration](#oauth-configuration)
+7. [User Roles](#user-roles)
+8. [Development](#development)
+9. [Deployment](#deployment)
+10. [Dokumentasi Tambahan](#dokumentasi-tambahan)
 
 ---
 
-## 🛠️ Tech Stack
+## Fitur Utama
+
+-   **Group-Based RBAC** - Hierarki grup, role, dan permission
+-   **OAuth 2.0 Server** - Authorization Code Flow dengan PKCE
+-   **Redis Caching** - Performance optimization untuk permission checks
+-   **Multi-language** - Indonesia & English (default: Indonesia)
+-   **Livewire 3** - Reactive UI tanpa JavaScript framework
+-   **Mary UI + DaisyUI** - Beautiful Tailwind components
+-   **Email OTP** - Secure email verification
+-   **OAuth Client Management** - Web UI untuk manage third-party apps
+
+---
+
+## Tech Stack
 
 -   **Backend:** Laravel 12.0
--   **Frontend:** Livewire 3, Tailwind CSS, DaisyUI, Mary UI, Lucide Icons
+-   **Frontend:** Livewire 3, Tailwind CSS, DaisyUI, Mary UI, Heroicons
 -   **Database:** MySQL 8.0+
 -   **Cache:** Redis 7.0+
 -   **OAuth:** Laravel Passport 13.4
@@ -45,7 +45,7 @@ Sistem manajemen akses berbasis grup dengan OAuth 2.0 untuk integrasi third-part
 
 ---
 
-## 🚀 Setup Awal
+## Setup Awal
 
 ### 1. Requirements
 
@@ -70,7 +70,7 @@ cd RBAC-livewire
 # Install PHP dependencies
 composer install
 
-# Install JavaScript dependencies (includes Lucide, Mary UI, DaisyUI)
+# Install JavaScript dependencies (includes Heroicons, Mary UI, DaisyUI)
 npm install
 ```
 
@@ -178,7 +178,7 @@ Akses: http://localhost:8000
 
 ---
 
-## 🏗️ Cara Kerja Web
+## Cara Kerja Web
 
 ### 1. RBAC Structure
 
@@ -276,7 +276,7 @@ Cache otomatis dihapus saat:
 
 ---
 
-## 🔧 Setup Redis
+## Setup Redis
 
 ### Opsi 1: Docker (Recommended - Termudah!)
 
@@ -340,7 +340,7 @@ php artisan config:clear
 
 ---
 
-## 🔐 OAuth Configuration
+## OAuth Configuration
 
 ### 1. Create OAuth Client (Admin Only)
 
@@ -437,9 +437,94 @@ Keuntungan:
 
 📖 **FAQ lengkap:** [OAUTH_FAQ_INDO.md](OAUTH_FAQ_INDO.md)
 
+### 5. OAuth Testing dengan Postman
+
+**Step 1: Get Authorization Code**
+
+Buka URL ini di browser (ganti values sesuai client kamu):
+
+```
+http://localhost:8000/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=https://httpbin.org/anything&response_type=code&scope=read-user&state=random123&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=S256
+```
+
+Setelah login & approve, kamu akan redirect ke httpbin dengan `code` di URL.
+
+**Step 2: Exchange Code for Token (Postman)**
+
+```
+POST http://localhost:8000/oauth/token
+Content-Type: application/json
+
+{
+    "grant_type": "authorization_code",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "code": "AUTH_CODE_FROM_STEP_1",
+    "redirect_uri": "https://httpbin.org/anything",
+    "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+}
+```
+
+Response:
+
+```json
+{
+    "token_type": "Bearer",
+    "expires_in": 31536000,
+    "access_token": "eyJ0eXAiOiJKV1...",
+    "refresh_token": "def50200..."
+}
+```
+
+**Step 3: Get User Info (Postman)**
+
+```
+GET http://localhost:8000/api/user
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+Response:
+
+```json
+{
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "email_verified": true
+}
+```
+
+**Step 4: Refresh Token (Postman)**
+
+```
+POST http://localhost:8000/oauth/token
+Content-Type: application/json
+
+{
+    "grant_type": "refresh_token",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "refresh_token": "YOUR_REFRESH_TOKEN"
+}
+```
+
+Response: New access_token + refresh_token (old refresh token invalidated).
+
+**PKCE Code Challenge Generator:**
+
+Untuk generate valid PKCE pair, gunakan tool online atau:
+
+```javascript
+// code_verifier: random 43-128 character string
+const verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+
+// code_challenge: base64url(sha256(verifier))
+// Result: E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+```
+
 ---
 
-## 👥 User Roles
+## User Roles
 
 ### System Roles
 
@@ -468,7 +553,7 @@ Keuntungan:
 
 ---
 
-## 💻 Development
+## Development
 
 ### Running Development Server
 
@@ -545,7 +630,7 @@ routes/
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Railway.app (Recommended - Gratis!)
 
@@ -635,7 +720,7 @@ php artisan db:seed --class=OAuthClientSeeder
 
 ---
 
-## 📚 Dokumentasi Tambahan
+## Dokumentasi Tambahan
 
 ### Reference Docs
 
@@ -692,7 +777,7 @@ docker restart rbac-redis
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 
@@ -704,18 +789,18 @@ Contributions welcome! Please:
 
 ---
 
-## 📄 License
+## License
 
 This project is open-sourced under the [MIT license](https://opensource.org/licenses/MIT).
 
 ---
 
-## 🙏 Credits
+## Credits
 
 -   **Framework:** [Laravel](https://laravel.com)
 -   **UI:** [Livewire](https://livewire.laravel.com), [Tailwind CSS](https://tailwindcss.com)
 -   **Components:** [Mary UI](https://mary-ui.com), [DaisyUI](https://daisyui.com)
--   **Icons:** [Lucide](https://lucide.dev)
+-   **Icons:** [Heroicons](https://heroicons.com)
 -   **OAuth:** [Laravel Passport](https://laravel.com/docs/passport)
 -   **Cache:** [Redis](https://redis.io)
 

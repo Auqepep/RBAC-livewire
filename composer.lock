@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b76d93f7941a44e29401712087da0813",
+    "content-hash": "2dd2ce57203a3c98e19544b51891311b",
     "packages": [
         {
             "name": "blade-ui-kit/blade-heroicons",
@@ -55,7 +55,7 @@
             "description": "A package to easily make use of Heroicons in your Laravel Blade views.",
             "homepage": "https://github.com/blade-ui-kit/blade-heroicons",
             "keywords": [
-                "Heroicons",
+                "Heroicons",    
                 "blade",
                 "laravel"
             ],

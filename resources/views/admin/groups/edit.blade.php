@@ -160,7 +160,7 @@
                                 </div>
 
                                 <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
-                                    <p class="font-semibold mb-1">📋 {{ __('What gets sent to the third-party app:') }}</p>
+                                    <p class="font-semibold mb-1"> {{ __('What gets sent to the third-party app:') }}</p>
                                     <ul class="list-disc list-inside space-y-0.5 ml-2">
                                         <li>{{ __('User ID, Email, Name') }}</li>
                                         <li>{{ __('Group ID & Name') }}</li>

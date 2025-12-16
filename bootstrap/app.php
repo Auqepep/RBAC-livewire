@@ -20,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'user.level' => \App\Http\Middleware\EnsureUserLevel::class,
             'can' => \App\Http\Middleware\CheckPermission::class,
         ]);
+        
+        // Exclude OAuth token endpoint from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'oauth/token',
+            'oauth/token/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {

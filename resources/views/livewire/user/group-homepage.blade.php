@@ -191,7 +191,7 @@
             
             <div class="flex flex-wrap gap-2">
                 <x-mary-button 
-                    label="🚪 Gateway Access" 
+                    label="Gateway Access" 
                     icon="o-key"
                     link="{{ route('groups.gateway', $group->id) }}"
                     class="btn-accent"

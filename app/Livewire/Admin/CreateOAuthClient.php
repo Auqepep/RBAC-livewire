@@ -31,6 +31,7 @@ class CreateOAuthClient extends Component
 
     public function addRedirectUri()
     {
+        $this->redirect_uris = array_values($this->redirect_uris);
         $this->redirect_uris[] = '';
     }
 
@@ -48,26 +49,29 @@ class CreateOAuthClient extends Component
         
         $this->validate();
 
-        // Remove empty URIs
-        $this->redirect_uris = array_filter($this->redirect_uris, fn($uri) => !empty($uri));
+        // Remove empty URIs and re-index array
+        $cleanUris = array_values(array_filter($this->redirect_uris, fn($uri) => !empty($uri)));
 
-        // Generate client secret (plain)
+        // Generate client secret (plain) - 40 characters random string
         $plainSecret = Str::random(40);
+        $clientId = Str::uuid()->toString();
         
-        // Create the client
-        $client = new Client();
-        $client->id = Str::uuid();
-        $client->user_id = null;
-        $client->name = $this->name;
-        $client->secret = Hash::make($plainSecret);
-        $client->redirect_uris = $this->redirect_uris;
-        $client->grant_types = ['authorization_code', 'refresh_token'];
-        $client->revoked = false;
-        $client->save();
+        // Insert directly to bypass Passport's auto-hashing mutator
+        \Illuminate\Support\Facades\DB::table('oauth_clients')->insert([
+            'id' => $clientId,
+            'name' => $this->name,
+            'secret' => $plainSecret,
+            'redirect' => json_encode($cleanUris),
+            'personal_access_client' => false,
+            'password_client' => false,
+            'revoked' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         // Store for display (one-time only)
         $this->generatedSecret = $plainSecret;
-        $this->createdClientId = $client->id;
+        $this->createdClientId = $clientId;
         
         // Show modal with secret
         $this->showSecretModal = true;

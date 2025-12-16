@@ -75,9 +75,10 @@
             </div>
 
             <!-- Security Notice -->
-            <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded">
+            <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded flex gap-2">
+                <x-mary-icon name="o-exclamation-triangle" class="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <p class="text-xs text-yellow-800">
-                    <strong>⚠️ Security Notice:</strong> Only authorize applications you trust. 
+                    <strong>Security Notice:</strong> Only authorize applications you trust. 
                     This will give <strong>{{ $client->name }}</strong> access to your account data.
                 </p>
             </div>

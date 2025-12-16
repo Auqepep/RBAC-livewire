@@ -46,14 +46,9 @@
                                 {{ __('Groups') }}
                             </a>
                             
-                            @can('manage-permissions')
-                            <a href="{{ route('admin.permissions.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-blue-600 focus:outline-none focus:text-blue-600 focus:border-blue-300 transition duration-150 ease-in-out">
-                                {{ __('Permissions') }}
-                            </a>
-                            @endcan
-                            
-                            <a href="{{ route('admin.oauth-clients.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.oauth-clients.*') ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-purple-600 focus:outline-none focus:text-purple-600 focus:border-purple-300 transition duration-150 ease-in-out">
-                                🔐 Client Apps
+                            <a href="{{ route('admin.oauth-clients.index') }}" class="inline-flex items-center gap-1 px-1 pt-1 border-b-2 {{ request()->routeIs('admin.oauth-clients.*') ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500' }} text-sm font-medium leading-5 hover:text-purple-600 focus:outline-none focus:text-purple-600 focus:border-purple-300 transition duration-150 ease-in-out">
+                                <x-mary-icon name="o-key" class="w-4 h-4" />
+                                Client Apps
                             </a>
                         </div>
                     </div>
@@ -106,13 +101,9 @@
                     <a href="{{ route('admin.groups.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.groups.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
                         {{ __('Groups') }}
                     </a>
-                    @can('manage-permissions')
-                    <a href="{{ route('admin.permissions.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.permissions.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        {{ __('Permissions') }}
-                    </a>
-                    @endcan
-                    <a href="{{ route('admin.oauth-clients.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.oauth-clients.*') ? 'border-purple-500 text-purple-600 bg-purple-50' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
-                        🔐 Client Apps
+                    <a href="{{ route('admin.oauth-clients.index') }}" class="flex items-center gap-2 pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.oauth-clients.*') ? 'border-purple-500 text-purple-600 bg-purple-50' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+                        <x-mary-icon name="o-key" class="w-4 h-4" />
+                        Client Apps
                     </a>
                 </div>
 

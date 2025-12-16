@@ -60,12 +60,6 @@
                             icon="o-rectangle-group" 
                             class="btn-accent"
                             link="{{ route('admin.groups.index') }}" />
-                        
-                        <x-mary-button 
-                            label="Lihat Izin" 
-                            icon="o-key" 
-                            class="btn-outline"
-                            link="{{ route('admin.permissions.index') }}" />
                     </div>
                     
                     <x-mary-alert class="mt-4" icon="o-information-circle">
@@ -106,13 +100,8 @@
 
             <!-- System Settings -->
             <x-mary-card title="Pengaturan Sistem" subtitle="Konfigurasi sistem">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <x-mary-button 
-                        label="Izin" 
-                        icon="o-key" 
-                        class="btn-outline btn-sm"
-                        link="{{ route('admin.permissions.index') }}" />
-                        
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">      
+                         
                     <x-mary-button 
                         label="Log Sistem" 
                         icon="o-document-text" 

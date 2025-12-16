@@ -69,7 +69,10 @@
             <x-mary-card shadow separator>
                 <x-slot:title>
                     <div class="flex items-center justify-between">
-                        <span>👥 Group Members ({{ $members->count() }})</span>
+                        <span class="flex items-center gap-2">
+                            <x-mary-icon name="o-user-group" class="w-4 h-4" />
+                            Group Members ({{ $members->count() }})
+                        </span>
                         <x-mary-button 
                             label="Add Member" 
                             icon="o-plus"

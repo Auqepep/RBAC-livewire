@@ -105,9 +105,7 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
     
     // Quick user permission testing routes
     Route::post('users/{user}/toggle-admin', [AdminUserController::class, 'toggleAdmin'])->name('users.toggle-admin');
-    Route::get('users/{user}/permissions', [AdminUserController::class, 'permissions'])->name('users.permissions');
     
-    Route::resource('permissions', PermissionController::class);
     Route::resource('groups', GroupController::class);
     
     // OAuth Client Management
@@ -171,6 +169,21 @@ Route::middleware(['auth', 'system.admin'])->prefix('admin')->name('admin.')->gr
 Route::get('/tailwind-test', function () {
     return view('tailwind-test');
 })->name('tailwind.test');
+
+// OAuth SSO Routes with Auto-Approval
+Route::middleware('web')->group(function () {
+    // Authorization endpoint (auto-approves)
+    Route::get('/oauth/authorize', [\App\Http\Controllers\Auth\OAuthAuthorizationController::class, 'authorize'])
+        ->name('oauth.authorize');
+    
+    // Token exchange endpoint
+    Route::post('/oauth/token', [\App\Http\Controllers\Auth\OAuthAuthorizationController::class, 'token'])
+        ->name('oauth.token');
+    
+    // User info endpoint for OAuth clients
+    Route::middleware('auth:api')->get('/api/user', [\App\Http\Controllers\Auth\OAuthAuthorizationController::class, 'userInfo'])
+        ->name('oauth.user-info');
+});
 
 // Comment out the default auth routes since we're using custom OTP auth
 // require __DIR__.'/auth.php';

@@ -55,7 +55,7 @@ class GroupGateway extends Component
             'client_id' => $this->group->oauth_client_id,
             'redirect_uri' => $this->group->third_party_app_url,
             'response_type' => 'code',
-            'scope' => '*', // Grant all scopes (since we control both authorization server and client)
+            'scope' => '', // Empty scope for simplicity
             'state' => base64_encode(json_encode([
                 'group_id' => $this->group->id,
                 'timestamp' => now()->timestamp,
@@ -63,8 +63,8 @@ class GroupGateway extends Component
             ]))
         ];
         
-        // Redirect to our own OAuth authorization endpoint
-        $this->redirectUrl = route('passport.authorizations.authorize', $params);
+        // Redirect to our custom OAuth authorization endpoint (with auto-approve)
+        $this->redirectUrl = route('oauth.authorize', $params);
     }
 
     private function checkGatewayAccess($membership)
