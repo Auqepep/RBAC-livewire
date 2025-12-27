@@ -55,9 +55,8 @@
     </div>
 
     <div class="message">
-        @elseif($type === 'login')
-            <h2>Kode Login Anda</h2>
-            <p>Gunakan kode OTP di bawah ini untuk menyelesaikan login Anda:</p>
+        <h2>Kode Login Anda</h2>
+        <p>Gunakan kode OTP di bawah ini untuk menyelesaikan login Anda:</p>
     </div>
 
     <div class="otp-code">
